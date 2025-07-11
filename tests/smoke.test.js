@@ -1,4 +1,4 @@
-   // tests/smoke.test.js
+/* eslint-env jest */
    test('smoke test', () => {
     expect(true).toBe(true);
   });

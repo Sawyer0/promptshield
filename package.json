@@ -1,0 +1,39 @@
+{
+  "name": "promptshield",
+  "version": "1.0.0",
+  "description": "ESLint for AI Safety - A developer-first CLI tool for scanning prompts and responses for risky content",
+  "main": "config.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sawyer0/promptshield.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Sawyer0/promptshield/issues"
+  },
+  "homepage": "https://github.com/Sawyer0/promptshield#readme",
+  "dependencies": {
+    "chalk": "^5.4.1",
+    "commander": "^14.0.0",
+    "glob": "^11.0.3",
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.13",
+    "eslint": "^9.31.0",
+    "husky": "^9.1.7",
+    "jest": "^30.0.4",
+    "lint-staged": "^16.1.2",
+    "prettier": "^3.6.2"
+  }
+}

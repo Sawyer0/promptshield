@@ -1,0 +1,8 @@
+feature:
+  - 'feature/**'
+bugfix:
+  - 'bugfix/**'
+chore:
+  - 'chore/**'
+docs:
+  - 'docs/**' 

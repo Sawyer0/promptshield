@@ -1,0 +1,31 @@
+name: Create Vibecode Issues and Projects
+
+on:
+  workflow_dispatch:
+    inputs:
+      github_token:
+        description: 'GitHub Token'
+        required: true
+        type: string
+
+jobs:
+  create-issues:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          
+      - name: Install dependencies
+        run: |
+          pip install PyGithub
+          
+      - name: Create Issues and Projects
+        run: |
+          python scripts/convert_vibecode_to_github.py --token ${{ inputs.github_token }} --repo ${{ github.repository }}
+        env:
+          GITHUB_TOKEN: ${{ inputs.github_token }}

@@ -1,8 +1,8 @@
 feature:
-  - 'feature/**'
-bugfix:
-  - 'bugfix/**'
-chore:
-  - 'chore/**'
+  - 'src/**'
 docs:
-  - 'docs/**' 
+  - 'docs/**'
+test:
+  - 'tests/**'
+workflow:
+  - '.github/workflows/**' 

@@ -3,7 +3,7 @@
  */
 
 class RuleEngine {
-  private rules: any[];
+  private rules: string[];
 
   constructor() {
     this.rules = [];
@@ -24,7 +24,7 @@ class RuleEngine {
    * @param content - Content to check
    * @returns Array of violations found
    */
-  applyRules(content: string): any[] {
+  applyRules(content: string): string[] {
     // Placeholder implementation
     console.log(`Applying rules to content (${content.length} characters)`);
     return [];

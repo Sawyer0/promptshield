@@ -3,9 +3,9 @@
  */
 
 class Reporter {
-  private options: Record<string, any>;
+  private options: Record<string, unknown>;
 
-  constructor(options: Record<string, any> = {}) {
+  constructor(options: Record<string, unknown> = {}) {
     this.options = options;
   }
 
@@ -19,7 +19,6 @@ class Reporter {
     if (format === 'json') {
       return JSON.stringify(issues, null, 2);
     }
-    
     // Default text format
     return this.formatTextReport(issues);
   }
@@ -33,7 +32,6 @@ class Reporter {
     if (issues.length === 0) {
       return 'No issues found.';
     }
-    
     return `Found ${issues.length} issue(s).`;
   }
 }

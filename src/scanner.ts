@@ -3,9 +3,9 @@
  */
 
 class Scanner {
-  private options: Record<string, any>;
+  private options: Record<string, unknown>;
 
-  constructor(options: Record<string, any> = {}) {
+  constructor(options: Record<string, unknown> = {}) {
     this.options = options;
   }
 

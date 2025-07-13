@@ -17,7 +17,9 @@ export const testHelpers = {
    * Create test data string from JSON array
    */
   createTestDataString(jsonArray: any[]): string {
-    return jsonArray.map((obj: Record<string, any>) => Object.values(obj).join(' ')).join(' ');
+    return jsonArray
+      .map((obj: Record<string, any>) => Object.values(obj).join(' '))
+      .join(' ');
   },
 
   /**
@@ -52,9 +54,12 @@ export const testHelpers = {
   /**
    * Assert that violations contain specific rule IDs
    */
-  expectViolationsToContain(violations: Violation[], expectedRuleIds: string[]): void {
-    const actualRuleIds = violations.map(v => v.ruleId);
-    expectedRuleIds.forEach(ruleId => {
+  expectViolationsToContain(
+    violations: Violation[],
+    expectedRuleIds: string[]
+  ): void {
+    const actualRuleIds = violations.map((v) => v.ruleId);
+    expectedRuleIds.forEach((ruleId) => {
       expect(actualRuleIds).toContain(ruleId);
     });
   },
@@ -62,9 +67,12 @@ export const testHelpers = {
   /**
    * Assert that violations do not contain specific rule IDs
    */
-  expectViolationsToNotContain(violations: Violation[], unexpectedRuleIds: string[]): void {
-    const actualRuleIds = violations.map(v => v.ruleId);
-    unexpectedRuleIds.forEach(ruleId => {
+  expectViolationsToNotContain(
+    violations: Violation[],
+    unexpectedRuleIds: string[]
+  ): void {
+    const actualRuleIds = violations.map((v) => v.ruleId);
+    unexpectedRuleIds.forEach((ruleId) => {
       expect(actualRuleIds).not.toContain(ruleId);
     });
   },
@@ -73,7 +81,7 @@ export const testHelpers = {
    * Get unique rule IDs from violations
    */
   getUniqueRuleIds(violations: Violation[]): string[] {
-    return [...new Set(violations.map(v => v.ruleId))];
+    return [...new Set(violations.map((v) => v.ruleId))];
   },
 
   /**
@@ -82,17 +90,17 @@ export const testHelpers = {
   testData: {
     validJsonArray: [
       { id: 'test1', prompt: 'Hello world', response: 'Hi there' },
-      { id: 'test2', prompt: 'How are you?', response: 'I\'m good' }
+      { id: 'test2', prompt: 'How are you?', response: "I'm good" },
     ],
-    
+
     piiData: [
-      { 
-        id: 'pii-001', 
+      {
+        id: 'pii-001',
         prompt: 'Contact john.doe@example.com for details',
-        response: 'Call 555-123-4567 or email jane.smith@company.com'
-      }
+        response: 'Call 555-123-4567 or email jane.smith@company.com',
+      },
     ],
-    
+
     nestedData: [
       {
         id: 'nested-001',
@@ -100,12 +108,12 @@ export const testHelpers = {
         user: {
           profile: {
             email: 'user@example.com',
-            phone: '555-987-6543'
-          }
-        }
-      }
+            phone: '555-987-6543',
+          },
+        },
+      },
     ],
-    
+
     malformedJson: '{"id": "test1", "prompt": "Hello world"', // Missing closing brace
     emptyJson: '',
     nonArrayJson: '{"id": "test1", "prompt": "Hello world"}',
@@ -132,19 +140,17 @@ export const testHelpers = {
     },
 
     expectNoViolations(results: ScanResult[]): void {
-      results.forEach(result => {
+      results.forEach((result) => {
         expect(result.violations).toHaveLength(0);
       });
     },
 
     expectHasViolations(results: ScanResult[]): void {
-      results.forEach(result => {
+      results.forEach((result) => {
         expect(result.violations.length).toBeGreaterThan(0);
       });
-    }
+    },
   },
-
-
 };
 
 /**
@@ -155,7 +161,7 @@ export const ndjsonHelpers = {
    * Create NDJSON string from array of objects
    */
   createNdjsonString(objects: any[]): string {
-    return objects.map(obj => JSON.stringify(obj)).join('\n');
+    return objects.map((obj) => JSON.stringify(obj)).join('\n');
   },
 
   /**
@@ -164,20 +170,22 @@ export const ndjsonHelpers = {
   parseNdjsonString(ndjsonString: string): any[] {
     return ndjsonString
       .split('\n')
-      .map(line => line.trim())
-      .filter(line => line.length > 0)
-      .map(line => JSON.parse(line));
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0)
+      .map((line) => JSON.parse(line));
   },
 
   /**
    * Shared NDJSON test data
    */
   testData: {
-    validNdjson: '{"prompt": "Hello", "response": "Hi"}\n{"prompt": "How are you?", "response": "Good"}',
-    malformedNdjson: '{"prompt": "Hello"}\n{"response": "Hi",}\n{"prompt": "Test"}',
+    validNdjson:
+      '{"prompt": "Hello", "response": "Hi"}\n{"prompt": "How are you?", "response": "Good"}',
+    malformedNdjson:
+      '{"prompt": "Hello"}\n{"response": "Hi",}\n{"prompt": "Test"}',
     emptyNdjson: '',
-    singleLineNdjson: '{"prompt": "Hello", "response": "Hi"}'
-  }
+    singleLineNdjson: '{"prompt": "Hello", "response": "Hi"}',
+  },
 };
 
 /**
@@ -190,7 +198,7 @@ export const cliHelpers = {
   extractViolationsFromOutput(output: string): string[] {
     const lines = output.split('\n');
     const violations: string[] = [];
-    
+
     for (const line of lines) {
       if (line.includes('**[') && line.includes(']**')) {
         // Extract rule ID from markdown format
@@ -200,7 +208,7 @@ export const cliHelpers = {
         }
       }
     }
-    
+
     return violations;
   },
 
@@ -208,7 +216,7 @@ export const cliHelpers = {
    * Check if CLI output contains specific error
    */
   outputContainsError(output: string, errorPattern: string | RegExp): boolean {
-    return typeof errorPattern === 'string' 
+    return typeof errorPattern === 'string'
       ? output.includes(errorPattern)
       : errorPattern.test(output);
   },
@@ -217,13 +225,16 @@ export const cliHelpers = {
    * Common CLI test scenarios
    */
   scenarios: {
-    basicScan: 'node bin/promptshield scan tests/fixtures/valid.json --rulepack rulepacks/pii.yaml',
+    basicScan:
+      'node bin/promptshield scan tests/fixtures/valid.json --rulepack rulepacks/pii.yaml',
     helpCommand: 'node bin/promptshield --help',
     versionCommand: 'node bin/promptshield --version',
     invalidCommand: 'node bin/promptshield invalid',
-    missingFile: 'node bin/promptshield scan missing.json --rulepack rulepacks/pii.yaml',
-    missingRulepack: 'node bin/promptshield scan tests/fixtures/valid.json --rulepack missing.yaml'
-  }
+    missingFile:
+      'node bin/promptshield scan missing.json --rulepack rulepacks/pii.yaml',
+    missingRulepack:
+      'node bin/promptshield scan tests/fixtures/valid.json --rulepack missing.yaml',
+  },
 };
 
 /**
@@ -233,9 +244,15 @@ export const fsHelpers = {
   /**
    * Create temporary test file
    */
-  async createTempFile(content: string, extension: string = '.json'): Promise<string> {
+  async createTempFile(
+    content: string,
+    extension: string = '.json'
+  ): Promise<string> {
     const path = require('path');
-    const tempPath = path.join(process.cwd(), `tests/fixtures/temp-${Date.now()}${extension}`);
+    const tempPath = path.join(
+      process.cwd(),
+      `tests/fixtures/temp-${Date.now()}${extension}`
+    );
     await fsPromises.writeFile(tempPath, content);
     return tempPath;
   },
@@ -251,5 +268,5 @@ export const fsHelpers = {
         // Ignore cleanup errors
       }
     }
-  }
-}; 
+  },
+};

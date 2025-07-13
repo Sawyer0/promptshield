@@ -30,4 +30,4 @@ help:
 	@echo "  lint      Run linter (if configured)"
 	@echo "  format    Format code (if configured)"
 	@echo "  scan      Run sample scan with PII RulePack"
-	@echo "  help      Show this help message" 
+	@echo "  help      Show this help message"

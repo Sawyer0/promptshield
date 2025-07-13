@@ -10,7 +10,7 @@
     }
   },
   {
-    "id": "prompt-002", 
+    "id": "prompt-002",
     "prompt": "Explain quantum computing in simple terms",
     "response": "Quantum computing is like having a computer that can be in multiple states at once...",
     "category": "education",
@@ -29,4 +29,4 @@
       "user_id": "user789"
     }
   }
-] 
+]

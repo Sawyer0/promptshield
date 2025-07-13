@@ -10,7 +10,8 @@
     "test": "npm run build && jest",
     "lint": "eslint src/",
     "format": "prettier --write src/",
-    "dev": "ts-node src/cli/index.ts"
+    "dev": "ts-node src/cli/index.ts",
+    "type-check": "tsc --noEmit"
   },
   "files": [
     "bin",
@@ -28,7 +29,8 @@
     "globals": "^16.3.0",
     "jest": "^30.0.4",
     "prettier": "^3.6.2",
-    "ts-jest": "^29.4.0"
+    "ts-jest": "^29.4.0",
+    "typescript": "^5.8.3"
   },
   "dependencies": {
     "ajv": "^8.17.1",

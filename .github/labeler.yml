@@ -9,4 +9,4 @@ test:
       - 'tests/**'
 workflow:
   - paths:
-      - '.github/workflows/**' 
+      - '.github/workflows/**'

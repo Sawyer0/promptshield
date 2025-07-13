@@ -1,17 +1,20 @@
 # PromptShield RulePack Authoring Guide
 
 ## What is a RulePack?
+
 A RulePack is a YAML file that defines a set of rules for scanning prompts, responses, or other files for compliance, safety, or quality issues. RulePacks are modular, versioned, and can be enabled/disabled or filtered by severity and tags.
 
 RulePacks live in the `rulepacks/` directory and are loaded by the Rule Engine at runtime.
 
 **RulePack Naming Convention:**
+
 - Use lowercase, hyphen-separated names (e.g., `pii.yaml`, `bias.yaml`, `hallucination.yaml`) for consistency in `rulepacks/`.
 
 ---
 
 ## RulePack YAML Schema & Versioning
-- Every RulePack **must** include: 
+
+- Every RulePack **must** include:
   - `schema_version` (required, e.g., `1.0.0`)
   - `version` (required, semantic versioning, e.g., `1.2.0`)
   - `last_updated` (required, YYYY-MM-DD)
@@ -20,29 +23,31 @@ RulePacks live in the `rulepacks/` directory and are loaded by the Rule Engine a
 ---
 
 ## Example RulePack
+
 ```yaml
 # Copyright (c) 2025 Sawyer0
 # Licensed under proprietary terms. See LICENSE for details.
 schema_version: 1.0.0
 version: 1.2.0
 last_updated: 2025-06-01
-name: "PII Detection"
-description: "Detects personally identifiable information in prompts and responses."
+name: 'PII Detection'
+description: 'Detects personally identifiable information in prompts and responses.'
 rules:
-  - id: "pii-email"
-    name: "Email Address Detection"
-    description: "Detects email addresses in content."
-    severity: "high"
+  - id: 'pii-email'
+    name: 'Email Address Detection'
+    description: 'Detects email addresses in content.'
+    severity: 'high'
     enabled: true
-    type: "regex"
+    type: 'regex'
     pattern: "\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b"
-    message: "Email address detected: {match}"
-    tags: ["pii", "email"]
+    message: 'Email address detected: {match}'
+    tags: ['pii', 'email']
 ```
 
 ---
 
 ## Rule Overlap and Ordering
+
 - Rules in a RulePack are typically applied in the order they appear in the YAML file, but may be processed in parallel for performance.
 - If multiple rules match the same content, all matching violations will be reported.
 - There is no built-in conflict resolution; use rule `severity` and `tags` to help prioritize or filter results.
@@ -51,6 +56,7 @@ rules:
 ---
 
 ## How to Test and Validate RulePacks
+
 1. Place your RulePack YAML file in the `rulepacks/` directory.
 2. Run the PromptShield CLI with your target files and the `--rules-dir` option if needed.
 3. Check the CLI output for detected violations and ensure rules behave as expected.
@@ -58,14 +64,17 @@ rules:
 5. For advanced validation, add or update tests in `tests/rules.test.js`.
 
 **Example Command:**
+
 ```sh
 promptshield scan --input input.json --rules rulepacks/pii.yaml
 ```
+
 This command scans `input.json` using the rules defined in `rulepacks/pii.yaml`.
 
 ---
 
 ## Severity Filtering
+
 - You can filter results by severity using the CLI option, e.g.:
   ```sh
   promptshield scan --input input.json --rules rulepacks/pii.yaml --severity high
@@ -75,6 +84,7 @@ This command scans `input.json` using the rules defined in `rulepacks/pii.yaml`.
 ---
 
 ## Best Practices
+
 - Use clear, descriptive names and messages for rules.
 - Tag rules for easy filtering (e.g., `pii`, `bias`, `hallucination`).
 - Set `enabled: false` for experimental or draft rules.
@@ -85,6 +95,7 @@ This command scans `input.json` using the rules defined in `rulepacks/pii.yaml`.
 ---
 
 ## Troubleshooting Common Errors
+
 - **YAML Parse Error:** Check for indentation or formatting mistakes.
 - **Missing Required Field:** Ensure all required fields are present in each rule.
 - **No Violations Detected:** Test with known-bad input to confirm rule logic.
@@ -121,12 +132,14 @@ PromptShield thrives on a diverse ecosystem of RulePacks. Here are some high-imp
 See the [RulePack Registry](RULEPACK_REGISTRY.md) for examples and inspiration.
 
 **How to contribute:**
+
 - Fork the repo, add your RulePack, and submit a PR.
 - All contributors will be recognized in our docs and GitHub project!
 
 ---
 
 ## References
+
 - [RULEPACK_SCHEMA.md](RULEPACK_SCHEMA.md) — RulePack schema and field details
 - [RULE_ENGINE.md](RULE_ENGINE.md) — Rule engine internals
 - [EXTENSIONS.md](EXTENSIONS.md) — Adding new rule types
@@ -134,4 +147,5 @@ See the [RulePack Registry](RULEPACK_REGISTRY.md) for examples and inspiration.
 - [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) — Contributor guide
 
 ---
-For questions or to contribute new RulePacks, see the contributor guide or open an issue! 
+
+For questions or to contribute new RulePacks, see the contributor guide or open an issue!

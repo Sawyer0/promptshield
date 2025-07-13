@@ -6,7 +6,10 @@ export interface ValidationResult {
   warnings: string[];
 }
 
-export function validateRulePack(rulePack: Rule[], opts?: { strict?: boolean }): ValidationResult[] {
+export function validateRulePack(
+  rulePack: Rule[],
+  opts?: { strict?: boolean }
+): ValidationResult[] {
   const results: ValidationResult[] = [];
   const seenIds = new Set<string>();
   for (const rule of rulePack) {
@@ -30,4 +33,4 @@ export function validateRulePack(rulePack: Rule[], opts?: { strict?: boolean }):
     results.push({ ruleId: rule.id, errors, warnings });
   }
   return results;
-} 
+}

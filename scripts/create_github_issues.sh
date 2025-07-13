@@ -45,7 +45,7 @@ echo -e "${GREEN}✅ Created directory structure${NC}"
 create_issue_template() {
     local template_name="$1"
     local template_content="$2"
-    
+
     cat > "$ISSUE_TEMPLATE_DIR/$template_name" << EOF
 $template_content
 EOF
@@ -65,11 +65,11 @@ assignees: ""
 <!-- Describe what needs to be done -->
 
 ## Week & Day
-- **Week:** 
-- **Day:** 
+- **Week:**
+- **Day:**
 
 ## Deliverables
-- [ ] 
+- [ ]
 
 ## Code Snippets
 ```javascript
@@ -95,9 +95,9 @@ assignees: ""
 <!-- Describe the bug -->
 
 ## Steps to Reproduce
-1. 
-2. 
-3. 
+1.
+2.
+3.
 
 ## Expected Behavior
 <!-- What should happen -->
@@ -106,9 +106,9 @@ assignees: ""
 <!-- What actually happens -->
 
 ## Environment
-- OS: 
-- Node.js version: 
-- PromptShield version: 
+- OS:
+- Node.js version:
+- PromptShield version:
 
 ## Additional Context
 <!-- Any other context about the problem -->
@@ -155,16 +155,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
-          
+
       - name: Install dependencies
         run: |
           pip install PyGithub
-          
+
       - name: Create Issues and Projects
         run: |
           python scripts/convert_vibecode_to_github.py --token ${{ inputs.github_token }} --repo ${{ github.repository }}
@@ -185,7 +185,7 @@ create_label_if_missing() {
     local name="$1"
     local color="$2"
     local description="$3"
-    
+
     if label_exists "$name"; then
         echo -e "${YELLOW}⚠️  Label '$name' already exists, skipping${NC}"
         update_counters "label" "skipped"
@@ -202,31 +202,31 @@ create_label_if_missing() {
 # Function to create labels
 create_labels() {
     echo -e "${BLUE}📝 Creating GitHub labels...${NC}"
-    
+
     # Vibecode labels
     create_label_if_missing "vibecode" "0366d6" "Tasks from vibecode development plan"
     create_label_if_missing "week-1" "fbca04" "Week 1 tasks"
     create_label_if_missing "week-2" "fbca04" "Week 2 tasks"
     create_label_if_missing "week-3" "fbca04" "Week 3 tasks"
     create_label_if_missing "week-4" "fbca04" "Week 4 tasks"
-    
+
     # Task type labels
     create_label_if_missing "cli" "d93f0b" "CLI-related tasks"
     create_label_if_missing "rules" "0e8a16" "Rule system tasks"
     create_label_if_missing "output" "1d76db" "Output formatting tasks"
     create_label_if_missing "testing" "5319e7" "Testing tasks"
     create_label_if_missing "error-handling" "b60205" "Error handling tasks"
-    
+
     # Priority labels
     create_label_if_missing "priority-high" "b60205" "High priority"
     create_label_if_missing "priority-medium" "fbca04" "Medium priority"
     create_label_if_missing "priority-low" "0e8a16" "Low priority"
-    
+
     # Status labels
     create_label_if_missing "blocked" "b60205" "Blocked by another issue"
     create_label_if_missing "ready" "0e8a16" "Ready to work on"
     create_label_if_missing "in-progress" "fbca04" "Currently being worked on"
-    
+
     echo -e "${GREEN}✅ GitHub labels ready${NC}"
 }
 
@@ -241,7 +241,7 @@ create_milestone_if_missing() {
     local title="$1"
     local description="$2"
     local due_date="$3"
-    
+
     if milestone_exists "$title"; then
         echo -e "${YELLOW}⚠️  Milestone '$title' already exists, skipping${NC}"
         update_counters "milestone" "skipped"
@@ -255,14 +255,14 @@ create_milestone_if_missing() {
 # Function to create milestones
 create_milestones() {
     echo -e "${BLUE}📅 Creating milestones...${NC}"
-    
+
     # Calculate dates (4 weeks from now, using RFC 3339 format)
     for week in {1..4}; do
         week_offset=$((week * 7))
         due_date=$(date -d "+$week_offset days" --utc +%Y-%m-%dT00:00:00Z)
         create_milestone_if_missing "Week $week" "Development milestone for Week $week" "$due_date"
     done
-    
+
     echo -e "${GREEN}✅ GitHub milestones ready${NC}"
 }
 
@@ -276,7 +276,7 @@ project_exists() {
 create_project_if_missing() {
     local name="$1"
     local description="$2"
-    
+
     if project_exists "$name"; then
         echo -e "${YELLOW}⚠️  Project '$name' already exists, skipping${NC}"
         update_counters "project" "skipped"
@@ -310,7 +310,7 @@ create_issue_if_missing() {
     local title="$1"
     local body="$2"
     local labels="$3"
-    
+
     if issue_exists "$title"; then
         echo -e "${YELLOW}⚠️  Issue '$title' already exists, skipping${NC}"
         update_counters "issue" "skipped"
@@ -328,50 +328,50 @@ create_issue_if_missing() {
 # Function to create issues from vibecode structure
 create_issues() {
     echo -e "${BLUE}📝 Creating issues from vibecode structure...${NC}"
-    
+
     # Process each week
     for week_dir in vibecode/week*; do
         if [ ! -d "$week_dir" ]; then
             continue
         fi
-        
+
         week_num=$(echo "$week_dir" | sed 's/.*week\([0-9]*\).*/\1/')
         week_name=$(basename "$week_dir")
-        
+
         echo -e "${YELLOW}Processing $week_name...${NC}"
-        
+
         # Process each day
         for day_dir in "$week_dir"/day*; do
             if [ ! -d "$day_dir" ]; then
                 continue
             fi
-            
+
             day_num=$(echo "$day_dir" | sed 's/.*day\([0-9]*\).*/\1/')
             day_name=$(basename "$day_dir")
-            
+
             # Read the README.md file
             readme_file="$day_dir/README.md"
             if [ ! -f "$readme_file" ]; then
                 continue
             fi
-            
+
             # Extract goal from README
             goal=$(grep -A 1 "## 🎯 \*\*Today's Goal\*\*" "$readme_file" | tail -n 1 | sed 's/^[[:space:]]*//' | sed 's/^[[:space:]]*//')
-            
+
             # If goal is empty, try alternative extraction
             if [ -z "$goal" ] || [ "$goal" = "" ]; then
                 # Try to get the first line after the goal header
                 goal=$(awk '/## 🎯 \*\*Today'\''s Goal\*\*/ {getline; print}' "$readme_file" | sed 's/^[[:space:]]*//')
             fi
-            
+
             # If still empty, use a unique fallback goal
             if [ -z "$goal" ] || [ "$goal" = "" ]; then
                 goal="Objectives for Week $week_num Day $day_num"
             fi
-            
+
             # Make issue title unique by including week and day
             issue_title="Week $week_num Day $day_num: $goal"
-            
+
             # Create issue body
             issue_body=$(cat << EOF
 ## Task Description
@@ -393,12 +393,12 @@ This task is part of the vibecode development plan for $week_name.
 - Update this issue with progress and blockers
 EOF
 )
-            
+
             # Create the issue if it doesn't exist, and assign to milestone
             create_issue_if_missing_with_milestone "$issue_title" "$issue_body" "vibecode,week-$week_num" "Week $week_num"
         done
     done
-    
+
     echo -e "${GREEN}✅ GitHub issues ready${NC}"
 }
 
@@ -408,7 +408,7 @@ create_issue_if_missing_with_milestone() {
     local body="$2"
     local labels="$3"
     local milestone="$4"
-    
+
     if issue_exists "$title"; then
         echo -e "${YELLOW}⚠️  Issue '$title' already exists, skipping${NC}"
         update_counters "issue" "skipped"
@@ -438,7 +438,7 @@ SKIPPED_ISSUES=0
 update_counters() {
     local type="$1"
     local action="$2"
-    
+
     case "$type" in
         "label")
             if [ "$action" = "created" ]; then
@@ -476,7 +476,7 @@ create_label_if_missing() {
     local name="$1"
     local color="$2"
     local description="$3"
-    
+
     if label_exists "$name"; then
         echo -e "${YELLOW}⚠️  Label '$name' already exists, skipping${NC}"
         update_counters "label" "skipped"
@@ -491,7 +491,7 @@ create_milestone_if_missing() {
     local title="$1"
     local description="$2"
     local due_date="$3"
-    
+
     if milestone_exists "$title"; then
         echo -e "${YELLOW}⚠️  Milestone '$title' already exists, skipping${NC}"
         update_counters "milestone" "skipped"
@@ -505,7 +505,7 @@ create_milestone_if_missing() {
 create_project_if_missing() {
     local name="$1"
     local description="$2"
-    
+
     if project_exists "$name"; then
         echo -e "${YELLOW}⚠️  Project '$name' already exists, skipping${NC}"
         update_counters "project" "skipped"
@@ -520,7 +520,7 @@ create_issue_if_missing() {
     local title="$1"
     local body="$2"
     local labels="$3"
-    
+
     if issue_exists "$title"; then
         echo -e "${YELLOW}⚠️  Issue '$title' already exists, skipping${NC}"
         update_counters "issue" "skipped"
@@ -544,10 +544,10 @@ show_summary() {
     echo -e "${BLUE}📋 Projects:${NC}    Created: ${GREEN}$CREATED_PROJECTS${NC}, Skipped: ${YELLOW}$SKIPPED_PROJECTS${NC}"
     echo -e "${BLUE}📝 Issues:${NC}      Created: ${GREEN}$CREATED_ISSUES${NC}, Skipped: ${YELLOW}$SKIPPED_ISSUES${NC}"
     echo -e "${BLUE}═══════════════════════════════════════════${NC}"
-    
+
     local total_created=$((CREATED_LABELS + CREATED_MILESTONES + CREATED_PROJECTS + CREATED_ISSUES))
     local total_skipped=$((SKIPPED_LABELS + SKIPPED_MILESTONES + SKIPPED_PROJECTS + SKIPPED_ISSUES))
-    
+
     echo -e "${GREEN}✅ Total Created: $total_created${NC}"
     echo -e "${YELLOW}⚠️  Total Skipped: $total_skipped${NC}"
 }
@@ -576,4 +576,4 @@ echo -e "2. Assign team members to issues"
 echo -e "3. Set up project board columns and automation"
 echo -e "4. Start working through the vibecode plan!"
 echo -e ""
-echo -e "${YELLOW}💡 Tip: Use 'gh issue list --label vibecode' to see all vibecode issues${NC}" 
+echo -e "${YELLOW}💡 Tip: Use 'gh issue list --label vibecode' to see all vibecode issues${NC}"

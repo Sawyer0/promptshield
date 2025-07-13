@@ -1,8 +1,12 @@
 feature:
-  - 'src/**'
+  - paths:
+      - 'src/**'
 docs:
-  - 'docs/**'
+  - paths:
+      - 'docs/**'
 test:
-  - 'tests/**'
+  - paths:
+      - 'tests/**'
 workflow:
-  - '.github/workflows/**' 
+  - paths:
+      - '.github/workflows/**' 

@@ -27,12 +27,12 @@ class Scanner {
    */
   scanFiles(filePaths: string[]): string[] {
     const allIssues: string[] = [];
-    
+
     for (const filePath of filePaths) {
       const issues = this.scanFile(filePath);
       allIssues.push(...issues);
     }
-    
+
     return allIssues;
   }
 }

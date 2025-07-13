@@ -142,3 +142,5 @@ vite.config.ts.timestamp-*
 vibecode/
 # Ignore the .cursor directory
 .cursor/
+# Ignore the .vscode directory
+.vscode/

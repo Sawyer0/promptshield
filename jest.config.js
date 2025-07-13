@@ -197,4 +197,14 @@ const config = {
   // watchman: true,
 };
 
-module.exports = config;
+module.exports = {
+  testEnvironment: 'node',
+  transform: {
+    '^.+\\.ts$': 'ts-jest'
+  },
+  testRegex: '/tests/.*\\.(test|spec)\\.ts$',
+  moduleFileExtensions: ['ts', 'js'],
+  collectCoverage: true,
+  coverageDirectory: 'coverage',
+  coverageReporters: ['text', 'lcov']
+};

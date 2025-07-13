@@ -1,4 +1,4 @@
-MIT License
+MIT License (for CLI and Core Logic)
 
 Copyright (c) 2025 Sawyer0
 
@@ -19,3 +19,21 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+# Proprietary License for RulePacks, Middleware, and Commercial Add-ons
+
+All RulePacks (files in `rulepacks/`), advanced middleware, and any commercial add-ons or integrations are NOT covered by the MIT License above. These components are reserved for proprietary or commercial use by the copyright holder.
+
+- You may NOT use, copy, modify, distribute, or sublicense RulePacks, advanced middleware, or commercial add-ons for any commercial purpose without a separate commercial license agreement.
+- Evaluation and non-commercial research use may be permitted at the discretion of the copyright holder.
+- For commercial licensing, please contact the project owner.
+
+---
+
+# Summary
+- **CLI and core logic:** MIT License (open source, permissive)
+- **RulePacks, advanced middleware, commercial add-ons:** Proprietary, commercial use requires a separate license
+
+This open-core model allows free and open use of the CLI and core, while reserving advanced/commercial features for future licensing and protection.

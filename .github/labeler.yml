@@ -1,0 +1,12 @@
+feature:
+  - paths:
+      - 'src/**'
+docs:
+  - paths:
+      - 'docs/**'
+test:
+  - paths:
+      - 'tests/**'
+workflow:
+  - paths:
+      - '.github/workflows/**' 

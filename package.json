@@ -2,14 +2,16 @@
   "name": "promptshield",
   "version": "1.0.0",
   "description": "ESLint for AI Safety - A developer-first CLI tool for scanning prompts and responses for risky content",
-  "main": "config.js",
   "directories": {
     "doc": "docs",
     "test": "tests"
   },
   "scripts": {
-    "lint": "eslint .",
-    "test": "jest"
+    "lint": "eslint . --ext .ts,.js",
+    "type-check": "tsc --noEmit",
+    "build": "tsc",
+    "test": "jest",
+    "prepare": "husky install"
   },
   "repository": {
     "type": "git",
@@ -31,7 +33,10 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.31.0",
+    "@types/jest": "^30.0.0",
     "@types/node": "^24.0.13",
+    "@typescript-eslint/eslint-plugin": "^8.36.0",
+    "@typescript-eslint/parser": "^8.36.0",
     "eslint": "^9.31.0",
     "eslint-plugin-react": "^7.37.5",
     "globals": "^16.3.0",
@@ -39,6 +44,9 @@
     "jest": "^30.0.4",
     "lint-staged": "^16.1.2",
     "prettier": "^3.6.2",
+    "ts-jest": "^29.4.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3",
     "typescript-eslint": "^8.36.0"
   }
 }

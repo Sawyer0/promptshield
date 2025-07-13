@@ -24,7 +24,10 @@ describe('CLI Core Functionality', () => {
     });
 
     test('invalid command shows error', () => {
-      const { stderr } = runCliCommandAndExpectError(cliHelpers.scenarios.invalidCommand, /unknown command/i);
+      const { stderr } = runCliCommandAndExpectError(
+        cliHelpers.scenarios.invalidCommand,
+        /unknown command/i
+      );
       expect(stderr).toMatch(/unknown command/i);
     });
   });
@@ -34,7 +37,7 @@ describe('CLI Core Functionality', () => {
       const result = runCliCommand(cliHelpers.scenarios.basicScan);
       expect(result.stdout).toBeDefined();
       expect(result.stderr).toBeDefined();
-      
+
       if (result.success) {
         expect(result.stdout).toContain('tests/fixtures/valid.json');
       }
@@ -55,18 +58,22 @@ describe('CLI Core Functionality', () => {
 
   describe('File Format Support', () => {
     test('supports NDJSON files', () => {
-      const result = runCliCommand('node bin/promptshield scan tests/fixtures/valid.ndjson --rulepack rulepacks/pii.yaml');
+      const result = runCliCommand(
+        'node bin/promptshield scan tests/fixtures/valid.ndjson --rulepack rulepacks/pii.yaml'
+      );
       expect(result.stdout).toBeDefined();
-      
+
       if (result.success) {
         expect(result.stdout).toContain('tests/fixtures/valid.ndjson');
       }
     });
 
     test('supports nested JSON with custom fields', () => {
-      const result = runCliCommand('node bin/promptshield scan tests/fixtures/nested.json --fields "prompt,user.profile.email" --rulepack rulepacks/pii.yaml');
+      const result = runCliCommand(
+        'node bin/promptshield scan tests/fixtures/nested.json --fields "prompt,user.profile.email" --rulepack rulepacks/pii.yaml'
+      );
       expect(result.stdout).toBeDefined();
-      
+
       if (result.success) {
         expect(result.stdout).toContain('tests/fixtures/nested.json');
       }
@@ -75,13 +82,17 @@ describe('CLI Core Functionality', () => {
 
   describe('Schema Validation', () => {
     test('validates against basic schema', () => {
-      const result = runCliCommand('node bin/promptshield scan tests/fixtures/schema-basic.json --schema basic --rulepack rulepacks/pii.yaml');
+      const result = runCliCommand(
+        'node bin/promptshield scan tests/fixtures/schema-basic.json --schema basic --rulepack rulepacks/pii.yaml'
+      );
       expect(result.success).toBe(true);
       expect(result.stdout).toContain('tests/fixtures/schema-basic.json');
     });
 
     test('rejects invalid schema data', () => {
-      const result = runCliCommand('node bin/promptshield scan tests/fixtures/schema-invalid.json --schema basic --rulepack rulepacks/pii.yaml');
+      const result = runCliCommand(
+        'node bin/promptshield scan tests/fixtures/schema-invalid.json --schema basic --rulepack rulepacks/pii.yaml'
+      );
       expect(result.success).toBe(false);
       expect(result.stderr).toContain('Schema validation failed');
     });
@@ -89,7 +100,9 @@ describe('CLI Core Functionality', () => {
 
   describe('Error Handling', () => {
     test('shows error for unsupported file format', () => {
-      const result = runCliCommand('node bin/promptshield scan tests/fixtures/sample.txt --rulepack rulepacks/pii.yaml');
+      const result = runCliCommand(
+        'node bin/promptshield scan tests/fixtures/sample.txt --rulepack rulepacks/pii.yaml'
+      );
       expect(result.success).toBe(false);
       expect(result.stderr).toContain('Unsupported file format');
     });
@@ -100,4 +113,4 @@ describe('CLI Core Functionality', () => {
       expect(result.stderr).toContain('missing required argument');
     });
   });
-}); 
+});

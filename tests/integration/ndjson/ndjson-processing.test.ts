@@ -18,11 +18,14 @@ describe('NDJSON File Processing Integration', () => {
     await fsHelpers.cleanupTempFiles(tempFiles);
   });
 
-      test('processes valid NDJSON files', async () => {
-      const tempFile = await fsHelpers.createTempFile(ndjsonHelpers.testData.validNdjson, '.ndjson');
-      tempFiles.push(tempFile);
+  test('processes valid NDJSON files', async () => {
+    const tempFile = await fsHelpers.createTempFile(
+      ndjsonHelpers.testData.validNdjson,
+      '.ndjson'
+    );
+    tempFiles.push(tempFile);
 
-      const results = await applyRulesToDataOrStream(
+    const results = await applyRulesToDataOrStream(
       tempFile,
       'rulepacks/pii.yaml',
       false,
@@ -37,11 +40,14 @@ describe('NDJSON File Processing Integration', () => {
     expect(results[0]).toHaveProperty('durationMs');
   });
 
-      test('handles malformed NDJSON gracefully', async () => {
-      const tempFile = await fsHelpers.createTempFile(ndjsonHelpers.testData.malformedNdjson, '.ndjson');
-      tempFiles.push(tempFile);
+  test('handles malformed NDJSON gracefully', async () => {
+    const tempFile = await fsHelpers.createTempFile(
+      ndjsonHelpers.testData.malformedNdjson,
+      '.ndjson'
+    );
+    tempFiles.push(tempFile);
 
-      const results = await applyRulesToDataOrStream(
+    const results = await applyRulesToDataOrStream(
       tempFile,
       'rulepacks/pii.yaml',
       false,
@@ -53,15 +59,15 @@ describe('NDJSON File Processing Integration', () => {
     expect(results[0].violations.length).toBeGreaterThan(0);
   });
 
-      test('processes empty NDJSON files', async () => {
-      const tempFile = await fsHelpers.createTempFile('', '.ndjson');
-      tempFiles.push(tempFile);
+  test('processes empty NDJSON files', async () => {
+    const tempFile = await fsHelpers.createTempFile('', '.ndjson');
+    tempFiles.push(tempFile);
 
-      const results = await applyRulesToDataOrStream(
-      tempFile, 
-      'rulepacks/pii.yaml', 
-      false, 
-      false, 
+    const results = await applyRulesToDataOrStream(
+      tempFile,
+      'rulepacks/pii.yaml',
+      false,
+      false,
       { ndjsonMode: true }
     );
 
@@ -70,4 +76,4 @@ describe('NDJSON File Processing Integration', () => {
     expect(results[0]).toHaveProperty('violations');
     expect(results[0].violations).toHaveLength(0);
   });
-}); 
+});

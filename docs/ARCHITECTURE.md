@@ -50,6 +50,7 @@ flowchart TD
 ```
 
 ## File Path Examples
+
 - Rulepacks: [`rulepacks/pii.yaml`](rulepacks/pii.yaml), `rulepacks/bias.yaml`, `rulepacks/hallucination.yaml`
 - Fixtures: [`tests/fixtures/sample.txt`](tests/fixtures/sample.txt)
 - Docs: `docs/PRINCIPLES.md`, `docs/vibecode/promptshield_mvp_spec.md`
@@ -57,13 +58,16 @@ flowchart TD
 - Core: `src/scanner.ts`, `src/rules.ts`, `src/reporter.ts`
 
 ## MVP Checklist
+
 See the [PromptShield MVP Checklist](./vibecode/promptshield_mvp_spec.md) for required features and progress tracking.
 
 ## (Optional) Split-out Documents
+
 - See `RULE_ENGINE.md` for rule engine internals (planned)
 - See `EXTENSIONS.md` for extension/plugin system (planned)
 
 ## Contributor Instructions
+
 See `docs/CONTRIBUTING.md` for how to add new rule types or output formats.
 
 ## How to Contribute RulePacks
@@ -77,4 +81,4 @@ Want to help make AI safer and more compliant? Contributing a RulePack is the be
 
 ---
 
-This architecture provides a solid foundation for PromptShield's growth from a CLI tool to a comprehensive AI safety platform while maintaining simplicity and developer experience. 
+This architecture provides a solid foundation for PromptShield's growth from a CLI tool to a comprehensive AI safety platform while maintaining simplicity and developer experience.

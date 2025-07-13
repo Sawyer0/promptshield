@@ -54,12 +54,16 @@ describe('Rule Loading and Validation', () => {
 
   test('throws error for invalid RulePack', async () => {
     mockReadFile.mockResolvedValue(invalidRulePack);
-    await expect(loadAndValidateRulePack('invalid.yaml')).rejects.toThrow('Validation errors in RulePack');
+    await expect(loadAndValidateRulePack('invalid.yaml')).rejects.toThrow(
+      'Validation errors in RulePack'
+    );
   });
 
   test('throws error for malformed YAML', async () => {
     mockReadFile.mockResolvedValue(malformedYaml);
-    await expect(loadAndValidateRulePack('malformed.yaml')).rejects.toThrow('Error loading or validating RulePack from malformed.yaml: bad indentation of a sequence entry');
+    await expect(loadAndValidateRulePack('malformed.yaml')).rejects.toThrow(
+      'Error loading or validating RulePack from malformed.yaml: bad indentation of a sequence entry'
+    );
   });
 
   test('RulePackSchema validates correct structure directly', () => {

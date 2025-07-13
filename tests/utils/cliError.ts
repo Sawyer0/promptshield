@@ -28,4 +28,4 @@ export function runCliCommandAndExpectError(
       throw error;
     }
   }
-} 
+}

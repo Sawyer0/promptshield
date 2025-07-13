@@ -9,7 +9,8 @@
     "test": "jest",
     "lint": "eslint src/",
     "format": "prettier --write src/",
-    "dev": "ts-node src/cli.ts"
+    "dev": "ts-node src/cli.ts",
+    "build": "tsc"
   },
   "files": [
     "bin",
@@ -18,6 +19,7 @@
   ],
   "type": "commonjs",
   "devDependencies": {
+    "@types/glob": "^8.1.0",
     "@types/jest": "^30.0.0",
     "@typescript-eslint/eslint-plugin": "^8.36.0",
     "eslint": "^9.31.0",
@@ -27,6 +29,7 @@
     "ts-jest": "^29.4.0"
   },
   "dependencies": {
-    "commander": "^14.0.0"
+    "commander": "^14.0.0",
+    "glob": "^11.0.3"
   }
 }

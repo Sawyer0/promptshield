@@ -14,7 +14,8 @@ function readFile(filePath: string): string {
   try {
     return fs.readFileSync(filePath, 'utf8');
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error';
     throw new Error(`Failed to read file ${filePath}: ${errorMessage}`);
   }
 }
@@ -28,8 +29,11 @@ function findFiles(pattern: string): string[] {
   try {
     return glob.sync(pattern);
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    throw new Error(`Failed to find files matching pattern ${pattern}: ${errorMessage}`);
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error';
+    throw new Error(
+      `Failed to find files matching pattern ${pattern}: ${errorMessage}`
+    );
   }
 }
 
@@ -42,8 +46,4 @@ function fileExists(filePath: string): boolean {
   return fs.existsSync(filePath);
 }
 
-export {
-  readFile,
-  findFiles,
-  fileExists
-};
+export { readFile, findFiles, fileExists };

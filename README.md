@@ -133,22 +133,56 @@ flowchart LR
     ```sh
     npm install
     ```
-2. **Scan a file with a RulePack**
+2. **Scan a JSON file with a RulePack**
     ```sh
-    promptshield scan --input tests/fixtures/sample.txt --rules rulepacks/pii.yaml
+    promptshield scan tests/fixtures/valid.json --rulepack rulepacks/pii.yaml
     ```
 3. **Review the results**
     - Violations and findings will be printed to your terminal.
+
+### **Advanced Usage**
+
+**Scan specific fields in JSON:**
+```sh
+promptshield scan data.json --fields prompt,response,title --rulepack rulepacks/pii.yaml
+```
+
+**Scan entire objects as strings:**
+```sh
+promptshield scan data.json --scan-entire-object --rulepack rulepacks/pii.yaml
+```
+
+**Limit processing for large files:**
+```sh
+promptshield scan large-data.json --max-objects 1000 --rulepack rulepacks/pii.yaml
+```
+
+**Debug mode for detailed output:**
+```sh
+promptshield scan data.json --debug --rulepack rulepacks/pii.yaml
+```
+
+**Scan NDJSON files (newline-delimited JSON):**
+```sh
+promptshield scan data.ndjson --rulepack rulepacks/pii.yaml
+```
+
+**Force NDJSON mode for any file:**
+```sh
+promptshield scan data.txt --ndjson --rulepack rulepacks/pii.yaml
+```
 
 ---
 
 ## Example Output
 ```
-[PII] Email address detected: john.doe@example.com (line 2)
-[PII] Phone number detected: (555) 123-4567 (line 2)
-[PII] Possible street address detected: 123 Main Street, Springfield, IL 62704 (line 3)
-[PII] SSN detected: 123-45-6789 (line 4)
-[PII] Credit card number detected: 4111 1111 1111 1111 (line 5)
+## File: tests/fixtures/violations.json
+- **[high]** `email` (contact): Detects email addresses (`john.doe@example.com`) [Object 0, field: prompt]
+- **[high]** `email` (contact): Detects email addresses (`jane.smith@company.com`) [Object 0, field: response]
+- **[medium]** `phone` (contact): Detects US phone numbers (`555-123-4567`) [Object 0, field: response]
+- **[high]** `ssn` (sensitive): Detects US Social Security Numbers (`123-45-6789`) [Object 1, field: prompt]
+- **[medium]** `address` (contact): Detects US-style street addresses (`123 Main Street`) [Object 2, field: prompt]
+- **[medium]** `address` (contact): Detects US-style street addresses (`123 Main Street`) [Object 2, field: response]
 ```
 
 ---

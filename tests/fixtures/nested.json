@@ -1,0 +1,39 @@
+[
+  {
+    "prompt": "What is the user's email?",
+    "response": "The user's email is john.doe@example.com",
+    "user": {
+      "profile": {
+        "email": "john.doe@example.com",
+        "phone": "555-123-4567",
+        "address": {
+          "street": "123 Main Street",
+          "city": "Springfield",
+          "zip": "62704"
+        }
+      },
+      "preferences": {
+        "language": "en",
+        "theme": "dark"
+      }
+    },
+    "metadata": {
+      "timestamp": "2024-01-15T10:30:00Z",
+      "source": "user-input"
+    }
+  },
+  {
+    "prompt": "What is the customer's SSN?",
+    "response": "The customer's SSN is 123-45-6789",
+    "customer": {
+      "personal": {
+        "ssn": "123-45-6789",
+        "name": "Jane Smith"
+      },
+      "contact": {
+        "email": "jane.smith@company.com",
+        "phone": "555-987-6543"
+      }
+    }
+  }
+] 

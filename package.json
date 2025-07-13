@@ -5,12 +5,12 @@
     "promptshield": "./bin/promptshield"
   },
   "scripts": {
-    "start": "node dist/cli.js",
-    "test": "jest",
+    "clean": "rm -rf dist",
+    "build": "npm run clean && tsc",
+    "test": "npm run build && jest",
     "lint": "eslint src/",
     "format": "prettier --write src/",
-    "dev": "ts-node src/cli/index.ts",
-    "build": "tsc"
+    "dev": "ts-node src/cli/index.ts"
   },
   "files": [
     "bin",

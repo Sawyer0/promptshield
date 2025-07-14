@@ -26,7 +26,7 @@ export interface ScanOptions {
  */
 export function validateFileFormat(input: string, ndjson?: boolean): boolean {
   const isNdjsonMode = ndjson || !!input.match(/\.(ndjson|jsonl)$/);
-  return !!input.match(/\.(json|ndjson|jsonl)$/) || isNdjsonMode;
+  return !!input.match(/\.(json|ndjson|jsonl|txt)$/) || isNdjsonMode;
 }
 
 /**

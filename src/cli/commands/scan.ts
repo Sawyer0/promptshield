@@ -39,8 +39,7 @@ export async function executeScanCommand(
 ): Promise<void> {
   // Validate file format
   const isNdjsonMode = options.ndjson || !!input.match(/\.(ndjson|jsonl)$/);
-  const isValidFormat =
-    !!input.match(/\.(json|ndjson|jsonl|txt)$/) || isNdjsonMode;
+  const isValidFormat = validateFileFormat(input, options.ndjson);
   if (!isValidFormat) {
     console.error(
       yellow(

@@ -4,6 +4,7 @@
  */
 
 import { describe, test, expect, beforeEach, afterEach } from '@jest/globals';
+import fs from 'fs';
 import { testHelpers, fsHelpers } from '../../utils/testHelpers';
 import { applyRulesToDataOrStream } from '../../../src/core/scanner';
 
@@ -81,6 +82,10 @@ describe('Performance Integration', () => {
     const manyObjectsJson = JSON.stringify(manySmallObjects);
     const tempFile = await fsHelpers.createTempFile(manyObjectsJson, '.json');
     tempFiles.push(tempFile);
+
+    // Verify file has content before scanning
+    const fileContent = await fs.promises.readFile(tempFile, 'utf-8');
+    expect(fileContent.length).toBeGreaterThan(0);
 
     const startTime = Date.now();
     const results = await applyRulesToDataOrStream(

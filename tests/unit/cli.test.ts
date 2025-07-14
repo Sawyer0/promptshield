@@ -78,6 +78,17 @@ describe('CLI Core Functionality', () => {
         expect(result.stdout).toContain('tests/fixtures/nested.json');
       }
     });
+
+    test('supports TXT files', () => {
+      const result = runCliCommand(
+        'node bin/promptshield scan tests/fixtures/sample.txt --rulepack rulepacks/pii.yaml'
+      );
+      expect(result.stdout).toBeDefined();
+
+      if (result.success) {
+        expect(result.stdout).toContain('tests/fixtures/sample.txt');
+      }
+    });
   });
 
   describe('Schema Validation', () => {
@@ -101,7 +112,7 @@ describe('CLI Core Functionality', () => {
   describe('Error Handling', () => {
     test('shows error for unsupported file format', () => {
       const result = runCliCommand(
-        'node bin/promptshield scan tests/fixtures/sample.txt --rulepack rulepacks/pii.yaml'
+        'node bin/promptshield scan tests/fixtures/sample.unsupported --rulepack rulepacks/pii.yaml'
       );
       expect(result.success).toBe(false);
       expect(result.stderr).toContain('Unsupported file format');

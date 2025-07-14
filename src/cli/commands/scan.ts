@@ -39,11 +39,13 @@ export async function executeScanCommand(
 ): Promise<void> {
   // Validate file format
   const isNdjsonMode = options.ndjson || !!input.match(/\.(ndjson|jsonl)$/);
-  const isValidFormat = validateFileFormat(input, options.ndjson);
-
+  const isValidFormat =
+    !!input.match(/\.(json|ndjson|jsonl|txt)$/) || isNdjsonMode;
   if (!isValidFormat) {
     console.error(
-      yellow('Unsupported file format. Try: .json, .ndjson, or .jsonl input')
+      yellow(
+        'Unsupported file format. Try: .json, .ndjson, .jsonl, or .txt input'
+      )
     );
     process.exit(1);
   }

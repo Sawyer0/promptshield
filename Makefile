@@ -20,7 +20,7 @@ format:
 
 ## Example scan using sample RulePack and fixture
 scan:
-	node src/cli.js scan --input tests/fixtures/sample.txt --rules rulepacks/pii.yaml
+	node dist/cli/index.js scan tests/fixtures/sample.txt --rulepack rulepacks/pii.yaml
 
 ## Show help
 help:

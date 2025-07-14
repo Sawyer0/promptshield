@@ -1,0 +1,20 @@
+[
+  {
+    "id": "pii-001",
+    "prompt": "Please contact john.doe@example.com for more info.",
+    "response": "You can also call 555-123-4567 or email jane.smith@company.com.",
+    "category": "support"
+  },
+  {
+    "id": "pii-002",
+    "prompt": "My SSN is 123-45-6789 and my credit card is 4111 1111 1111 1111.",
+    "response": "Thank you for providing your sensitive information.",
+    "category": "finance"
+  },
+  {
+    "id": "pii-003",
+    "prompt": "Send the package to 123 Main Street, Springfield, IL 62704.",
+    "response": "The address 123 Main Street, Springfield, IL 62704 has been recorded.",
+    "category": "shipping"
+  }
+]

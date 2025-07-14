@@ -130,4 +130,4 @@ echo -e "\n${BLUE}🚀 Ready to run conversion?${NC}"
 echo -e "${YELLOW}Run: ./scripts/create_github_issues.sh${NC}"
 echo -e "${YELLOW}Or: python scripts/convert_vibecode_to_github.py --token YOUR_TOKEN --repo $REPO${NC}"
 
-echo -e "\n${GREEN}🎉 Smart checking test complete!${NC}" 
+echo -e "\n${GREEN}🎉 Smart checking test complete!${NC}"

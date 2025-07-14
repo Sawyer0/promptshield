@@ -31,4 +31,4 @@ export function runCliCommand(command: string): CliResult {
       error,
     };
   }
-} 
+}

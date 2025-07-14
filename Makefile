@@ -20,7 +20,7 @@ format:
 
 ## Example scan using sample RulePack and fixture
 scan:
-	node src/cli.js scan --input tests/fixtures/sample.txt --rules rulepacks/pii.yaml
+	node dist/cli/index.js scan tests/fixtures/sample.txt --rulepack rulepacks/pii.yaml
 
 ## Show help
 help:
@@ -30,4 +30,4 @@ help:
 	@echo "  lint      Run linter (if configured)"
 	@echo "  format    Format code (if configured)"
 	@echo "  scan      Run sample scan with PII RulePack"
-	@echo "  help      Show this help message" 
+	@echo "  help      Show this help message"

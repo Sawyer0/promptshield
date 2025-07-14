@@ -5,22 +5,22 @@ import typescript from "@typescript-eslint/eslint-plugin";
 import typescriptParser from "@typescript-eslint/parser";
 
 export default defineConfig([
-  { 
-    files: ["**/*.{js,mjs,cjs}"], 
-    plugins: { js }, 
-    extends: ["js/recommended"] 
+  {
+    files: ["**/*.{js,mjs,cjs}"],
+    plugins: { js },
+    extends: ["js/recommended"]
   },
-  { 
-    files: ["**/*.js"], 
-    languageOptions: { sourceType: "commonjs" } 
+  {
+    files: ["**/*.js"],
+    languageOptions: { sourceType: "commonjs" }
   },
-  { 
-    files: ["**/*.{js,mjs,cjs}"], 
-    languageOptions: { globals: globals.node } 
+  {
+    files: ["**/*.{js,mjs,cjs}"],
+    languageOptions: { globals: globals.node }
   },
-  { 
-    files: ["tests/**/*.js"], 
-    languageOptions: { globals: { ...globals.node, ...globals.jest } } 
+  {
+    files: ["tests/**/*.js"],
+    languageOptions: { globals: { ...globals.node, ...globals.jest } }
   },
   {
     files: ["**/*.ts"],

@@ -2,7 +2,7 @@
  * Schema-specific type definitions for PromptShield
  */
 
-import { JsonSchema } from '../data/json';
+import { JsonSchema, isJsonObject } from '../data/json';
 
 /**
  * Represents a schema validation result
@@ -102,11 +102,4 @@ export function isSchemaValidationResult(
   return (
     typeof result.isValid === 'boolean' && typeof result.schemaName === 'string'
   );
-}
-
-/**
- * Type guard to check if a value is a JSON object
- */
-function isJsonObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

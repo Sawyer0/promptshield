@@ -1,0 +1,140 @@
+# Copyright (c) 2025 Sawyer0
+# Licensed under proprietary terms. See LICENSE for details.
+version: '1.0.0'
+last_updated: '2025-01-15'
+name: Bias Detection Rules
+description: Detects potentially biased language and content
+rules:
+  # Gender bias keywords
+  - id: gender_bias
+    description: Detects gender-biased language
+    match_keywords:
+      [
+        'he should',
+        'she should',
+        'he must',
+        'she must',
+        'man up',
+        'grow a pair',
+        'be a man',
+        'act like a lady',
+        'bossy',
+        'aggressive',
+        'emotional',
+        'hysterical',
+      ]
+    severity: medium
+    category: bias
+    enabled: true
+    case_sensitive: false
+
+  # Racial bias keywords
+  - id: racial_bias
+    description: Detects racially biased language
+    match_keywords:
+      [
+        'exotic',
+        'articulate',
+        'well-spoken',
+        'urban',
+        'thug',
+        'ghetto',
+        'hood',
+        'street',
+      ]
+    severity: high
+    category: bias
+    enabled: true
+    case_sensitive: false
+
+  # Age bias keywords
+  - id: age_bias
+    description: Detects age-biased language
+    match_keywords:
+      [
+        'old-fashioned',
+        'outdated',
+        'behind the times',
+        'young and inexperienced',
+        'too young',
+        'too old',
+        'millennial',
+        'boomer',
+        'gen z',
+      ]
+    severity: medium
+    category: bias
+    enabled: true
+    case_sensitive: false
+
+  # Socioeconomic bias keywords
+  - id: socioeconomic_bias
+    description: Detects socioeconomic bias
+    match_keywords:
+      [
+        'poor people',
+        'rich people',
+        'privileged',
+        'underprivileged',
+        'low-income',
+        'high-class',
+        'white collar',
+        'blue collar',
+      ]
+    severity: medium
+    category: bias
+    enabled: true
+    case_sensitive: false
+
+  # Ability bias keywords
+  - id: ability_bias
+    description: Detects ability/disability bias
+    match_keywords:
+      [
+        'normal people',
+        'regular people',
+        'able-bodied',
+        'handicapped',
+        'crippled',
+        'retarded',
+        'insane',
+        'crazy',
+        'lame',
+        'blind to',
+        'deaf to',
+      ]
+    severity: high
+    category: bias
+    enabled: true
+    case_sensitive: false
+
+  # Religious bias keywords
+  - id: religious_bias
+    description: Detects religious bias
+    match_keywords:
+      [
+        'god-fearing',
+        'heathen',
+        'pagan',
+        'infidel',
+        'religious fanatic',
+        'zealot',
+        'cult',
+      ]
+    severity: medium
+    category: bias
+    enabled: true
+    case_sensitive: false
+
+  # Stereotypical phrases using regex
+  - id: stereotypes
+    description: Detects stereotypical phrases
+    match_regex:
+      [
+        "\\b(all|every|no)\\s+\\w+\\s+(are|is)\\s+\\w+\\b",
+        "\\b\\w+\\s+people\\s+(always|never|usually)\\b",
+      ]
+    severity: medium
+    category: bias
+    enabled: true
+    case_sensitive: false

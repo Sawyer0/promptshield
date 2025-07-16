@@ -185,8 +185,7 @@ function getSuggestion(errorMessage: string): string {
  */
 export function isJsonLike(data: string): boolean {
   const trimmed = data.trim();
-  return (
-    (trimmed.startsWith('[') && trimmed.endsWith(']')) ||
-    (trimmed.startsWith('{') && trimmed.endsWith('}'))
-  );
+  // Check if it starts with JSON-like characters
+  // This will catch malformed JSON that should still be parsed as JSON
+  return trimmed.startsWith('[') || trimmed.startsWith('{');
 }

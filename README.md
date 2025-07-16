@@ -56,6 +56,9 @@ PromptShield is a dev-first security layer for AI outputs. It uses composable Ru
 
 PromptShield is built around a powerful, config-first RulePack system. **RulePacks are the npm modules of AI security**—modular YAML or JSON files that define policies, security checks, and compliance logic—no code changes required.
 
+> ⚠️ **Regex Escaping in RulePacks:**
+> When writing regex patterns in YAML RulePacks, you must double-escape backslashes in JS strings so YAML receives the correct pattern. See [RulePack Authoring Guide](docs/RULEPACK_GUIDE.md#regex-escaping-in-yaml-rulepacks) for details and examples.
+
 See the [RulePack Registry](docs/RULEPACK_REGISTRY.md) for a list of official and community RulePacks.
 
 ### Types of RulePacks
@@ -99,6 +102,7 @@ See the [RulePack Registry](docs/RULEPACK_REGISTRY.md) for a list of official an
 - Modular, open-core CLI for prompt and response scanning
 - RulePack system for custom, YAML-based rules
 - Detects PII, bias, hallucinations, and more
+- Parallel processing for high-performance directory scanning
 - Extensible with plugins and custom rule types
 - Designed for enterprise and open-source use
 - Fast, developer-friendly workflow
@@ -186,19 +190,85 @@ promptshield scan data.ndjson --rulepack rulepacks/pii.yaml
 promptshield scan data.txt --ndjson --rulepack rulepacks/pii.yaml
 ```
 
+**Parallel processing for large directories:**
+
+```sh
+# Enable parallel scanning with default CPU cores
+promptshield scan /path/to/files --parallel --rulepack rulepacks/pii.yaml
+
+# Specify number of workers
+promptshield scan /path/to/files --parallel 4 --rulepack rulepacks/pii.yaml
+
+# Configure batch size for memory management
+promptshield scan /path/to/files --parallel --batch-size 5 --rulepack rulepacks/pii.yaml
+```
+
+> **💡 Performance Tip:** For large directories with many files, parallel processing can provide 2-4x performance improvements. See [Performance Features](docs/PERFORMANCE.md) for detailed benchmarks and tuning guidance.
+
 ---
 
 ## Example Output
 
+### Markdown (Default)
+
 ```
-## File: tests/fixtures/violations.json
-- **[high]** `email` (contact): Detects email addresses (`john.doe@example.com`) [Object 0, field: prompt]
-- **[high]** `email` (contact): Detects email addresses (`jane.smith@company.com`) [Object 0, field: response]
-- **[medium]** `phone` (contact): Detects US phone numbers (`555-123-4567`) [Object 0, field: response]
-- **[high]** `ssn` (sensitive): Detects US Social Security Numbers (`123-45-6789`) [Object 1, field: prompt]
-- **[medium]** `address` (contact): Detects US-style street addresses (`123 Main Street`) [Object 2, field: prompt]
-- **[medium]** `address` (contact): Detects US-style street addresses (`123 Main Street`) [Object 2, field: response]
+# PromptShield Scan Report
+
+**Scan Date:** 2024-01-15T10:30:00.000Z
+**Files Scanned:** 1
+**Total Violations:** 6
+
+## Summary
+
+### Severity Breakdown
+- 🔴 **high:** 3 violations
+- 🟡 **medium:** 3 violations
+
+## Results
+
+### File: tests/fixtures/violations.json
+
+- 🔴 **[HIGH]** `email` (contact): Detects email addresses
+  - **Match:** `john.doe@example.com` [Object 0, field: prompt]
+- 🔴 **[HIGH]** `email` (contact): Detects email addresses
+  - **Match:** `jane.smith@company.com` [Object 0, field: response]
+- 🟡 **[MEDIUM]** `phone` (contact): Detects US phone numbers
+  - **Match:** `555-123-4567` [Object 0, field: response]
+- 🔴 **[HIGH]** `ssn` (sensitive): Detects US Social Security Numbers
+  - **Match:** `123-45-6789` [Object 1, field: prompt]
+- 🟡 **[MEDIUM]** `address` (contact): Detects US-style street addresses
+  - **Match:** `123 Main Street` [Object 2, field: prompt]
+- 🟡 **[MEDIUM]** `address` (contact): Detects US-style street addresses
+  - **Match:** `123 Main Street` [Object 2, field: response]
 ```
+
+### Other Output Formats
+
+**JSON (for API integration):**
+
+```bash
+promptshield scan data.json --output json --output-file report.json
+```
+
+**HTML (for web dashboards):**
+
+```bash
+promptshield scan data.json --output html --output-file report.html
+```
+
+**CSV (for spreadsheet analysis):**
+
+```bash
+promptshield scan data.json --output csv --output-file violations.csv
+```
+
+**Table (for terminal display):**
+
+```bash
+promptshield scan data.json --output table
+```
+
+See [Output Renderers](docs/OUTPUT_RENDERERS.md) for detailed format documentation.
 
 ---
 
@@ -253,6 +323,8 @@ promptshield/
 - [Rule Engine Internals](docs/RULE_ENGINE.md)
 - [Extensions & Plugin System](docs/EXTENSIONS.md)
 - [RulePack Authoring Guide](docs/RULEPACK_GUIDE.md)
+- [Output Renderers](docs/OUTPUT_RENDERERS.md)
+- [Performance Features](docs/PERFORMANCE.md)
 - [PromptShield MVP Checklist](docs/promptshield_mvp_spec.md)
 
 ---

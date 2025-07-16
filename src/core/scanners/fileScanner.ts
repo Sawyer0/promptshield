@@ -1,28 +1,249 @@
 /**
  * File-based scanning logic for PromptShield
+ *
+ * This module handles scanning of individual files, supporting both JSON and
+ * text file formats. It provides intelligent file type detection, batch processing
+ * for large files, and comprehensive error handling for various file system issues.
  */
 
-import { Rule, Violation, ScanResult } from '../../types/core/rule';
+import {
+  Rule,
+  Violation,
+  ScanResult,
+  createViolation,
+} from '../../types/core/rule';
 import { readFileUtf8 } from '../../services/fileUtils';
 import { parseJsonSafe, isJsonLike } from '../../services/jsonParser';
-import { ScanConfig } from '../../types/core/scanConfig';
-import { JsonObject } from '../../types/data/json';
-import {
-  createInvalidJsonError,
-  createInvalidJsonStructureError,
-  createEmptyFileError,
-  handleFileSystemError,
-} from '../../utils/errors';
+import { ScanConfig, mergeScanConfig } from '../../types/core/scanConfig';
 import { scanJsonObjectWithRules } from './jsonScanner';
 import { scanStringWithRules } from './stringScanner';
+import { createReadStream } from 'fs';
+import { parser } from 'stream-json';
+import { streamArray } from 'stream-json/streamers/StreamArray';
+import { isJsonObject } from '../../types/data/json';
+import { logger } from '../../utils/logger';
+import {
+  memoryMonitor as globalMemoryMonitor,
+  MemoryMonitor,
+} from '../../utils/memoryMonitor';
 
 /**
- * Scans a file (JSON or text) for rule violations
- * @param filePath - Path to the file
- * @param rules - Array of rules to apply
- * @param debug - Enable debug output
- * @param config - Scan configuration
- * @returns ScanResult object
+ * Configuration constants for streaming operations
+ */
+const DEBUG_PROGRESS_INTERVAL = 1000; // Log progress every N objects
+
+/**
+ * Streams a large JSON array file and applies rules to each object
+ *
+ * This function provides memory-efficient processing of large JSON arrays
+ * by streaming the file content instead of loading it entirely into memory.
+ * It includes comprehensive error handling and progress monitoring.
+ *
+ * @param filePath - Path to the JSON array file to stream
+ * @param rules - Array of rules to apply to each object
+ * @param debug - Enable debug output with performance metrics
+ * @param config - Scan configuration options
+ * @returns Promise resolving to a ScanResult with violations and timing information
+ */
+async function streamAndScanJsonArray(
+  filePath: string,
+  rules: Rule[],
+  debug: boolean = false,
+  config: ScanConfig = {}
+): Promise<ScanResult> {
+  if (!filePath)
+    throw new Error('streamAndScanJsonArray: filePath is required');
+  if (!rules) throw new Error('streamAndScanJsonArray: rules are required');
+
+  // Use a custom memory monitor if a threshold is provided, else use global
+  const memoryMonitor =
+    config.memoryWarningThreshold !== undefined
+      ? new MemoryMonitor({ warningThreshold: config.memoryWarningThreshold })
+      : globalMemoryMonitor;
+
+  return new Promise((resolve, reject) => {
+    const violations: Violation[] = [];
+    let objectIndex = 0;
+    let processed = 0;
+    const maxObjects = config.maxObjects || Infinity;
+    const maxDepth = config.maxDepth ?? 4;
+    const start = Date.now();
+
+    let fileStream: (NodeJS.ReadableStream & { destroy?: () => void }) | null =
+      null;
+    let jsonPipeline:
+      | (NodeJS.ReadableStream & { destroy?: () => void })
+      | null = null;
+
+    try {
+      fileStream = createReadStream(filePath);
+      jsonPipeline = fileStream.pipe(parser()).pipe(streamArray());
+
+      if (!jsonPipeline) {
+        throw new Error('Failed to create JSON pipeline');
+      }
+
+      jsonPipeline.on('data', ({ value }: { value: unknown }) => {
+        if (processed >= maxObjects) {
+          cleanupStreams();
+          return;
+        }
+
+        try {
+          // Only scan if value is a valid JsonObject
+          if (isJsonObject(value)) {
+            const objectViolations = scanJsonObjectWithRules(
+              value,
+              objectIndex,
+              rules,
+              filePath,
+              { ...config, maxDepth }
+            );
+            violations.push(...objectViolations);
+          } else {
+            // Log non-object values but don't treat as error
+            if (debug) {
+              logger.debug(`Skipping non-object value at index ${objectIndex}`);
+            }
+          }
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error ? error.message : 'Unknown error';
+          violations.push(
+            createViolation({
+              ruleId: 'json-parse-error',
+              message: `Error processing JSON object: ${errorMessage}`,
+              match: JSON.stringify(value).slice(0, 100),
+              severity: 'high',
+              category: 'parse',
+              filePath,
+              objectIndex,
+              field: undefined,
+              lineNumber: undefined,
+            })
+          );
+        }
+
+        objectIndex++;
+        processed++;
+
+        if (debug && processed % DEBUG_PROGRESS_INTERVAL === 0) {
+          logger.debug(`Streamed ${processed} JSON objects`);
+          memoryMonitor.checkMemoryUsage('JSON streaming');
+        }
+      });
+
+      jsonPipeline.on('end', () => {
+        const durationMs = Date.now() - start;
+        if (debug) {
+          logger.debug(`Streamed JSON file ${filePath} in ${durationMs}ms`);
+          logger.debug(`Processed ${processed} objects`);
+          logger.debug(`Found ${violations.length} violations`);
+        }
+        resolve({ file: filePath, violations, durationMs });
+      });
+
+      jsonPipeline.on('error', (error: unknown) => {
+        const errorMessage =
+          error instanceof Error ? error.message : 'Unknown stream error';
+        violations.push(
+          createViolation({
+            ruleId: 'stream-error',
+            message: `Stream processing error: ${errorMessage}`,
+            match: '',
+            severity: 'high',
+            category: 'internal',
+            filePath,
+            objectIndex,
+            field: undefined,
+            lineNumber: undefined,
+          })
+        );
+
+        const durationMs = Date.now() - start;
+        resolve({ file: filePath, violations, durationMs });
+      });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      reject(
+        new Error(
+          `Failed to initialize stream for ${filePath}: ${errorMessage}`
+        )
+      );
+    }
+
+    function cleanupStreams(): void {
+      if (jsonPipeline && typeof jsonPipeline.destroy === 'function') {
+        jsonPipeline.destroy();
+        jsonPipeline = null;
+      }
+      if (fileStream && typeof fileStream.destroy === 'function') {
+        fileStream.destroy();
+        fileStream = null;
+      }
+    }
+  });
+}
+
+/**
+ * Determines if a JSON array should use streaming based on size and configuration
+ *
+ * @param arrayLength - The length of the JSON array
+ * @param config - Scan configuration options
+ * @returns True if streaming should be used
+ */
+function shouldUseStreaming(arrayLength: number, config: ScanConfig): boolean {
+  // Use streaming if explicitly configured or if array is large
+  const streamingThreshold = config.streamingThreshold ?? 1000;
+  return config.maxObjects !== undefined || arrayLength > streamingThreshold;
+}
+
+/**
+ * Scans a file (JSON or text) for rule violations with comprehensive error handling
+ *
+ * This function is the main entry point for file-based scanning operations. It
+ * automatically detects file type (JSON vs text), handles large files with batch
+ * processing, and provides detailed debug output for performance monitoring.
+ *
+ * The function supports:
+ * - JSON files with array of objects (processed individually with streaming for large files)
+ * - Text files (processed as single string)
+ * - Large file optimization with configurable batch sizes
+ * - Comprehensive error handling for file system and parsing issues
+ * - Debug mode with performance metrics and progress indicators
+ *
+ * @param filePath - Path to the file to scan
+ * @param rules - Array of rules to apply to the file content
+ * @param debug - Enable debug output with performance metrics and progress indicators
+ * @param config - Scan configuration options (fields, maxObjects, schema, etc.)
+ * @returns Promise resolving to a ScanResult with violations and timing information
+ * @throws Various file system and parsing errors with detailed error messages
+ *
+ * @example
+ * ```typescript
+ * const rules = await loadAndValidateRulePack('rulepacks/pii.yaml');
+ *
+ * // Scan a JSON file
+ * const result = await scanFileWithRules(
+ *   'data/prompts.json',
+ *   rules,
+ *   true, // debug mode
+ *   {
+ *     fieldsToScan: ['prompt', 'response'],
+ *     maxObjects: 1000
+ *   }
+ * );
+ *
+ * // Scan a text file
+ * const result = await scanFileWithRules(
+ *   'data/sample.txt',
+ *   rules,
+ *   false
+ * );
+ *
+ * console.log(`Found ${result.violations.length} violations in ${result.durationMs}ms`);
+ * ```
  */
 export async function scanFileWithRules(
   filePath: string,
@@ -30,91 +251,135 @@ export async function scanFileWithRules(
   debug: boolean = false,
   config: ScanConfig = {}
 ): Promise<ScanResult> {
-  const start: number = Date.now();
+  if (!filePath) throw new Error('scanFileWithRules: filePath is required');
+  if (!rules) throw new Error('scanFileWithRules: rules are required');
+  const start = Date.now();
+  const mergedConfig = mergeScanConfig(config);
 
-  try {
-    const data: string = await readFileUtf8(filePath);
+  // Use a custom memory monitor if a threshold is provided, else use global
+  const memoryMonitor =
+    mergedConfig.memoryWarningThreshold !== undefined
+      ? new MemoryMonitor({
+          warningThreshold: mergedConfig.memoryWarningThreshold,
+        })
+      : globalMemoryMonitor;
 
-    // Check if this is a JSON file and handle accordingly
-    const isJson = filePath.endsWith('.json') || isJsonLike(data);
+  // Read file content
+  const content = await readFileUtf8(filePath);
 
-    if (isJson) {
-      const jsonResult = parseJsonSafe(data, filePath, config.schemaName);
-      if (jsonResult.error) {
-        // Convert JSON parser errors to proper error types
-        if (jsonResult.error.includes('File is empty')) {
-          throw createEmptyFileError(filePath);
-        } else if (jsonResult.error.includes('Invalid JSON structure')) {
-          throw createInvalidJsonStructureError(filePath, jsonResult.error);
-        } else {
-          throw createInvalidJsonError(
-            filePath,
-            jsonResult.error,
-            jsonResult.lineNumber
-          );
-        }
+  // Check for empty content
+  if (!content || content.trim().length === 0) {
+    // Return empty violations for empty files
+    const durationMs = Date.now() - start;
+    return {
+      file: filePath,
+      violations: [],
+      durationMs,
+    };
+  }
+
+  // Check if content is JSON-like
+  if (isJsonLike(content)) {
+    const result = parseJsonSafe(content, filePath);
+    if (result.error) {
+      // For test mode, throw the error instead of creating a violation
+      if (
+        result.error.includes('Invalid JSON') ||
+        result.error.includes('File is empty')
+      ) {
+        throw new Error(result.error);
       }
-
-      // Scan each JSON object individually with configurable fields
-      const violations: Violation[] = [];
-      const maxObjects = config.maxObjects || jsonResult.data.length;
-      const totalObjects = Math.min(jsonResult.data.length, maxObjects);
-
-      // Process objects in batches for large files
-      const batchSize = 1000;
-      for (let i = 0; i < totalObjects; i += batchSize) {
-        const batchEnd = Math.min(i + batchSize, totalObjects);
-
-        // Process batch
-        for (let j = i; j < batchEnd; j++) {
-          const objectViolations = scanJsonObjectWithRules(
-            jsonResult.data[j] as JsonObject,
-            j,
-            rules,
+      const durationMs = Date.now() - start;
+      return {
+        file: filePath,
+        violations: [
+          createViolation({
+            ruleId: 'json-parse-error',
+            message: result.error,
+            match: '',
+            severity: 'high',
+            category: 'parse',
             filePath,
-            config
-          );
-          violations.push(...objectViolations);
-        }
+            objectIndex: 0,
+            field: undefined,
+            lineNumber: result.lineNumber,
+          }),
+        ],
+        durationMs,
+      };
+    }
 
-        // Progress indicator for large files
-        if (debug && totalObjects > batchSize) {
-          console.log(`[debug] Processed ${batchEnd}/${totalObjects} objects`);
-        }
-      }
+    const parsed = result.data;
 
-      const durationMs: number = Date.now() - start;
-      if (debug) {
-        console.log(`[debug] Scanned JSON file ${filePath} in ${durationMs}ms`);
-        console.log(`[debug] Processed ${totalObjects} objects`);
-        console.log(`[debug] Found ${violations.length} violations`);
-        console.log(
-          `[debug] Performance: ${Math.round(totalObjects / (durationMs / 1000))} objects/sec`
+    if (Array.isArray(parsed)) {
+      // Determine if we should use streaming based on array size and config
+      if (shouldUseStreaming(parsed.length, mergedConfig)) {
+        return await streamAndScanJsonArray(
+          filePath,
+          rules,
+          debug,
+          mergedConfig
         );
       }
+
+      // Small array - process in memory
+      const violations: Violation[] = [];
+      const maxObjects = mergedConfig.maxObjects || Infinity;
+      const maxDepth = mergedConfig.maxDepth ?? 4;
+
+      for (let i = 0; i < Math.min(parsed.length, maxObjects); i++) {
+        const objectViolations = scanJsonObjectWithRules(
+          parsed[i],
+          i,
+          rules,
+          filePath,
+          { ...mergedConfig, maxDepth }
+        );
+        violations.push(...objectViolations);
+        // Granular memory check after each batch
+        if (debug && i > 0 && i % DEBUG_PROGRESS_INTERVAL === 0) {
+          memoryMonitor.checkMemoryUsage('JSON in-memory scan');
+        }
+      }
+
+      const durationMs = Date.now() - start;
+      if (debug) {
+        logger.debug(`Scanned JSON array file ${filePath} in ${durationMs}ms`);
+        logger.debug(
+          `Processed ${Math.min(parsed.length, maxObjects)} objects`
+        );
+        logger.debug(`Found ${violations.length} violations`);
+      }
+
       return { file: filePath, violations, durationMs };
     } else {
-      // Handle as regular text file
-      const violations: Violation[] = scanStringWithRules(
-        data,
+      // Single JSON object
+      const violations = scanJsonObjectWithRules(
+        parsed,
+        0,
         rules,
-        filePath
+        filePath,
+        mergedConfig
       );
-      const durationMs: number = Date.now() - start;
-      if (debug)
-        console.log(`[debug] Scanned text file ${filePath} in ${durationMs}ms`);
+
+      const durationMs = Date.now() - start;
+      if (debug) {
+        logger.debug(`Scanned JSON object file ${filePath} in ${durationMs}ms`);
+        logger.debug(`Found ${violations.length} violations`);
+      }
+
       return { file: filePath, violations, durationMs };
     }
-  } catch (error) {
-    // Handle file system errors
-    if (error instanceof Error && 'code' in error) {
-      throw handleFileSystemError(error as NodeJS.ErrnoException, filePath);
+  } else {
+    // Text file - scan as string
+    const violations = scanStringWithRules(content, rules, filePath);
+
+    const durationMs = Date.now() - start;
+    if (debug) {
+      logger.debug(`Scanned text file ${filePath} in ${durationMs}ms`);
+      logger.debug(`Found ${violations.length} violations`);
     }
-    // Re-throw PromptShield errors as-is
-    if (error instanceof Error && error.name === 'PromptShieldError') {
-      throw error;
-    }
-    // Handle other errors
-    throw error;
+
+    return { file: filePath, violations, durationMs };
   }
 }

@@ -2,13 +2,19 @@ import { JsonObject, JsonValue, JsonObjectArray } from '../types/data/json';
 import { NestedFieldPath, FlattenedNestedObject } from '../types/data/nested';
 
 /**
- * Extracts all nested string values from an object with their paths
+ * Extracts all nested string values from an object with their paths, up to a maximum depth
  */
 export function extractNestedStrings(
   obj: JsonObject,
-  prefix: string = ''
+  prefix: string = '',
+  maxDepth: number = 4,
+  currentDepth: number = 0
 ): NestedFieldPath[] {
   const result: NestedFieldPath[] = [];
+
+  if (currentDepth > maxDepth) {
+    return result;
+  }
 
   for (const [key, value] of Object.entries(obj)) {
     const currentPath = prefix ? `${prefix}.${key}` : key;
@@ -25,10 +31,12 @@ export function extractNestedStrings(
       value !== null &&
       !Array.isArray(value)
     ) {
-      // Recursively extract from nested objects
+      // Recursively extract from nested objects, incrementing currentDepth
       const nestedStrings = extractNestedStrings(
         value as JsonObject,
-        currentPath
+        currentPath,
+        maxDepth,
+        currentDepth + 1
       );
       result.push(...nestedStrings);
     }
@@ -38,16 +46,22 @@ export function extractNestedStrings(
 }
 
 /**
- * Gets a value from a nested object using dot notation path
+ * Gets a value from a nested object using dot notation path, up to a maximum depth
  */
 export function getNestedValue(
   obj: JsonObject,
-  path: string
+  path: string,
+  maxDepth: number = 4
 ): JsonValue | undefined {
   const keys = path.split('.');
   let current: JsonValue = obj;
 
-  for (const key of keys) {
+  if (keys.length > maxDepth + 1) {
+    return undefined;
+  }
+
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
     if (
       typeof current === 'object' &&
       current !== null &&

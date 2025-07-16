@@ -1,5 +1,7 @@
 import { promises as fsPromises } from 'fs';
+import path from 'path';
 import { Violation, ScanResult } from '../../src/types/core/rule';
+import { CategoryEnum } from '../../src/types/core/severity';
 
 /**
  * Test data preparation utilities
@@ -31,7 +33,7 @@ export const testHelpers = {
       message: 'Test violation',
       match: 'test-match',
       severity: 'medium',
-      category: 'test',
+      category: CategoryEnum.Custom,
       filePath: 'test-file',
       objectIndex: undefined,
       field: undefined,
@@ -226,14 +228,14 @@ export const cliHelpers = {
    */
   scenarios: {
     basicScan:
-      'node bin/promptshield scan tests/fixtures/valid.json --rulepack rulepacks/pii.yaml',
-    helpCommand: 'node bin/promptshield --help',
-    versionCommand: 'node bin/promptshield --version',
-    invalidCommand: 'node bin/promptshield invalid',
+      'node dist/cli/index.js scan tests/fixtures/sample.json --rulepack rulepacks/pii.yaml',
+    helpCommand: 'node dist/cli/index.js --help',
+    versionCommand: 'node dist/cli/index.js --version',
+    invalidCommand: 'node dist/cli/index.js invalid',
     missingFile:
-      'node bin/promptshield scan missing.json --rulepack rulepacks/pii.yaml',
+      'node dist/cli/index.js scan missing.json --rulepack rulepacks/pii.yaml',
     missingRulepack:
-      'node bin/promptshield scan tests/fixtures/valid.json --rulepack missing.yaml',
+      'node dist/cli/index.js scan tests/fixtures/sample.json --rulepack missing.yaml',
   },
 };
 
@@ -248,7 +250,6 @@ export const fsHelpers = {
     content: string,
     extension: string = '.json'
   ): Promise<string> {
-    const path = require('path');
     const tempPath = path.join(
       process.cwd(),
       `tests/fixtures/temp-${Date.now()}${extension}`
@@ -264,7 +265,7 @@ export const fsHelpers = {
     for (const filePath of filePaths) {
       try {
         await fsPromises.unlink(filePath);
-      } catch (e) {
+      } catch {
         // Ignore cleanup errors
       }
     }

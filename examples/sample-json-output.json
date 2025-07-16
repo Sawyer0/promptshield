@@ -1,0 +1,89 @@
+[
+  {
+    "file": "data/sample-prompts.json",
+    "violations": [
+      {
+        "ruleId": "email",
+        "message": "Detects email addresses",
+        "match": "john.doe@example.com",
+        "severity": "high",
+        "category": "pii",
+        "filePath": "data/sample-prompts.json",
+        "objectIndex": 0,
+        "field": "prompt"
+      },
+      {
+        "ruleId": "phone",
+        "message": "Detects US phone numbers",
+        "match": "555-123-4567",
+        "severity": "medium",
+        "category": "pii",
+        "filePath": "data/sample-prompts.json",
+        "objectIndex": 0,
+        "field": "response"
+      },
+      {
+        "ruleId": "ssn",
+        "message": "Detects US Social Security Numbers",
+        "match": "123-45-6789",
+        "severity": "high",
+        "category": "pii",
+        "filePath": "data/sample-prompts.json",
+        "objectIndex": 1,
+        "field": "response"
+      },
+      {
+        "ruleId": "address_keywords",
+        "message": "Detects address-related keywords",
+        "match": "123 Main Street",
+        "severity": "medium",
+        "category": "pii",
+        "filePath": "data/sample-prompts.json",
+        "objectIndex": 2,
+        "field": "prompt"
+      }
+    ],
+    "durationMs": 245
+  },
+  {
+    "file": "data/clean-data.json",
+    "violations": [],
+    "durationMs": 89
+  },
+  {
+    "file": "data/bias-examples.json",
+    "violations": [
+      {
+        "ruleId": "gender_bias",
+        "message": "Detects gender-biased language",
+        "match": "bossy",
+        "severity": "medium",
+        "category": "bias",
+        "filePath": "data/bias-examples.json",
+        "objectIndex": 0,
+        "field": "prompt"
+      },
+      {
+        "ruleId": "racial_bias",
+        "message": "Detects racially biased language",
+        "match": "exotic",
+        "severity": "high",
+        "category": "bias",
+        "filePath": "data/bias-examples.json",
+        "objectIndex": 1,
+        "field": "prompt"
+      },
+      {
+        "ruleId": "ability_bias",
+        "message": "Detects ability/disability bias",
+        "match": "normal people",
+        "severity": "high",
+        "category": "bias",
+        "filePath": "data/bias-examples.json",
+        "objectIndex": 3,
+        "field": "response"
+      }
+    ],
+    "durationMs": 156
+  }
+]

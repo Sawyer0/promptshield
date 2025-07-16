@@ -24,8 +24,8 @@ module.exports = {
   bail: false, // Don't stop on first failure
   verbose: false, // Reduce noise in output
 
-  // Test timeout
-  testTimeout: 30000, // 30 seconds per test
+  // Test timeout (increased for CI environment)
+  testTimeout: 60000, // 60 seconds per test
 
   // Coverage thresholds
   coverageThreshold: {

@@ -5,6 +5,7 @@
 
 import { describe, test, expect } from '@jest/globals';
 import { testHelpers, ndjsonHelpers } from '../utils/testHelpers';
+import { applyRulesToDataOrStream } from '../../src/core/scanner';
 
 describe('NDJSON Scanner', () => {
   describe('NDJSON Parsing', () => {
@@ -37,7 +38,6 @@ describe('NDJSON Scanner', () => {
 
   describe('NDJSON File Scanning', () => {
     test('scans valid NDJSON file without violations', async () => {
-      const { applyRulesToDataOrStream } = require('../../src/core/scanner');
       const results = await applyRulesToDataOrStream(
         'tests/fixtures/valid.ndjson',
         'rulepacks/pii.yaml',
@@ -52,7 +52,6 @@ describe('NDJSON Scanner', () => {
     });
 
     test('scans NDJSON file with PII violations', async () => {
-      const { applyRulesToDataOrStream } = require('../../src/core/scanner');
       const results = await applyRulesToDataOrStream(
         'tests/fixtures/violations.ndjson',
         'rulepacks/pii.yaml',
@@ -75,7 +74,6 @@ describe('NDJSON Scanner', () => {
     });
 
     test('handles malformed NDJSON lines gracefully', async () => {
-      const { applyRulesToDataOrStream } = require('../../src/core/scanner');
       const results = await applyRulesToDataOrStream(
         'tests/fixtures/malformed.ndjson',
         'rulepacks/pii.yaml',
@@ -95,7 +93,6 @@ describe('NDJSON Scanner', () => {
     });
 
     test('handles empty NDJSON file', async () => {
-      const { applyRulesToDataOrStream } = require('../../src/core/scanner');
       const results = await applyRulesToDataOrStream(
         'tests/fixtures/empty.ndjson',
         'rulepacks/pii.yaml',
@@ -112,7 +109,6 @@ describe('NDJSON Scanner', () => {
 
   describe('NDJSON File Detection', () => {
     test('auto-detects .ndjson files', async () => {
-      const { applyRulesToDataOrStream } = require('../../src/core/scanner');
       const results = await applyRulesToDataOrStream(
         'tests/fixtures/valid.ndjson',
         'rulepacks/pii.yaml',
@@ -125,7 +121,6 @@ describe('NDJSON Scanner', () => {
     });
 
     test('auto-detects .jsonl files', async () => {
-      const { applyRulesToDataOrStream } = require('../../src/core/scanner');
       const results = await applyRulesToDataOrStream(
         'tests/fixtures/valid.ndjson', // Using .ndjson as .jsonl for test
         'rulepacks/pii.yaml',

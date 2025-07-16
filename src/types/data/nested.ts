@@ -2,7 +2,7 @@
  * Nested object type definitions for PromptShield
  */
 
-import { JsonObject, JsonValue } from './json';
+import { JsonObject, JsonValue, isJsonObject } from './json';
 
 /**
  * Represents a nested field path with its value and metadata
@@ -114,13 +114,6 @@ export function isFlattenedNestedObject(
 
   const obj = value as FlattenedNestedObject;
   return Object.keys(obj).some((key) => key.includes('.'));
-}
-
-/**
- * Type guard to check if a value is a JSON object
- */
-function isJsonObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 /**

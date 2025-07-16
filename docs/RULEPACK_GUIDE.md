@@ -46,6 +46,42 @@ rules:
 
 ---
 
+## Regex Escaping in YAML RulePacks
+
+When writing regex patterns in YAML RulePacks, you must be careful with escaping backslashes. YAML interprets single backslashes as escape characters, so to represent a literal backslash (as required in most regex patterns), you need to use **double backslashes** in YAML. If you are writing YAML as a JS string (e.g., in tests), you need to use **four backslashes** in the JS string so that YAML receives two.
+
+**Why?**
+
+- YAML: `\b` is interpreted as a literal `\b` (word boundary in regex), but ` ` is a backspace character.
+- JS string: `"\\b"` → YAML sees `\b` → regex engine sees `\b`.
+
+**How to Write Regex Patterns:**
+
+- In YAML: `pattern: "\\b\\w+@\\w+\\.\\w+\\b"`
+- In a JS string (for test data): `pattern: "\\\\b\\\\w+@\\\\w+\\\\.\\\\w+\\\\b"`
+- In regex engine: `\b\w+@\w+\.\w+\b`
+
+**Example:**
+
+```yaml
+rules:
+  - id: email
+    description: Detects email addresses
+    pattern: "\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\\b"
+    severity: high
+    enabled: true
+```
+
+**Common Error:**
+If you see a YAML parse error like `unknown escape sequence`, check your backslashes. Always use double backslashes in YAML for regex patterns.
+
+**Troubleshooting:**
+
+- If your regex isn't matching as expected, print the loaded pattern and check for missing or extra backslashes.
+- For more examples, see the test data in `tests/unit/rule-loading.test.ts`.
+
+---
+
 ## Rule Overlap and Ordering
 
 - Rules in a RulePack are typically applied in the order they appear in the YAML file, but may be processed in parallel for performance.

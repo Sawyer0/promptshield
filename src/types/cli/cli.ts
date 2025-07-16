@@ -4,6 +4,7 @@
 
 import { Severity } from '../core/severity';
 import { OutputFormat } from '../core/outputFormat';
+import { isJsonObject } from '../data/json';
 
 /**
  * Represents CLI command options
@@ -171,11 +172,4 @@ export function isCliProgressInfo(value: unknown): value is CliProgressInfo {
     typeof progress.message === 'string' &&
     typeof progress.stage === 'string'
   );
-}
-
-/**
- * Type guard to check if a value is a JSON object
- */
-function isJsonObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

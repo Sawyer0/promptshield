@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs';
-import path from 'path';
-import glob from 'glob';
+import * as path from 'path';
+import { glob } from 'glob';
 import { detectCompression, readCompressedFile } from './compression';
 
 export async function isDirectory(p: string): Promise<boolean> {
@@ -21,7 +21,7 @@ export async function readFileUtf8(filePath: string): Promise<string> {
 export function findDataFiles(dir: string): string[] {
   const pattern: string = path.join(
     dir,
-    '**/*.{json,ndjson,json.gz,json.gzip,json.deflate,ndjson.gz,ndjson.gzip,ndjson.deflate}'
+    '**/*.{json,ndjson,txt,json.gz,json.gzip,json.deflate,ndjson.gz,ndjson.gzip,ndjson.deflate}'
   );
   return glob.sync(pattern, { nodir: true });
 }

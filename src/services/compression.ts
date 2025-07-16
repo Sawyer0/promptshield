@@ -5,14 +5,13 @@
 import { promises as fs } from 'fs';
 import { gzip, gunzip, deflate, inflate } from 'zlib';
 import { promisify } from 'util';
+import { CompressionType } from '../types/core/scanConfig';
 
 // Promisify zlib functions
 const gzipAsync = promisify(gzip);
 const gunzipAsync = promisify(gunzip);
 const deflateAsync = promisify(deflate);
 const inflateAsync = promisify(inflate);
-
-export type CompressionType = 'gzip' | 'deflate';
 
 export interface CompressionOptions {
   type: CompressionType;

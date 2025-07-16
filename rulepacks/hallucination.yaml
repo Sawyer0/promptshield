@@ -1,0 +1,14 @@
+# Copyright (c) 2025 Sawyer0
+# Licensed under proprietary terms. See LICENSE for details.
+version: '1.0.0'
+last_updated: '2025-01-15'
+name: Hallucination Detection Rules
+description: Detects potential AI hallucination patterns and unreliable content
+rules:
+  # Placeholder rule - add specific hallucination detection rules here
+  - id: placeholder
+    description: Placeholder rule for hallucination detection
+    match_keywords: []
+    severity: medium
+    category: hallucination
+    enabled: false

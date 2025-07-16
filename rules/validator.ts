@@ -21,9 +21,8 @@ export function validateRulePack(
     if (seenIds.has(rule.id)) warnings.push('Duplicate id');
     seenIds.add(rule.id);
     try {
-      // eslint-disable-next-line no-new
       new RegExp(rule.pattern);
-    } catch (e) {
+    } catch {
       errors.push('Invalid regex pattern');
     }
     if (opts?.strict) {

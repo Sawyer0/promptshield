@@ -3,7 +3,12 @@
 import { Command } from 'commander';
 import { executeScanCommand } from './commands/scan';
 import { executeUpdateCommand } from './commands/update';
+import { executeValidateCommand } from './commands/validate';
+import { executeListCommand } from './commands/list';
+import { executeCreateCommand } from './commands/create';
 import { ScanOptions } from './validators/options';
+import { UpdateOptions } from './commands/update/types';
+import { CreateOptions } from './commands/create/types';
 
 const program = new Command();
 
@@ -15,15 +20,39 @@ program
 // --- Scan Command ---
 program
   .command('scan <input>')
-  .description('Scan a JSON file of prompts/responses')
+  .description(
+    'Scan a JSON file of prompts/responses (supports streaming output for NDJSON, Markdown, and CSV when writing to a file for large result sets. Streaming improves performance and memory usage. Order may not be fully preserved; truncation warnings will be shown if limits are hit.)'
+  )
   .option('--debug', 'Enable debug mode for detailed output')
   .option(
     '--fail-on <severity>',
     'Fail the scan on specified severity (low, medium, high, critical)'
   )
   .option('--rulepack <path>', 'Path to RulePack YAML')
-  .option('--output <format>', 'Output format: json or markdown', 'markdown')
+  .option(
+    '--output <format>',
+    'Output format: json, markdown, csv, table, html, or ndjson (default: markdown). NDJSON, Markdown, and CSV support streaming output to files for large results.'
+  )
   .option('--output-file <file>', 'Write report to file instead of stdout')
+  .option(
+    '--severity <levels>',
+    'Filter by severity levels (comma-separated: low,medium,high,critical)'
+  )
+  .option(
+    '--category <categories>',
+    'Filter by categories (comma-separated: pii,bias,hallucination,security,compliance)'
+  )
+  .option(
+    '--max-violations <number>',
+    'Maximum number of violations to report (for large result sets, may truncate output and show a warning)'
+  )
+  .option('--offset <number>', 'Offset for pagination (default: 0)')
+  .option(
+    '--limit <number>',
+    'Limit for pagination (default: all, may truncate output and show a warning)'
+  )
+  .option('--quiet', 'Suppress progress output and summary')
+  .option('--verbose', 'Enable verbose output with detailed information')
   .option(
     '--fields <fields>',
     'Comma-separated list of fields to scan (default: prompt,response)'
@@ -43,6 +72,32 @@ program
   )
   .option('--compress <type>', 'Compress output file (gzip or deflate)')
   .option('--compression-level <level>', 'Compression level (0-9, default: 6)')
+  .option('--no-color', 'Disable colored output')
+  .option('--strict', 'Enable strict mode (treat warnings as errors)')
+  .option(
+    '--timeout <seconds>',
+    'Timeout for processing large files (default: 300)'
+  )
+  .option(
+    '--max-depth <number>',
+    'Maximum depth for nested object traversal (default: 4)'
+  )
+  .option(
+    '--streaming-threshold <number>',
+    'Threshold for switching to streaming mode for large JSON arrays (default: 1000)'
+  )
+  .option(
+    '--memory-warning-threshold <number>',
+    'Memory usage threshold (0.0-1.0) for warnings during large scans (default: 0.8)'
+  )
+  .option(
+    '--parallel [workers]',
+    'Enable parallel scanning (optional: specify number of workers, default: CPU cores)'
+  )
+  .option(
+    '--batch-size <number>',
+    'Batch size for parallel processing (default: 10)'
+  )
   .action(async (input: string, options: ScanOptions): Promise<void> => {
     await executeScanCommand(input, options);
   });
@@ -51,8 +106,48 @@ program
 program
   .command('update')
   .description('Update the RulePacks')
-  .action((): void => {
-    executeUpdateCommand();
+  .option('--force', 'Force update even if no changes detected')
+  .option('--registry <url>', 'Custom registry URL for RulePacks')
+  .action(async (options: UpdateOptions): Promise<void> => {
+    await executeUpdateCommand(options);
+  });
+
+// --- Validate Command ---
+program
+  .command('validate <input>')
+  .description('Validate input file format and structure')
+  .option('--schema <schema>', 'JSON schema to validate against')
+  .option('--rulepack <path>', 'Validate against specific RulePack')
+  .option('--output <format>', 'Output format: json or text', 'text')
+  .action(async (input: string, options: ScanOptions): Promise<void> => {
+    await executeValidateCommand(input, options);
+  });
+
+// --- List Command ---
+program
+  .command('list')
+  .description('List available RulePacks and rules')
+  .option('--rulepack <path>', 'List rules from specific RulePack')
+  .option('--category <category>', 'Filter by category')
+  .option('--severity <severity>', 'Filter by severity')
+  .option('--enabled-only', 'Show only enabled rules')
+  .action(async (options: ScanOptions): Promise<void> => {
+    await executeListCommand(options);
+  });
+
+// --- Create Command ---
+program
+  .command('create <name>')
+  .description('Create a new RulePack with templates')
+  .option(
+    '--template <template>',
+    'Template to use (basic, pii, bias, security, compliance)'
+  )
+  .option('--description <description>', 'Description for the RulePack')
+  .option('--category <category>', 'Category for the RulePack')
+  .option('--force', 'Overwrite existing RulePack')
+  .action(async (name: string, options: CreateOptions): Promise<void> => {
+    await executeCreateCommand(name, options);
   });
 
 program.parse();

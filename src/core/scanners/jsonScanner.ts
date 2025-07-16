@@ -26,6 +26,7 @@ export function scanJsonObjectWithRules(
 ): Violation[] {
   const violations: Violation[] = [];
   const fieldsToScan = config.fieldsToScan || ['prompt', 'response'];
+  const maxDepth = config.maxDepth ?? 4;
 
   // Check if any fields contain dot notation (nested paths)
   const hasNestedFields = fieldsToScan.some((field) => field.includes('.'));
@@ -33,7 +34,7 @@ export function scanJsonObjectWithRules(
   if (hasNestedFields) {
     // Use nested scanning for dot notation fields
     for (const field of fieldsToScan) {
-      const value = getNestedValue(object, field);
+      const value = getNestedValue(object, field, maxDepth);
       if (value && typeof value === 'string') {
         const fieldViolations = scanStringWithRules(value, rules, filePath, {
           objectIndex,

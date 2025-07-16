@@ -1,0 +1,159 @@
+# Copyright (c) 2025 Sawyer0
+# Licensed under proprietary terms. See LICENSE for details.
+version: '1.0.0'
+last_updated: '2025-01-15'
+name: Prompt Injection Detection
+description: Detects prompt injection attacks, jailbreaking attempts, and system prompt extraction
+rules:
+  # Jailbreaking patterns
+  - id: jailbreak-dan
+    description: Detects DAN jailbreak attempts
+    match_regex:
+      - "\\bDAN\\b"
+      - 'do anything now'
+      - 'act as dan'
+    severity: critical
+    category: security
+    enabled: true
+    case_sensitive: false
+
+  - id: jailbreak-roleplay
+    description: Detects roleplay-based jailbreak attempts
+    match_regex:
+      - "\\[.*roleplay.*\\]"
+      - 'act as if you are'
+      - 'pretend you are'
+      - 'imagine you are'
+    severity: critical
+    category: security
+    enabled: true
+    case_sensitive: false
+
+  - id: jailbreak-ignore-instructions
+    description: Detects attempts to ignore previous instructions
+    match_regex:
+      - 'ignore.*previous.*instructions'
+      - 'forget.*previous.*instructions'
+      - 'disregard.*previous.*instructions'
+      - 'ignore.*all.*instructions'
+    severity: critical
+    category: security
+    enabled: true
+    case_sensitive: false
+
+  # System prompt extraction
+  - id: system-prompt-extraction
+    description: Detects attempts to extract system prompts
+    match_regex:
+      - 'system prompt'
+      - 'initial instructions'
+      - 'base instructions'
+      - 'core instructions'
+      - 'what.*are.*your.*instructions'
+    severity: high
+    category: security
+    enabled: true
+    case_sensitive: false
+
+  - id: training-data-extraction
+    description: Detects attempts to extract training data information
+    match_regex:
+      - 'training data'
+      - 'training cutoff'
+      - 'knowledge cutoff'
+      - 'what.*do.*you.*know.*about'
+    severity: high
+    category: security
+    enabled: true
+    case_sensitive: false
+
+  # Configuration extraction
+  - id: config-extraction
+    description: Detects attempts to extract model configuration
+    match_regex:
+      - 'internal.*configuration'
+      - 'model.*parameters'
+      - 'system.*settings'
+      - 'what.*is.*your.*configuration'
+    severity: high
+    category: security
+    enabled: true
+    case_sensitive: false
+
+  # Bypass attempts
+  - id: security-bypass
+    description: Detects security bypass attempts
+    match_regex:
+      - 'bypass.*security'
+      - 'circumvent.*safety'
+      - 'disable.*safeguards'
+      - 'remove.*restrictions'
+    severity: critical
+    category: security
+    enabled: true
+    case_sensitive: false
+
+  # Unbiased AI manipulation
+  - id: unbiased-manipulation
+    description: Detects attempts to manipulate AI bias
+    match_regex:
+      - 'act as an unbiased ai'
+      - 'be completely neutral'
+      - 'remove.*bias'
+      - 'ignore.*bias'
+    severity: high
+    category: security
+    enabled: true
+    case_sensitive: false
+
+  # Code execution attempts
+  - id: code-execution
+    description: Detects attempts to execute code
+    match_regex:
+      - 'execute.*code'
+      - 'run.*this.*code'
+      - 'execute.*this.*script'
+      - 'run.*command'
+    severity: critical
+    category: security
+    enabled: true
+    case_sensitive: false
+
+  # File access attempts
+  - id: file-access
+    description: Detects attempts to access system files
+    match_regex:
+      - 'read.*file'
+      - 'access.*file'
+      - 'open.*file'
+      - 'show.*file.*contents'
+    severity: critical
+    category: security
+    enabled: true
+    case_sensitive: false
+
+  # Network access attempts
+  - id: network-access
+    description: Detects attempts to access network resources
+    match_regex:
+      - 'make.*http.*request'
+      - 'connect.*to.*url'
+      - 'access.*website'
+      - 'download.*from'
+    severity: critical
+    category: security
+    enabled: true
+    case_sensitive: false
+
+  # Data exfiltration attempts
+  - id: data-exfiltration
+    description: Detects attempts to exfiltrate data
+    match_regex:
+      - 'send.*data.*to'
+      - 'upload.*to'
+      - 'export.*data'
+      - 'transmit.*information'
+    severity: critical
+    category: security
+    enabled: true
+    case_sensitive: false

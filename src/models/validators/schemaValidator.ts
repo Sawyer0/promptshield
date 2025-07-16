@@ -1,42 +1,30 @@
 /**
- * Main schema validator for PromptShield
+ * Schema validation utilities for PromptShield
+ * Handles JSON schema validation and built-in schema management
  */
 
+import { JsonSchema } from '../../types/data/json';
 import { SchemaValidationResult } from '../../types/schema/schema';
-import { JsonObjectArray } from '../../types/data/json';
 import { builtinSchemas } from '../schemas/builtinSchemas';
-import { validateObject } from './objectValidator';
-import {
-  loadSchemaFromFile,
-  getSchemaNameFromPath,
-} from '../loaders/schemaLoader';
 
 /**
- * Schema validator class for JSON schema validation
+ * Schema validator for JSON data
  */
 export class SchemaValidator {
-  private schemas: Map<string, Record<string, unknown>> = new Map();
+  private schemas: Map<string, JsonSchema> = new Map();
 
   constructor() {
-    // Register built-in schemas
-    Object.entries(builtinSchemas).forEach(([name, schema]) => {
-      this.registerSchema(name, schema);
-    });
+    // Load built-in schemas
+    for (const [name, schema] of Object.entries(builtinSchemas)) {
+      this.schemas.set(name, schema);
+    }
   }
 
   /**
-   * Register a custom schema
+   * Validates data against a schema
    */
-  registerSchema(name: string, schema: Record<string, unknown>): void {
-    this.schemas.set(name, schema);
-  }
-
-  /**
-   * Validate data against a schema
-   */
-  validate(data: JsonObjectArray, schemaName: string): SchemaValidationResult {
+  validate(data: unknown, schemaName: string): SchemaValidationResult {
     const schema = this.schemas.get(schemaName);
-
     if (!schema) {
       return {
         isValid: false,
@@ -46,24 +34,18 @@ export class SchemaValidator {
     }
 
     try {
-      // Simple validation - in a real implementation, you'd use a proper JSON schema validator
+      // Basic schema validation (simplified for MVP)
       const errors: string[] = [];
 
-      if (schema.type === 'array' && schema.items) {
-        if (!Array.isArray(data)) {
-          errors.push('Expected an array');
-        } else {
-          // Validate each item
-          data.forEach((item, index) => {
-            const itemErrors = validateObject(
-              item,
-              schema.items as Record<string, unknown>
-            );
-            itemErrors.forEach((error) => {
-              errors.push(`Item ${index}: ${error}`);
-            });
-          });
-        }
+      if (schema.type === 'array' && !Array.isArray(data)) {
+        errors.push('Expected array data');
+      }
+
+      if (
+        schema.type === 'object' &&
+        (typeof data !== 'object' || data === null || Array.isArray(data))
+      ) {
+        errors.push('Expected object data');
       }
 
       return {
@@ -75,55 +57,25 @@ export class SchemaValidator {
       return {
         isValid: false,
         schemaName,
-        errors: [
-          `Validation error: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        ],
+        errors: [`Schema validation error: ${error}`],
       };
     }
   }
 
   /**
-   * Validate data against multiple schemas
+   * Registers a custom schema
    */
-  validateMultiple(
-    data: JsonObjectArray,
-    schemaNames: string[]
-  ): SchemaValidationResult {
-    const allErrors: string[] = [];
-
-    for (const schemaName of schemaNames) {
-      const result = this.validate(data, schemaName);
-      if (!result.isValid && result.errors) {
-        allErrors.push(...result.errors);
-      }
-    }
-
-    return {
-      isValid: allErrors.length === 0,
-      schemaName: schemaNames.join(','),
-      errors: allErrors.length > 0 ? allErrors : undefined,
-    };
+  registerSchema(name: string, schema: JsonSchema): void {
+    this.schemas.set(name, schema);
   }
 
   /**
-   * Get list of available schemas
+   * Gets all available schema names
    */
   getAvailableSchemas(): string[] {
     return Array.from(this.schemas.keys());
   }
-
-  /**
-   * Load schema from file
-   */
-  async loadSchemaFromFile(filePath: string): Promise<void> {
-    try {
-      const schema = await loadSchemaFromFile(filePath);
-      const schemaName = getSchemaNameFromPath(filePath);
-      this.registerSchema(schemaName, schema);
-    } catch (error) {
-      throw new Error(
-        `Failed to load schema from ${filePath}: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
-    }
-  }
 }
+
+// Export singleton instance
+export const schemaValidator = new SchemaValidator();

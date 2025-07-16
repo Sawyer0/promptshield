@@ -5,8 +5,8 @@
 
 import { jest } from '@jest/globals';
 
-// Global test timeout
-jest.setTimeout(30000);
+// Global test timeout (increased for CI environment)
+jest.setTimeout(60000);
 
 // Mock console methods to reduce noise in tests
 

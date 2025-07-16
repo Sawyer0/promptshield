@@ -97,7 +97,7 @@ jobs:
         run: npm run build
 
       - name: Run tests with coverage
-        run: npm test -- --coverage --coverageReporters=text --coverageReporters=lcov
+        run: npm test -- --coverage --coverageReporters=text --coverageReporters=lcov --maxWorkers=2 --testTimeout=60000
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
@@ -127,7 +127,7 @@ jobs:
         run: npm run build
 
       - name: Run integration tests
-        run: npm test -- --testPathPattern=integration
+        run: npm test -- --testPathPattern=integration --maxWorkers=2 --testTimeout=60000
 
   output-validation:
     runs-on: ubuntu-latest

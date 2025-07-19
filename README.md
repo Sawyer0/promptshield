@@ -1,6 +1,6 @@
 # PromptShield 🛡️
 
-[![npm version](https://img.shields.io/npm/v/promptshield.svg)](https://www.npmjs.com/package/promptshield)
+[![npm version](https://img.shields.io/npm/v/@dawans/promptshield.svg)](https://www.npmjs.com/package/@dawans/promptshield)
 [![License: Proprietary](https://img.shields.io/badge/License-Proprietary-blue.svg)](LICENSE)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen.svg)](https://nodejs.org)
 
@@ -10,7 +10,7 @@
 
 ```bash
 # Install globally
-npm install -g promptshield
+npm install -g @dawans/promptshield
 
 # Scan a file for prompt injection attacks
 promptshield scan prompts.json --rulepack rulepacks/prompt-injection.yaml
@@ -54,7 +54,7 @@ PromptShield is a developer-first CLI security tool that scans AI prompts, respo
 ### Global Installation (Recommended)
 
 ```bash
-npm install -g promptshield
+npm install -g @dawans/promptshield
 
 # Verify installation
 promptshield --version
@@ -63,7 +63,7 @@ promptshield --version
 ### Project Installation
 
 ```bash
-npm install promptshield --save-dev
+npm install @dawans/promptshield --save-dev
 
 # Add to package.json scripts
 {

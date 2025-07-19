@@ -48,7 +48,7 @@ export class JsonProcessor implements ContentProcessor, StreamingProcessor {
   }
 
   /**
-   * Processes regular JSON array
+   * Processes regular JSON (array or single object)
    */
   private async processRegularJson(
     content: string,
@@ -57,18 +57,17 @@ export class JsonProcessor implements ContentProcessor, StreamingProcessor {
     try {
       const data = JSON.parse(content);
 
-      if (!Array.isArray(data)) {
-        return err(new Error('Expected JSON array but got object'));
-      }
+      // Handle both arrays and single objects
+      const items = Array.isArray(data) ? data : [data];
 
       const results: ProcessedContent[] = [];
       const maxObjects = context.getMaxObjects();
       const fieldsToScan = context.getFieldsToScan();
 
-      for (let i = 0; i < data.length; i++) {
+      for (let i = 0; i < items.length; i++) {
         if (maxObjects && i >= maxObjects) break;
 
-        const item = data[i];
+        const item = items[i];
         const fields: Record<string, string> = {};
 
         // Extract specified fields

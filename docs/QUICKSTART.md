@@ -11,7 +11,7 @@ Get PromptShield running in 5 minutes to scan your AI content for security risks
 
 ```bash
 # Install globally
-npm install -g promptshield
+npm install -g @dawans/promptshield
 
 # Verify installation
 promptshield --version

@@ -69,11 +69,11 @@ async function scanNdjsonFile(
       const objectViolations = JsonProcessor.scanObject(obj, rules, {
         fieldsToScan: config.fieldsToScan,
         scanEntireObject: config.scanEntireObject,
-        maxDepth: config.maxDepth
-      }).map(violation => ({
+        maxDepth: config.maxDepth,
+      }).map((violation) => ({
         ...violation,
         objectIndex,
-        filePath
+        filePath,
       }));
       violations.push(...objectViolations);
     } catch {

@@ -73,10 +73,10 @@ describe('JsonProcessor', () => {
         conversation: {
           messages: [
             { role: 'user', content: 'Hello' },
-            { role: 'assistant', content: 'Hi there!' }
-          ]
+            { role: 'assistant', content: 'Hi there!' },
+          ],
         },
-        metadata: { timestamp: '2025-01-01' }
+        metadata: { timestamp: '2025-01-01' },
       });
       const context = new ScanContext(createScanConfig());
 
@@ -93,7 +93,7 @@ describe('JsonProcessor', () => {
       const input = JSON.stringify([
         { id: 1, text: 'First item' },
         { id: 2, text: 'Second item' },
-        { id: 3, text: 'Third item' }
+        { id: 3, text: 'Third item' },
       ]);
       const context = new ScanContext(createScanConfig());
 
@@ -133,7 +133,8 @@ describe('JsonProcessor', () => {
 
   describe('process - NDJSON', () => {
     test('should process NDJSON with multiple lines', async () => {
-      const input = '{"id": 1, "text": "First"}\n{"id": 2, "text": "Second"}\n{"id": 3, "text": "Third"}';
+      const input =
+        '{"id": 1, "text": "First"}\n{"id": 2, "text": "Second"}\n{"id": 3, "text": "Third"}';
       const context = new ScanContext(createScanConfig({ ndjson: true }));
 
       const result = await processor.process(input, context);
@@ -155,7 +156,7 @@ describe('JsonProcessor', () => {
       expect(result.isSuccess()).toBe(true);
       const objects = result.getValue();
       expect(objects).toHaveLength(3);
-      expect(objects.map(o => o.id)).toEqual([1, 2, 3]);
+      expect(objects.map((o) => o.id)).toEqual([1, 2, 3]);
     });
 
     test('should process NDJSON with whitespace', async () => {
@@ -197,11 +198,18 @@ describe('JsonProcessor', () => {
     test('should extract specified fields only', async () => {
       const input = JSON.stringify([
         { id: 1, prompt: 'Hello', response: 'Hi', metadata: { time: '10:00' } },
-        { id: 2, prompt: 'How are you?', response: 'Good', metadata: { time: '10:01' } }
+        {
+          id: 2,
+          prompt: 'How are you?',
+          response: 'Good',
+          metadata: { time: '10:01' },
+        },
       ]);
-      const context = new ScanContext(createScanConfig({
-        fields: ['prompt', 'response']
-      }));
+      const context = new ScanContext(
+        createScanConfig({
+          fields: ['prompt', 'response'],
+        })
+      );
 
       const result = await processor.process(input, context);
 
@@ -217,14 +225,19 @@ describe('JsonProcessor', () => {
         {
           conversation: {
             user: { message: 'Hello' },
-            assistant: { message: 'Hi there' }
+            assistant: { message: 'Hi there' },
           },
-          metadata: { timestamp: '2025-01-01' }
-        }
+          metadata: { timestamp: '2025-01-01' },
+        },
       ]);
-      const context = new ScanContext(createScanConfig({
-        fields: ['conversation.user.message', 'conversation.assistant.message']
-      }));
+      const context = new ScanContext(
+        createScanConfig({
+          fields: [
+            'conversation.user.message',
+            'conversation.assistant.message',
+          ],
+        })
+      );
 
       const result = await processor.process(input, context);
 
@@ -233,7 +246,7 @@ describe('JsonProcessor', () => {
       expect(objects).toHaveLength(1);
       expect(objects[0]).toEqual({
         'conversation.user.message': 'Hello',
-        'conversation.assistant.message': 'Hi there'
+        'conversation.assistant.message': 'Hi there',
       });
     });
 
@@ -241,11 +254,13 @@ describe('JsonProcessor', () => {
       const input = JSON.stringify([
         { prompt: 'Hello', response: 'Hi' },
         { prompt: 'How are you?' }, // Missing response
-        { response: 'Fine' } // Missing prompt
+        { response: 'Fine' }, // Missing prompt
       ]);
-      const context = new ScanContext(createScanConfig({
-        fields: ['prompt', 'response']
-      }));
+      const context = new ScanContext(
+        createScanConfig({
+          fields: ['prompt', 'response'],
+        })
+      );
 
       const result = await processor.process(input, context);
 
@@ -259,12 +274,14 @@ describe('JsonProcessor', () => {
 
     test('should scan entire object when scanEntireObject is true', async () => {
       const input = JSON.stringify([
-        { prompt: 'Hello', response: 'Hi', metadata: { important: 'data' } }
+        { prompt: 'Hello', response: 'Hi', metadata: { important: 'data' } },
       ]);
-      const context = new ScanContext(createScanConfig({
-        fields: ['prompt', 'response'],
-        scanEntireObject: true
-      }));
+      const context = new ScanContext(
+        createScanConfig({
+          fields: ['prompt', 'response'],
+          scanEntireObject: true,
+        })
+      );
 
       const result = await processor.process(input, context);
 
@@ -274,7 +291,7 @@ describe('JsonProcessor', () => {
       expect(objects[0]).toEqual({
         prompt: 'Hello',
         response: 'Hi',
-        metadata: { important: 'data' }
+        metadata: { important: 'data' },
       });
     });
   });
@@ -313,7 +330,7 @@ describe('JsonProcessor', () => {
     test('should handle extremely large JSON objects', async () => {
       // Create a very large object that might cause memory issues
       const largeObject = {
-        data: 'x'.repeat(100 * 1024 * 1024) // 100MB string
+        data: 'x'.repeat(100 * 1024 * 1024), // 100MB string
       };
       const input = JSON.stringify(largeObject);
       const context = new ScanContext(createScanConfig());
@@ -342,11 +359,13 @@ describe('JsonProcessor', () => {
 
   describe('performance', () => {
     test('should process large arrays efficiently', async () => {
-      const largeArray = Array(1000).fill(null).map((_, i) => ({
-        id: i,
-        prompt: `Prompt ${i}`,
-        response: `Response ${i}`
-      }));
+      const largeArray = Array(1000)
+        .fill(null)
+        .map((_, i) => ({
+          id: i,
+          prompt: `Prompt ${i}`,
+          response: `Response ${i}`,
+        }));
       const input = JSON.stringify(largeArray);
       const context = new ScanContext(createScanConfig());
 
@@ -360,9 +379,9 @@ describe('JsonProcessor', () => {
     });
 
     test('should process large NDJSON efficiently', async () => {
-      const lines = Array(1000).fill(null).map((_, i) =>
-        JSON.stringify({ id: i, text: `Item ${i}` })
-      );
+      const lines = Array(1000)
+        .fill(null)
+        .map((_, i) => JSON.stringify({ id: i, text: `Item ${i}` }));
       const input = lines.join('\n');
       const context = new ScanContext(createScanConfig({ ndjson: true }));
 
@@ -376,11 +395,15 @@ describe('JsonProcessor', () => {
     });
 
     test('should handle streaming threshold', async () => {
-      const largeArray = Array(200).fill(null).map((_, i) => ({ id: i }));
+      const largeArray = Array(200)
+        .fill(null)
+        .map((_, i) => ({ id: i }));
       const input = JSON.stringify(largeArray);
-      const context = new ScanContext(createScanConfig({
-        streamingThreshold: 100
-      }));
+      const context = new ScanContext(
+        createScanConfig({
+          streamingThreshold: 100,
+        })
+      );
 
       const result = await processor.process(input, context);
 
@@ -398,7 +421,7 @@ describe('JsonProcessor', () => {
         boolean: true,
         null_value: null,
         array: [1, 2, 3],
-        object: { nested: 'value' }
+        object: { nested: 'value' },
       });
       const context = new ScanContext(createScanConfig());
 
@@ -419,7 +442,7 @@ describe('JsonProcessor', () => {
       const input = JSON.stringify({
         unicode: '🚀 Unicode test: café, naïve, 中文, 日本語',
         escaped: 'Line 1\nLine 2\tTabbed',
-        quotes: 'Single \' and double " quotes'
+        quotes: 'Single \' and double " quotes',
       });
       const context = new ScanContext(createScanConfig());
 

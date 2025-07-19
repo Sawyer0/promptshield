@@ -10,19 +10,35 @@ describe('RulePackValidatorImpl', () => {
 
   beforeEach(() => {
     validator = new RulePackValidatorImpl();
-    tempDir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'promptshield-test-'));
+    tempDir = fs.mkdtempSync(
+      path.join(require('os').tmpdir(), 'promptshield-test-')
+    );
   });
 
   describe('supports', () => {
     test('should support YAML files', () => {
-      const options = { strict: false, verbose: false, skipWarnings: false, maxErrors: 100, validateRegex: true, validateSchema: true };
+      const options = {
+        strict: false,
+        verbose: false,
+        skipWarnings: false,
+        maxErrors: 100,
+        validateRegex: true,
+        validateSchema: true,
+      };
       expect(validator.supports('test.yaml', options)).toBe(true);
       expect(validator.supports('test.yml', options)).toBe(true);
       expect(validator.supports('rules.yaml', options)).toBe(true);
     });
 
     test('should not support non-YAML files', () => {
-      const options = { strict: false, verbose: false, skipWarnings: false, maxErrors: 100, validateRegex: true, validateSchema: true };
+      const options = {
+        strict: false,
+        verbose: false,
+        skipWarnings: false,
+        maxErrors: 100,
+        validateRegex: true,
+        validateSchema: true,
+      };
       expect(validator.supports('test.json', options)).toBe(false);
       expect(validator.supports('test.txt', options)).toBe(false);
       expect(validator.supports('test.xml', options)).toBe(false);
@@ -59,7 +75,7 @@ rules:
         maxErrors: 100,
         validateRegex: true,
         validateSchema: true,
-        format: 'yaml'
+        format: 'yaml',
       };
       const result = await validator.validate(filePath, options);
 
@@ -89,7 +105,7 @@ rules:
         maxErrors: 100,
         validateRegex: true,
         validateSchema: true,
-        format: 'yaml'
+        format: 'yaml',
       };
       const result = await validator.validate(filePath, options);
 
@@ -100,12 +116,15 @@ rules:
 
         const errorMessages = result.value.errors.map((e: any) => e.message);
         // Check that at least one of the required field errors is present
-        expect(errorMessages.some((msg: any) =>
-          msg.includes('name') ||
-          msg.includes('description') ||
-          msg.includes('version') ||
-          msg.includes('rules')
-        )).toBe(true);
+        expect(
+          errorMessages.some(
+            (msg: any) =>
+              msg.includes('name') ||
+              msg.includes('description') ||
+              msg.includes('version') ||
+              msg.includes('rules')
+          )
+        ).toBe(true);
       }
     });
 
@@ -132,14 +151,16 @@ rules:
         maxErrors: 100,
         validateRegex: true,
         validateSchema: true,
-        format: 'yaml'
+        format: 'yaml',
       };
       const result = await validator.validate(filePath, options);
 
       expect(result.isOk()).toBe(true);
       if (result.isOk()) {
         expect(result.value.isValid).toBe(false);
-        expect(result.value.errors.some((e: any) => e.message.includes('YAML'))).toBe(true);
+        expect(
+          result.value.errors.some((e: any) => e.message.includes('YAML'))
+        ).toBe(true);
       }
     });
   });
@@ -167,7 +188,7 @@ rules:
         skipWarnings: false,
         maxErrors: 100,
         validateRegex: true,
-        validateSchema: true
+        validateSchema: true,
       };
       const result = await validator.validateRulePack(filePath, options);
 
@@ -199,14 +220,16 @@ rules:
         skipWarnings: false,
         maxErrors: 100,
         validateRegex: true,
-        validateSchema: true
+        validateSchema: true,
       };
       const result = await validator.validateRulePack(filePath, options);
 
       expect(result.isOk()).toBe(true);
       if (result.isOk()) {
         expect(result.value.isValid).toBe(false);
-        expect(result.value.errors.some((e: any) => e.message.includes('severity'))).toBe(true);
+        expect(
+          result.value.errors.some((e: any) => e.message.includes('severity'))
+        ).toBe(true);
       }
     });
   });
@@ -265,7 +288,7 @@ rules:
         severity: 'medium',
         category: 'custom',
         match_keywords: ['test'],
-        enabled: true
+        enabled: true,
       };
 
       const result = await validator.validateRuleSchema(validRule);
@@ -280,7 +303,7 @@ rules:
       const invalidRule = {
         description: 'Test rule',
         severity: 'invalid-severity',
-        category: 'custom'
+        category: 'custom',
         // Missing required fields
       };
 
@@ -298,12 +321,12 @@ rules:
       const rules = [
         {
           id: 'email-rule',
-          match_regex: ['\\b[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}\\b']
+          match_regex: ['\\b[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}\\b'],
         },
         {
           id: 'ssn-rule',
-          match_regex: ['\\d{3}-\\d{2}-\\d{4}']
-        }
+          match_regex: ['\\d{3}-\\d{2}-\\d{4}'],
+        },
       ];
 
       const result = await validator.validateRegexPatterns(rules);
@@ -318,8 +341,8 @@ rules:
       const rules = [
         {
           id: 'invalid-rule',
-          match_regex: ['\\b[invalid-regex\\b'] // Unclosed bracket
-        }
+          match_regex: ['\\b[invalid-regex\\b'], // Unclosed bracket
+        },
       ];
 
       const result = await validator.validateRegexPatterns(rules);
@@ -327,7 +350,9 @@ rules:
       expect(result.isOk()).toBe(true);
       if (result.isOk()) {
         expect(result.value.isValid).toBe(false);
-        expect(result.value.errors.some((e: any) => e.message.includes('regex'))).toBe(true);
+        expect(
+          result.value.errors.some((e: any) => e.message.includes('regex'))
+        ).toBe(true);
       }
     });
   });

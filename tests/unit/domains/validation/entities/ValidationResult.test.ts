@@ -2,7 +2,7 @@ import { describe, test, expect, beforeEach } from '@jest/globals';
 import {
   ValidationResultBuilder,
   ValidationResult,
-  ValidationError
+  ValidationError,
 } from '../../../../../src/domains/validation/core/entities/ValidationResult';
 
 describe('ValidationResult', () => {
@@ -26,7 +26,7 @@ describe('ValidationResult', () => {
           code: 'ERROR_CODE',
           severity: 'error',
           line: 10,
-          column: 5
+          column: 5,
         });
       });
 
@@ -63,7 +63,7 @@ describe('ValidationResult', () => {
           code: 'WARN_CODE',
           severity: 'warning',
           line: 20,
-          column: 10
+          column: 10,
         });
       });
 
@@ -120,9 +120,18 @@ describe('ValidationResult', () => {
 
     describe('validation types', () => {
       test('should support different validation types', () => {
-        const rulepackBuilder = new ValidationResultBuilder('test.yaml', 'rulepack');
-        const inputBuilder = new ValidationResultBuilder('test.json', 'input-file');
-        const configBuilder = new ValidationResultBuilder('config.json', 'config');
+        const rulepackBuilder = new ValidationResultBuilder(
+          'test.yaml',
+          'rulepack'
+        );
+        const inputBuilder = new ValidationResultBuilder(
+          'test.json',
+          'input-file'
+        );
+        const configBuilder = new ValidationResultBuilder(
+          'config.json',
+          'config'
+        );
 
         expect(rulepackBuilder.build().validationType).toBe('rulepack');
         expect(inputBuilder.build().validationType).toBe('input-file');
@@ -139,7 +148,7 @@ describe('ValidationResult', () => {
         code: 'TEST_CODE',
         severity: 'error',
         line: 10,
-        column: 5
+        column: 5,
       };
 
       expect(error.field).toBe('test');
@@ -154,7 +163,7 @@ describe('ValidationResult', () => {
         errors: [],
         warnings: [],
         target: 'test.yaml',
-        validationType: 'rulepack'
+        validationType: 'rulepack',
       };
 
       expect(result.isValid).toBe(true);

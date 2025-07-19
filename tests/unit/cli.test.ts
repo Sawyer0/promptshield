@@ -109,9 +109,9 @@ describe('CLI Core Functionality', () => {
   describe('Schema Validation', () => {
     const cliCmd = 'node dist/cli/index.js';
 
-    test('validates against basic schema', () => {
+    test('validates against universal schema', () => {
       const result = runCliCommand(
-        `${cliCmd} scan tests/fixtures/schema-basic.json --schema basic --rulepack rulepacks/pii.yaml`
+        `${cliCmd} scan tests/fixtures/schema-basic.json --schema universal --rulepack rulepacks/pii.yaml`
       );
       expect(result.success).toBe(true);
       const cleanOutput = stripAnsiCodes(result.stdout);
@@ -121,7 +121,7 @@ describe('CLI Core Functionality', () => {
 
     test('rejects invalid schema data', () => {
       const result = runCliCommand(
-        `${cliCmd} scan tests/fixtures/schema-invalid.json --schema basic --rulepack rulepacks/pii.yaml`
+        `${cliCmd} scan tests/fixtures/schema-invalid.json --schema universal --rulepack rulepacks/pii.yaml`
       );
       // Currently schema validation is not implemented, so this should succeed
       expect(result.success).toBe(true);

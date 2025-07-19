@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  promptshield:
+    build: .
+    image: promptshield:latest
+    container_name: promptshield
+    volumes:
+      - ./examples:/data:ro # Mount examples as read-only
+      - ./output:/output # Mount output directory
+    environment:
+      - NODE_ENV=production
+    # Override default command for interactive use
+    # docker-compose run promptshield scan /data/sample.txt --output json
+
+  # Example service for CI/CD scanning
+  scanner:
+    build: .
+    image: promptshield:latest
+    volumes:
+      - ./examples:/data:ro
+      - ./output:/output
+    command: >
+      scan /data/sample.txt
+      --rulepack /app/rulepacks/prompt-injection.yaml
+      --output json
+      --output-file /output/scan-results.json
+    environment:
+      - NODE_ENV=production

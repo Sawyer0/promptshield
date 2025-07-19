@@ -327,6 +327,112 @@ All test runners integrate with GitHub Actions:
 - **Test Analytics**: Success rate trends and patterns
 - **Alerting**: Notifications for test failures
 
+## Code Organization
+
+### Codebase Organization (`organize-codebase.sh`)
+
+Analyzes and categorizes all files in the codebase, separating new architecture from old code.
+
+**Usage:**
+
+```bash
+./scripts/organize-codebase.sh
+```
+
+**Features:**
+
+- Identifies new architecture files (domains, shared, infrastructure, application)
+- Finds old/commented code files marked with "OLD CODE - COMMENTED OUT"
+- Provides statistics on code coverage and migration progress
+- Generates commands for safe cleanup of old code
+- Color-coded output for easy identification
+
+**Output Categories:**
+
+- **New Architecture**: Active files in the new modular structure
+- **Old Code**: Commented out/deprecated files
+- **Mixed Files**: Files that may contain both old and new code
+- **Statistics**: Coverage percentages and file counts
+
+### Dependency Analysis (`analyze-dependencies.sh`)
+
+Analyzes which files are actually used by the new architecture and identifies unused code.
+
+**Usage:**
+
+```bash
+./scripts/analyze-dependencies.sh
+```
+
+**Features:**
+
+- Analyzes import dependencies in the new architecture
+- Identifies files that are never imported
+- Checks compiled output for verification
+- Finds dead code patterns and commented files
+- Provides optimization recommendations
+
+**Analysis Categories:**
+
+- **Import Analysis**: Shows which files import from old vs new architecture
+- **Unused Files**: Files that are never imported by other modules
+- **Compiled Output**: Verification against the built dist directory
+- **Dead Code**: Files marked as old or containing only comments
+
+### Safe Cleanup (`safe-cleanup.sh`)
+
+Safely removes confirmed old code files with rollback capability.
+
+**Usage:**
+
+```bash
+./scripts/safe-cleanup.sh
+```
+
+**Safety Features:**
+
+- User confirmation before any changes
+- Moves files to archive directory instead of deleting
+- Tests build after cleanup
+- Automatic rollback if build fails
+- Verifies CLI functionality after cleanup
+- Provides restoration instructions
+
+**Cleanup Process:**
+
+1. Creates archive/old-code directory
+2. Moves definitively old files to archive
+3. Removes empty directories
+4. Updates tsconfig.json exclude section
+5. Tests build and CLI functionality
+6. Provides rollback if anything fails
+
+### Aggressive Cleanup (`clean-old-code.sh`)
+
+More aggressive cleanup option for removing old code files.
+
+**Usage:**
+
+```bash
+./scripts/clean-old-code.sh
+```
+
+**Features:**
+
+- Archives old code files with descriptive names
+- Removes empty directories
+- Updates TypeScript configuration
+- Tests build after cleanup
+- Provides restoration and deletion instructions
+
+**File Categories Removed:**
+
+- Old CLI commands (scan, test)
+- Old core files (scanner, processor)
+- Old services (compression)
+- Old utilities (validators, parsers)
+- Old processing modules
+
 ## Contributing
 
 When adding new tests:

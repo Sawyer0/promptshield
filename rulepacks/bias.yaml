@@ -28,25 +28,6 @@ rules:
     enabled: true
     case_sensitive: false
 
-  # Racial bias keywords
-  - id: racial_bias
-    description: Detects racially biased language
-    match_keywords:
-      [
-        'exotic',
-        'articulate',
-        'well-spoken',
-        'urban',
-        'thug',
-        'ghetto',
-        'hood',
-        'street',
-      ]
-    severity: high
-    category: bias
-    enabled: true
-    case_sensitive: false
-
   # Age bias keywords
   - id: age_bias
     description: Detects age-biased language
@@ -133,6 +114,130 @@ rules:
       [
         "\\b(all|every|no)\\s+\\w+\\s+(are|is)\\s+\\w+\\b",
         "\\b\\w+\\s+people\\s+(always|never|usually)\\b",
+      ]
+    severity: medium
+    category: bias
+    enabled: true
+    case_sensitive: false
+
+  # Implicit bias patterns
+  - id: implicit_bias
+    description: Detects implicit bias language patterns
+    match_keywords:
+      [
+        'surprisingly articulate',
+        'well-dressed for a',
+        'clean-cut',
+        'speaks well',
+        'not like other',
+        'one of the good ones',
+        'credit to their race',
+        'so articulate',
+        'very presentable',
+        'well-educated for a',
+      ]
+    severity: high
+    category: bias
+    enabled: true
+    case_sensitive: false
+
+  # Professional bias
+  - id: professional_bias
+    description: Detects professional and workplace bias
+    match_keywords:
+      [
+        'cultural fit',
+        'not a good fit',
+        'overqualified',
+        'aggressive negotiator',
+        'pushy',
+        'difficult to work with',
+        'not leadership material',
+        'lacks executive presence',
+        'team player',
+        'go-getter',
+      ]
+    severity: medium
+    category: bias
+    enabled: true
+    case_sensitive: false
+
+  # Appearance bias
+  - id: appearance_bias
+    description: Detects appearance-based bias
+    match_keywords:
+      [
+        'unprofessional hair',
+        'ethnic hairstyle',
+        'natural hair',
+        'dreadlocks',
+        'tattoos',
+        'piercings',
+        'alternative style',
+        'dress code violation',
+        'inappropriate attire',
+        'looks professional',
+      ]
+    severity: medium
+    category: bias
+    enabled: true
+    case_sensitive: false
+
+  # Cultural bias
+  - id: cultural_bias
+    description: Detects cultural bias and assumptions
+    match_keywords:
+      [
+        'foreign-sounding name',
+        'ethnic name',
+        'hard to pronounce',
+        'American name',
+        'normal name',
+        'traditional family',
+        'broken English',
+        'heavy accent',
+        'poor English',
+        'language barrier',
+      ]
+    severity: high
+    category: bias
+    enabled: true
+    case_sensitive: false
+
+  # Microaggressions
+  - id: microaggressions
+    description: Detects common microaggression phrases
+    match_keywords:
+      [
+        'where are you really from',
+        'you speak English so well',
+        'can I touch your hair',
+        'you look exotic',
+        'what are you mixed with',
+        "I don't see color",
+        "we're all human",
+        'reverse racism',
+        'playing the race card',
+        "you're so lucky",
+      ]
+    severity: high
+    category: bias
+    enabled: true
+    case_sensitive: false
+
+  # Economic assumptions
+  - id: economic_assumptions
+    description: Detects economic status assumptions
+    match_regex:
+      [
+        'must be (rich|poor|wealthy|broke)',
+        "can't afford",
+        "probably can't pay",
+        'lives in the (ghetto|projects|suburbs)',
+        'from the wrong side of town',
+        'trailer trash',
+        'silver spoon',
+        'born with advantages',
       ]
     severity: medium
     category: bias

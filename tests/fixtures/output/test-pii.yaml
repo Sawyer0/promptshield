@@ -1,0 +1,28 @@
+version: 1.0.0
+name: PII Detection
+description: Detects personally identifiable information
+rules:
+  - id: email_addresses
+    description: Detects email addresses
+    match_regex:
+      - \b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b
+    severity: medium
+    category: pii
+    enabled: true
+  - id: phone_numbers
+    description: Detects phone numbers
+    match_regex:
+      - \b\d{3}-\d{3}-\d{4}\b
+      - \(\d{3}\)\s?\d{3}-\d{4}
+      - \b\d{10}\b
+    severity: medium
+    category: pii
+    enabled: true
+  - id: ssn
+    description: Detects Social Security Numbers
+    match_regex:
+      - \b\d{3}-\d{2}-\d{4}\b
+    severity: high
+    category: pii
+    enabled: true
+last_updated: '2025-07-18'

@@ -2,11 +2,11 @@
   "name": "@dawans/promptshield",
   "version": "1.0.3",
   "publishConfig": {
-    "access": "restricted"
+    "access": "public"
   },
   "description": "Secure your LLM stack with enterprise-grade RulePacks for AI safety scanning",
   "author": "PromptShield Team",
-  "license": "UNLICENSED",
+  "license": "Apache-2.0",
   "keywords": [
     "llm",
     "security",

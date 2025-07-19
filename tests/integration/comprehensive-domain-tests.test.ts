@@ -1,4 +1,12 @@
-import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from '@jest/globals';
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  beforeAll,
+  afterAll,
+} from '@jest/globals';
 import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
@@ -78,22 +86,34 @@ describe('Comprehensive Domain Tests', () => {
     const testJson = {
       users: [
         { name: 'John Doe', ssn: '123-45-6789', email: 'john@example.com' },
-        { name: 'Jane Smith', ssn: '987-65-4321', email: 'jane@example.com' }
+        { name: 'Jane Smith', ssn: '987-65-4321', email: 'jane@example.com' },
       ],
       transactions: [
-        { id: 1, amount: 1000, description: 'Payment from credit card 4111-1111-1111-1111' },
-        { id: 2, amount: 500, description: 'Wire transfer' }
-      ]
+        {
+          id: 1,
+          amount: 1000,
+          description: 'Payment from credit card 4111-1111-1111-1111',
+        },
+        { id: 2, amount: 500, description: 'Wire transfer' },
+      ],
     };
-    fs.writeFileSync(path.join(testFixturesDir, 'test-data.json'), JSON.stringify(testJson, null, 2));
+    fs.writeFileSync(
+      path.join(testFixturesDir, 'test-data.json'),
+      JSON.stringify(testJson, null, 2)
+    );
 
     // Create test NDJSON file
     const ndjsonLines = [
       JSON.stringify({ message: 'User login: admin password: admin123' }),
-      JSON.stringify({ message: 'Processing payment for card 4111-1111-1111-1111' }),
-      JSON.stringify({ message: 'User SSN: 123-45-6789 updated' })
+      JSON.stringify({
+        message: 'Processing payment for card 4111-1111-1111-1111',
+      }),
+      JSON.stringify({ message: 'User SSN: 123-45-6789 updated' }),
     ];
-    fs.writeFileSync(path.join(testFixturesDir, 'test-logs.ndjson'), ndjsonLines.join('\n'));
+    fs.writeFileSync(
+      path.join(testFixturesDir, 'test-logs.ndjson'),
+      ndjsonLines.join('\n')
+    );
 
     // Create test text file
     const textContent = `
@@ -102,7 +122,10 @@ describe('Comprehensive Domain Tests', () => {
       Credit card 4111-1111-1111-1111 was charged $500.
       The password is admin123 - please keep it secure.
     `;
-    fs.writeFileSync(path.join(testFixturesDir, 'test-document.txt'), textContent);
+    fs.writeFileSync(
+      path.join(testFixturesDir, 'test-document.txt'),
+      textContent
+    );
 
     // Create test rulepack
     const testRulepack = `
@@ -149,11 +172,20 @@ rules:
     pattern: "\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b"
     enabled: true
 `;
-    fs.writeFileSync(path.join(testFixturesDir, 'test-rules.yaml'), testRulepack);
+    fs.writeFileSync(
+      path.join(testFixturesDir, 'test-rules.yaml'),
+      testRulepack
+    );
 
     // Create invalid files for error testing
-    fs.writeFileSync(path.join(testFixturesDir, 'invalid.json'), '{ invalid json }');
-    fs.writeFileSync(path.join(testFixturesDir, 'invalid-rules.yaml'), 'invalid: yaml: content:');
+    fs.writeFileSync(
+      path.join(testFixturesDir, 'invalid.json'),
+      '{ invalid json }'
+    );
+    fs.writeFileSync(
+      path.join(testFixturesDir, 'invalid-rules.yaml'),
+      'invalid: yaml: content:'
+    );
   }
 
   describe('🔍 Scanning Domain - Core Functionality', () => {
@@ -171,26 +203,26 @@ rules:
       const mockRepository = {
         loadRulePack: jest.fn(),
         getRules: jest.fn(),
-        validateRulePack: jest.fn()
+        validateRulePack: jest.fn(),
       } as any;
       const mockMatcher = {
         match: jest.fn(),
-        createViolation: jest.fn()
+        createViolation: jest.fn(),
       } as any;
       ruleEngine = new DefaultRuleEngine(mockRepository, mockMatcher);
 
       // Mock dependencies for isolated testing
       const mockStrategy = {
-        shouldUseStreaming: jest.fn().mockReturnValue(false)
+        shouldUseStreaming: jest.fn().mockReturnValue(false),
       };
 
       const mockMetricsCollector = {
         start: jest.fn(),
         end: jest.fn().mockReturnValue({
           processingTime: 100,
-          memoryUsage: 1024
+          memoryUsage: 1024,
         }),
-        recordProcessing: jest.fn()
+        recordProcessing: jest.fn(),
       };
 
       scanOrchestrator = new DefaultScanOrchestrator(
@@ -204,12 +236,15 @@ rules:
 
     describe('Request Validation', () => {
       it('should validate complete scan requests', () => {
-        const validRequest = new ScanRequest(path.join(testFixturesDir, 'test-data.json'), {
-          rulepack: path.join(testFixturesDir, 'test-rules.yaml'),
-          outputFormat: 'json',
-          severity: ['high', 'critical'],
-          categories: ['pii', 'data-leak']
-        });
+        const validRequest = new ScanRequest(
+          path.join(testFixturesDir, 'test-data.json'),
+          {
+            rulepack: path.join(testFixturesDir, 'test-rules.yaml'),
+            outputFormat: 'json',
+            severity: ['high', 'critical'],
+            categories: ['pii', 'data-leak'],
+          }
+        );
 
         const result = scanOrchestrator.validateRequest(validRequest);
         expect(result.isOk()).toBe(true);
@@ -218,7 +253,7 @@ rules:
       it('should reject requests with empty input', () => {
         const invalidRequest = new ScanRequest('', {
           rulepack: 'test-rulepack',
-          outputFormat: 'json'
+          outputFormat: 'json',
         });
 
         const result = scanOrchestrator.validateRequest(invalidRequest);
@@ -237,7 +272,7 @@ rules:
       it('should reject requests with whitespace-only input', () => {
         const invalidRequest = new ScanRequest('   \n\t  ', {
           rulepack: 'test-rulepack',
-          outputFormat: 'json'
+          outputFormat: 'json',
         });
 
         const result = scanOrchestrator.validateRequest(invalidRequest);
@@ -304,7 +339,7 @@ rules:
             field: 'users[0].ssn',
             objectIndex: 0,
             context: { match: '123-45-6789' },
-            position: { start: 0, end: 11 }
+            position: { start: 0, end: 11 },
           },
           {
             ruleId: 'credit-card-detection',
@@ -316,7 +351,7 @@ rules:
             field: 'transactions[0].description',
             objectIndex: 1,
             context: { match: '4111-1111-1111-1111' },
-            position: { start: 25, end: 44 }
+            position: { start: 25, end: 44 },
           },
           {
             ruleId: 'password-detection',
@@ -328,8 +363,8 @@ rules:
             field: 'credentials',
             objectIndex: 2,
             context: { match: 'password: admin123' },
-            position: { start: 0, end: 18 }
-          }
+            position: { start: 0, end: 18 },
+          },
         ];
       });
 
@@ -339,12 +374,17 @@ rules:
           processingTime: 150,
           memoryUsage: 2048,
           rulesApplied: 3,
-          streamingUsed: false
+          streamingUsed: false,
         });
 
         const highSeverity = scanResult.getViolationsBySeverity(['high']);
-        const criticalSeverity = scanResult.getViolationsBySeverity(['critical']);
-        const multipleSeverities = scanResult.getViolationsBySeverity(['high', 'critical']);
+        const criticalSeverity = scanResult.getViolationsBySeverity([
+          'critical',
+        ]);
+        const multipleSeverities = scanResult.getViolationsBySeverity([
+          'high',
+          'critical',
+        ]);
 
         expect(highSeverity).toHaveLength(2);
         expect(criticalSeverity).toHaveLength(1);
@@ -357,12 +397,17 @@ rules:
           processingTime: 150,
           memoryUsage: 2048,
           rulesApplied: 3,
-          streamingUsed: false
+          streamingUsed: false,
         });
 
         const piiViolations = scanResult.getViolationsByCategory(['pii']);
-        const dataLeakViolations = scanResult.getViolationsByCategory(['data-leak']);
-        const multipleCategories = scanResult.getViolationsByCategory(['pii', 'data-leak']);
+        const dataLeakViolations = scanResult.getViolationsByCategory([
+          'data-leak',
+        ]);
+        const multipleCategories = scanResult.getViolationsByCategory([
+          'pii',
+          'data-leak',
+        ]);
 
         expect(piiViolations).toHaveLength(2);
         expect(dataLeakViolations).toHaveLength(1);
@@ -375,7 +420,7 @@ rules:
           processingTime: 150,
           memoryUsage: 2048,
           rulesApplied: 3,
-          streamingUsed: false
+          streamingUsed: false,
         });
 
         const counts = scanResult.getViolationCountBySeverity();
@@ -392,7 +437,7 @@ rules:
           processingTime: 150,
           memoryUsage: 2048,
           rulesApplied: 3,
-          streamingUsed: false
+          streamingUsed: false,
         });
 
         expect(scanResult.shouldFail('critical')).toBe(true);
@@ -420,7 +465,7 @@ rules:
           processingTime: 2500,
           memoryUsage: 50 * 1024 * 1024, // 50MB
           rulesApplied: 10,
-          streamingUsed: true
+          streamingUsed: true,
         };
 
         const scanResult = new ScanResult([], metrics);
@@ -438,7 +483,7 @@ rules:
           processingTime: 60000, // 1 minute
           memoryUsage: 500 * 1024 * 1024, // 500MB
           rulesApplied: 25,
-          streamingUsed: true
+          streamingUsed: true,
         };
 
         const scanResult = new ScanResult([], largeDatasetMetrics);
@@ -457,11 +502,11 @@ rules:
       const mockRepository = {
         loadRulePack: jest.fn(),
         getRules: jest.fn(),
-        validateRulePack: jest.fn()
+        validateRulePack: jest.fn(),
       } as any;
       const mockMatcher = {
         match: jest.fn(),
-        createViolation: jest.fn()
+        createViolation: jest.fn(),
       } as any;
       ruleEngine = new DefaultRuleEngine(mockRepository, mockMatcher);
       ruleRepository = new YamlRuleRepository();
@@ -481,7 +526,10 @@ rules:
       });
 
       it('should reject invalid rulepack files', async () => {
-        const invalidRulepackPath = path.join(testFixturesDir, 'invalid-rules.yaml');
+        const invalidRulepackPath = path.join(
+          testFixturesDir,
+          'invalid-rules.yaml'
+        );
         const result = await ruleRepository.loadRulePack(invalidRulepackPath);
 
         expect(result.isErr()).toBe(true);
@@ -561,14 +609,14 @@ rules:
             'regex',
             'disabled-pattern',
             false
-          )
+          ),
         ];
       });
 
       it('should apply enabled rules to content', async () => {
         const testContent = {
-          'field1': 'John Doe SSN: 123-45-6789',
-          'field2': 'Contact: john.doe@example.com'
+          field1: 'John Doe SSN: 123-45-6789',
+          field2: 'Contact: john.doe@example.com',
         };
 
         const result = await ruleEngine.applyRules(testContent, testRules);
@@ -578,8 +626,12 @@ rules:
           const violations = result.value;
           expect(violations.length).toBeGreaterThan(0);
 
-          const ssnViolations = violations.filter(v => v.ruleId === 'ssn-detection');
-          const emailViolations = violations.filter(v => v.ruleId === 'email-detection');
+          const ssnViolations = violations.filter(
+            (v) => v.ruleId === 'ssn-detection'
+          );
+          const emailViolations = violations.filter(
+            (v) => v.ruleId === 'email-detection'
+          );
 
           expect(ssnViolations).toHaveLength(1);
           expect(emailViolations).toHaveLength(1);
@@ -588,7 +640,7 @@ rules:
 
       it('should skip disabled rules', async () => {
         const testContent = {
-          'field1': 'This contains disabled-pattern'
+          field1: 'This contains disabled-pattern',
         };
 
         const result = await ruleEngine.applyRules(testContent, testRules);
@@ -596,14 +648,16 @@ rules:
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
           const violations = result.value;
-          const disabledRuleViolations = violations.filter(v => v.ruleId === 'disabled-rule');
+          const disabledRuleViolations = violations.filter(
+            (v) => v.ruleId === 'disabled-rule'
+          );
           expect(disabledRuleViolations).toHaveLength(0);
         }
       });
 
       it('should provide accurate match context', async () => {
         const testContent = {
-          'user_data': 'The user John Doe has SSN 123-45-6789 on file.'
+          user_data: 'The user John Doe has SSN 123-45-6789 on file.',
         };
 
         const result = await ruleEngine.applyRules(testContent, testRules);
@@ -611,7 +665,9 @@ rules:
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
           const violations = result.value;
-          const ssnViolation = violations.find(v => v.ruleId === 'ssn-detection');
+          const ssnViolation = violations.find(
+            (v) => v.ruleId === 'ssn-detection'
+          );
 
           expect(ssnViolation).toBeDefined();
           expect(ssnViolation?.context.match).toBe('123-45-6789');
@@ -625,7 +681,7 @@ rules:
         const metadata = {
           name: 'Test RulePack',
           description: 'A test rulepack',
-          version: '1.0.0'
+          version: '1.0.0',
         };
 
         const rulePack = new RulePack(metadata, testRules);
@@ -642,7 +698,7 @@ rules:
         const allRules = rulePack.getAllRules();
 
         expect(enabledRules.length).toBeLessThan(allRules.length);
-        expect(enabledRules.every(rule => rule.enabled)).toBe(true);
+        expect(enabledRules.every((rule) => rule.enabled)).toBe(true);
       });
 
       it('should retrieve rules by category', () => {
@@ -703,14 +759,14 @@ rules:
           context: {
             before: 'User: ',
             match: '123-45-6789',
-            after: ' - Active'
+            after: ' - Active',
           },
           position: { start: 6, end: 17, line: 1, column: 6 },
           metadata: {
             confidence: 0.98,
             pattern: '\\d{3}-\\d{2}-\\d{4}',
-            tags: ['sensitive', 'government-id']
-          }
+            tags: ['sensitive', 'government-id'],
+          },
         },
         {
           ruleId: 'credit-card-detection',
@@ -724,15 +780,15 @@ rules:
           context: {
             before: 'Card: ',
             match: '4111-1111-1111-1111',
-            after: ' Exp: 12/25'
+            after: ' Exp: 12/25',
           },
           position: { start: 6, end: 25, line: 2, column: 6 },
           metadata: {
             confidence: 0.95,
             pattern: '4[0-9]{3}(-?[0-9]{4}){3}',
-            tags: ['financial', 'visa']
-          }
-        }
+            tags: ['financial', 'visa'],
+          },
+        },
       ];
     });
 
@@ -745,8 +801,8 @@ rules:
           summary: {
             fileCount: 1,
             objectsScanned: 100,
-            rulesApplied: 15
-          }
+            rulesApplied: 15,
+          },
         });
 
         const result = await reportService.generateReport(report);
@@ -765,7 +821,7 @@ rules:
         const report = new Report('csv', sampleViolations, {
           timestamp: new Date(),
           totalViolations: 2,
-          scanTime: 1000
+          scanTime: 1000,
         });
 
         const result = await reportService.generateReport(report);
@@ -784,7 +840,7 @@ rules:
         const report = new Report('markdown', sampleViolations, {
           timestamp: new Date(),
           totalViolations: 2,
-          scanTime: 800
+          scanTime: 800,
         });
 
         const result = await reportService.generateReport(report);
@@ -806,7 +862,7 @@ rules:
         const report = new Report('html', sampleViolations, {
           timestamp: new Date(),
           totalViolations: 2,
-          scanTime: 1500
+          scanTime: 1500,
         });
 
         const result = await reportService.generateReport(report);
@@ -828,7 +884,7 @@ rules:
         const report = new Report('table', sampleViolations, {
           timestamp: new Date(),
           totalViolations: 2,
-          scanTime: 900
+          scanTime: 900,
         });
 
         const result = await reportService.generateReport(report);
@@ -850,7 +906,7 @@ rules:
         const report = new Report('ndjson', sampleViolations, {
           timestamp: new Date(),
           totalViolations: 2,
-          scanTime: 1100
+          scanTime: 1100,
         });
 
         const result = await reportService.generateReport(report);
@@ -874,7 +930,7 @@ rules:
         const report = new Report('json', sampleViolations, {
           timestamp: new Date(),
           totalViolations: 2,
-          scanTime: 1000
+          scanTime: 1000,
         });
 
         const outputPath = path.join(outputDir, 'test-report.json');
@@ -888,15 +944,23 @@ rules:
         expect(jsonContent.violations).toHaveLength(2);
       });
 
-      it('should create output directories if they don\'t exist', async () => {
+      it("should create output directories if they don't exist", async () => {
         const report = new Report('json', [], {
           timestamp: new Date(),
           totalViolations: 0,
-          scanTime: 100
+          scanTime: 100,
         });
 
-        const nestedOutputPath = path.join(outputDir, 'nested', 'deep', 'report.json');
-        const result = await reportService.writeReport(report, nestedOutputPath);
+        const nestedOutputPath = path.join(
+          outputDir,
+          'nested',
+          'deep',
+          'report.json'
+        );
+        const result = await reportService.writeReport(
+          report,
+          nestedOutputPath
+        );
 
         expect(result.isOk()).toBe(true);
         expect(fs.existsSync(nestedOutputPath)).toBe(true);
@@ -907,7 +971,7 @@ rules:
         const report = new Report('json', [], {
           timestamp: new Date(),
           totalViolations: 0,
-          scanTime: 100
+          scanTime: 100,
         });
 
         // Try to write to a location that should fail (root directory)
@@ -924,18 +988,20 @@ rules:
         const report = new Report('unsupported-format', sampleViolations, {
           timestamp: new Date(),
           totalViolations: 2,
-          scanTime: 1000
+          scanTime: 1000,
         });
 
         const result = await reportService.generateReport(report);
 
         expect(result.isErr()).toBe(true);
-        expect(result.error?.message).toContain('No renderer found for format: unsupported-format');
+        expect(result.error?.message).toContain(
+          'No renderer found for format: unsupported-format'
+        );
       });
 
       it('should handle renderer errors gracefully', async () => {
         const faultyRenderer = {
-          render: jest.fn().mockRejectedValue(new Error('Renderer failure'))
+          render: jest.fn().mockRejectedValue(new Error('Renderer failure')),
         };
 
         const faultyRenderers = new Map();
@@ -946,7 +1012,7 @@ rules:
         const report = new Report('faulty', sampleViolations, {
           timestamp: new Date(),
           totalViolations: 2,
-          scanTime: 1000
+          scanTime: 1000,
         });
 
         const result = await faultyService.generateReport(report);
@@ -959,7 +1025,7 @@ rules:
         const report = new Report('json', [], {
           timestamp: new Date(),
           totalViolations: 0,
-          scanTime: 50
+          scanTime: 50,
         });
 
         const result = await reportService.generateReport(report);
@@ -988,22 +1054,25 @@ rules:
 
       it('should handle large violation datasets efficiently', async () => {
         // Generate a large number of violations
-        const largeViolationSet: Violation[] = Array.from({ length: 1000 }, (_, i) => ({
-          ruleId: `rule-${i % 10}`,
-          ruleName: `Test Rule ${i % 10}`,
-          ruleDescription: `Description for rule ${i % 10}`,
-          severity: (['low', 'medium', 'high', 'critical'] as const)[i % 4],
-          category: (['pii', 'bias', 'data-leak'] as const)[i % 3],
-          message: `Violation ${i}`,
-          field: `field-${i}`,
-          objectIndex: i,
-          context: { match: `match-${i}` }
-        }));
+        const largeViolationSet: Violation[] = Array.from(
+          { length: 1000 },
+          (_, i) => ({
+            ruleId: `rule-${i % 10}`,
+            ruleName: `Test Rule ${i % 10}`,
+            ruleDescription: `Description for rule ${i % 10}`,
+            severity: (['low', 'medium', 'high', 'critical'] as const)[i % 4],
+            category: (['pii', 'bias', 'data-leak'] as const)[i % 3],
+            message: `Violation ${i}`,
+            field: `field-${i}`,
+            objectIndex: i,
+            context: { match: `match-${i}` },
+          })
+        );
 
         const report = new Report('json', largeViolationSet, {
           timestamp: new Date(),
           totalViolations: 1000,
-          scanTime: 5000
+          scanTime: 5000,
         });
 
         const startTime = Date.now();
@@ -1041,7 +1110,7 @@ rules:
         const jsonFilePath = path.join(testFixturesDir, 'test-data.json');
         const options = new ValidationOptions({
           validateFormat: true,
-          validateContent: true
+          validateContent: true,
         });
 
         const result = await validationEngine.validate(jsonFilePath, options);
@@ -1057,7 +1126,10 @@ rules:
         const invalidJsonPath = path.join(testFixturesDir, 'invalid.json');
         const options = new ValidationOptions({ validateFormat: true });
 
-        const result = await validationEngine.validate(invalidJsonPath, options);
+        const result = await validationEngine.validate(
+          invalidJsonPath,
+          options
+        );
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
@@ -1092,10 +1164,16 @@ rules:
       });
 
       it('should reject non-existent files', async () => {
-        const nonExistentPath = path.join(testFixturesDir, 'does-not-exist.json');
+        const nonExistentPath = path.join(
+          testFixturesDir,
+          'does-not-exist.json'
+        );
         const options = new ValidationOptions({ validateFormat: true });
 
-        const result = await validationEngine.validate(nonExistentPath, options);
+        const result = await validationEngine.validate(
+          nonExistentPath,
+          options
+        );
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
@@ -1110,7 +1188,7 @@ rules:
         const rulepackPath = path.join(testFixturesDir, 'test-rules.yaml');
         const options = new ValidationOptions({
           validateSchema: true,
-          validateRules: true
+          validateRules: true,
         });
 
         const result = await validationEngine.validate(rulepackPath, options);
@@ -1123,10 +1201,16 @@ rules:
       });
 
       it('should reject invalid rulepack files', async () => {
-        const invalidRulepackPath = path.join(testFixturesDir, 'invalid-rules.yaml');
+        const invalidRulepackPath = path.join(
+          testFixturesDir,
+          'invalid-rules.yaml'
+        );
         const options = new ValidationOptions({ validateSchema: true });
 
-        const result = await validationEngine.validate(invalidRulepackPath, options);
+        const result = await validationEngine.validate(
+          invalidRulepackPath,
+          options
+        );
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
@@ -1141,7 +1225,7 @@ rules:
         const files = [
           path.join(testFixturesDir, 'test-data.json'),
           path.join(testFixturesDir, 'test-logs.ndjson'),
-          path.join(testFixturesDir, 'test-document.txt')
+          path.join(testFixturesDir, 'test-document.txt'),
         ];
         const options = new ValidationOptions({ validateFormat: true });
 
@@ -1150,14 +1234,14 @@ rules:
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
           expect(result.value).toHaveLength(3);
-          expect(result.value.every(r => r.isValid)).toBe(true);
+          expect(result.value.every((r) => r.isValid)).toBe(true);
         }
       });
 
       it('should handle mixed valid and invalid files in batch', async () => {
         const files = [
           path.join(testFixturesDir, 'test-data.json'),
-          path.join(testFixturesDir, 'invalid.json')
+          path.join(testFixturesDir, 'invalid.json'),
         ];
         const options = new ValidationOptions({ validateFormat: true });
 
@@ -1177,13 +1261,13 @@ rules:
         const options1 = new ValidationOptions({
           validateFormat: true,
           validateContent: false,
-          validateSchema: false
+          validateSchema: false,
         });
 
         const options2 = new ValidationOptions({
           validateFormat: false,
           validateContent: true,
-          validateSchema: true
+          validateSchema: true,
         });
 
         expect(options1.validateFormat).toBe(true);
@@ -1196,16 +1280,11 @@ rules:
       });
 
       it('should create validation results with proper structure', () => {
-        const result = new ValidationResult(
-          'test-file.json',
-          true,
-          [],
-          {
-            fileSize: 1024,
-            validationTime: 150,
-            checksPerformed: ['format', 'content']
-          }
-        );
+        const result = new ValidationResult('test-file.json', true, [], {
+          fileSize: 1024,
+          validationTime: 150,
+          checksPerformed: ['format', 'content'],
+        });
 
         expect(result.target).toBe('test-file.json');
         expect(result.isValid).toBe(true);
@@ -1257,7 +1336,7 @@ rules:
             message: 'Message 1',
             field: 'field1',
             objectIndex: 0,
-            context: { match: 'test1' }
+            context: { match: 'test1' },
           },
           {
             ruleId: 'rule2',
@@ -1268,7 +1347,7 @@ rules:
             message: 'Message 2',
             field: 'field2',
             objectIndex: 1,
-            context: { match: 'test2' }
+            context: { match: 'test2' },
           },
           {
             ruleId: 'rule3',
@@ -1279,8 +1358,8 @@ rules:
             message: 'Message 3',
             field: 'field3',
             objectIndex: 2,
-            context: { match: 'test3' }
-          }
+            context: { match: 'test3' },
+          },
         ];
 
         it('should create comprehensive summaries', () => {
@@ -1296,8 +1375,12 @@ rules:
         });
 
         it('should filter violations correctly', () => {
-          const highSeverity = ViolationUtils.filterBySeverity(testViolations, ['high']);
-          const piiCategory = ViolationUtils.filterByCategory(testViolations, ['pii']);
+          const highSeverity = ViolationUtils.filterBySeverity(testViolations, [
+            'high',
+          ]);
+          const piiCategory = ViolationUtils.filterByCategory(testViolations, [
+            'pii',
+          ]);
 
           expect(highSeverity).toHaveLength(1);
           expect(piiCategory).toHaveLength(2);
@@ -1331,7 +1414,9 @@ rules:
 
       it('should register and resolve services', () => {
         class TestService {
-          getName() { return 'test-service'; }
+          getName() {
+            return 'test-service';
+          }
         }
 
         container.register('testService', new TestService());
@@ -1367,16 +1452,23 @@ rules:
         }
 
         class Repository implements IRepository {
-          getData() { return 'repository-data'; }
+          getData() {
+            return 'repository-data';
+          }
         }
 
         class Service {
           constructor(private repo: IRepository) {}
-          process() { return `processed: ${this.repo.getData()}`; }
+          process() {
+            return `processed: ${this.repo.getData()}`;
+          }
         }
 
         container.register('repository', new Repository());
-        container.register('service', (c) => new Service(c.resolve<IRepository>('repository')));
+        container.register(
+          'service',
+          (c) => new Service(c.resolve<IRepository>('repository'))
+        );
 
         const service = container.resolve<Service>('service');
         expect(service.process()).toBe('processed: repository-data');
@@ -1399,13 +1491,15 @@ rules:
         const userConfig = {
           scanning: {
             streamingThreshold: 100 * 1024 * 1024, // 100MB
-            maxFileSize: 500 * 1024 * 1024 // 500MB
-          }
+            maxFileSize: 500 * 1024 * 1024, // 500MB
+          },
         };
 
         const mergedConfig = configManager.mergeConfigs(userConfig);
 
-        expect(mergedConfig.scanning.streamingThreshold).toBe(100 * 1024 * 1024);
+        expect(mergedConfig.scanning.streamingThreshold).toBe(
+          100 * 1024 * 1024
+        );
         expect(mergedConfig.scanning.maxFileSize).toBe(500 * 1024 * 1024);
         expect(mergedConfig.output).toBeDefined(); // Should still have defaults
       });
@@ -1428,7 +1522,7 @@ rules:
           logger.info('operation completed', {
             operation: 'scan',
             duration: 1500,
-            violations: 5
+            violations: 5,
           });
         }).not.toThrow();
       });
@@ -1451,15 +1545,15 @@ rules:
           options: {
             outputFormat: 'json',
             severity: ['high', 'critical'],
-            outputFile: path.join(tempDir, 'scan-result.json')
-          }
+            outputFile: path.join(tempDir, 'scan-result.json'),
+          },
         };
 
         const handler = new ScanCommandHandler(container);
 
         // Mock dependencies to avoid full integration
         const mockScanOrchestrator = {
-          scan: jest.fn().mockResolvedValue(ok(ScanResult.empty()))
+          scan: jest.fn().mockResolvedValue(ok(ScanResult.empty())),
         };
 
         container.register('scanOrchestrator', mockScanOrchestrator);
@@ -1474,7 +1568,7 @@ rules:
         const invalidCommand = {
           input: '', // Invalid empty input
           rulepack: 'non-existent.yaml',
-          options: {}
+          options: {},
         };
 
         const handler = new ScanCommandHandler(container);
@@ -1491,14 +1585,16 @@ rules:
           type: 'rulepack',
           options: {
             validateSchema: true,
-            validateRules: true
-          }
+            validateRules: true,
+          },
         };
 
         const handler = new ValidateCommandHandler(container);
 
         const mockValidationEngine = {
-          validate: jest.fn().mockResolvedValue(ok(new ValidationResult('test.yaml', true, [])))
+          validate: jest
+            .fn()
+            .mockResolvedValue(ok(new ValidationResult('test.yaml', true, []))),
         };
 
         container.register('validationEngine', mockValidationEngine);
@@ -1515,17 +1611,27 @@ rules:
         const listCommand = {
           type: 'rulepacks',
           options: {
-            detailed: true
-          }
+            detailed: true,
+          },
         };
 
         const handler = new ListCommandHandler(container);
 
         const mockRuleRepository = {
-          listAvailableRulePacks: jest.fn().mockResolvedValue(ok([
-            { name: 'basic-pii', version: '1.0', description: 'Basic PII detection' },
-            { name: 'advanced-security', version: '2.1', description: 'Advanced security rules' }
-          ]))
+          listAvailableRulePacks: jest.fn().mockResolvedValue(
+            ok([
+              {
+                name: 'basic-pii',
+                version: '1.0',
+                description: 'Basic PII detection',
+              },
+              {
+                name: 'advanced-security',
+                version: '2.1',
+                description: 'Advanced security rules',
+              },
+            ])
+          ),
         };
 
         container.register('ruleRepository', mockRuleRepository);
@@ -1542,12 +1648,15 @@ rules:
         const commandBus = container.resolve('commandBus');
 
         const scanCommand = { type: 'scan', payload: { input: 'test.json' } };
-        const validateCommand = { type: 'validate', payload: { target: 'rules.yaml' } };
+        const validateCommand = {
+          type: 'validate',
+          payload: { target: 'rules.yaml' },
+        };
 
         // Mock command handlers
         const mockHandlers = {
           scan: jest.fn().mockResolvedValue(ok('scan-result')),
-          validate: jest.fn().mockResolvedValue(ok('validation-result'))
+          validate: jest.fn().mockResolvedValue(ok('validation-result')),
         };
 
         // Register handlers in command bus
@@ -1560,7 +1669,9 @@ rules:
           await commandBus.execute(validateCommand);
 
           expect(mockHandlers.scan).toHaveBeenCalledWith(scanCommand.payload);
-          expect(mockHandlers.validate).toHaveBeenCalledWith(validateCommand.payload);
+          expect(mockHandlers.validate).toHaveBeenCalledWith(
+            validateCommand.payload
+          );
         }
       });
     });
@@ -1581,27 +1692,27 @@ rules:
 
         const ruleRepository = new YamlRuleRepository();
         const mockRepository = {
-        loadRulePack: jest.fn(),
-        getRules: jest.fn(),
-        validateRulePack: jest.fn()
-      } as any;
-      const mockMatcher = {
-        match: jest.fn(),
-        createViolation: jest.fn()
-      } as any;
-      ruleEngine = new DefaultRuleEngine(mockRepository, mockMatcher);
+          loadRulePack: jest.fn(),
+          getRules: jest.fn(),
+          validateRulePack: jest.fn(),
+        } as any;
+        const mockMatcher = {
+          match: jest.fn(),
+          createViolation: jest.fn(),
+        } as any;
+        ruleEngine = new DefaultRuleEngine(mockRepository, mockMatcher);
 
         const strategy = {
-          shouldUseStreaming: () => false
+          shouldUseStreaming: () => false,
         };
 
         const metricsCollector = {
           start: () => {},
           end: () => ({
             processingTime: 100,
-            memoryUsage: 1024
+            memoryUsage: 1024,
           }),
-          recordProcessing: () => {}
+          recordProcessing: () => {},
         };
 
         const scanOrchestrator = new DefaultScanOrchestrator(
@@ -1615,7 +1726,7 @@ rules:
         // Execute scan
         const scanRequest = new ScanRequest(inputFile, {
           rulepack: rulepackFile,
-          outputFormat: 'json'
+          outputFormat: 'json',
         });
 
         const scanResult = await scanOrchestrator.scan(scanRequest);
@@ -1625,7 +1736,9 @@ rules:
           expect(scanResult.value.violations.length).toBeGreaterThan(0);
 
           // Verify specific violations are detected
-          const ssnViolations = scanResult.value.violations.filter(v => v.ruleId === 'ssn-detection');
+          const ssnViolations = scanResult.value.violations.filter(
+            (v) => v.ruleId === 'ssn-detection'
+          );
           expect(ssnViolations.length).toBeGreaterThan(0);
         }
       });
@@ -1642,8 +1755,8 @@ rules:
             message: 'SSN detected',
             field: 'users[0].ssn',
             objectIndex: 0,
-            context: { match: '123-45-6789' }
-          }
+            context: { match: '123-45-6789' },
+          },
         ];
 
         const renderers = new Map();
@@ -1659,7 +1772,7 @@ rules:
           const report = new Report(format, sampleViolations, {
             timestamp: new Date(),
             totalViolations: 1,
-            scanTime: 500
+            scanTime: 500,
           });
 
           const outputPath = path.join(tempDir, `report.${format}`);
@@ -1681,20 +1794,20 @@ rules:
         processors.set('json', new JsonProcessor());
 
         const mockRepository = {
-        loadRulePack: jest.fn(),
-        getRules: jest.fn(),
-        validateRulePack: jest.fn()
-      } as any;
-      const mockMatcher = {
-        match: jest.fn(),
-        createViolation: jest.fn()
-      } as any;
-      ruleEngine = new DefaultRuleEngine(mockRepository, mockMatcher);
+          loadRulePack: jest.fn(),
+          getRules: jest.fn(),
+          validateRulePack: jest.fn(),
+        } as any;
+        const mockMatcher = {
+          match: jest.fn(),
+          createViolation: jest.fn(),
+        } as any;
+        ruleEngine = new DefaultRuleEngine(mockRepository, mockMatcher);
         const strategy = { shouldUseStreaming: () => false };
         const metricsCollector = {
           start: () => {},
           end: () => ({ processingTime: 100, memoryUsage: 1024 }),
-          recordProcessing: () => {}
+          recordProcessing: () => {},
         };
 
         const scanOrchestrator = new DefaultScanOrchestrator(
@@ -1707,7 +1820,7 @@ rules:
 
         const scanRequest = new ScanRequest(corruptedFile, {
           rulepack: rulepackFile,
-          outputFormat: 'json'
+          outputFormat: 'json',
         });
 
         const result = await scanOrchestrator.scan(scanRequest);
@@ -1719,14 +1832,20 @@ rules:
 
       it('should handle missing rulepack files', async () => {
         const inputFile = path.join(testFixturesDir, 'test-data.json');
-        const missingRulepack = path.join(testFixturesDir, 'missing-rules.yaml');
+        const missingRulepack = path.join(
+          testFixturesDir,
+          'missing-rules.yaml'
+        );
 
         const validationEngine = new DefaultValidationEngine();
         const rulePackValidator = new RulePackValidatorImpl();
         validationEngine.registerValidator('rulepack', rulePackValidator);
 
         const options = new ValidationOptions({ validateSchema: true });
-        const result = await validationEngine.validate(missingRulepack, options);
+        const result = await validationEngine.validate(
+          missingRulepack,
+          options
+        );
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
@@ -1744,8 +1863,8 @@ rules:
             id: i,
             name: `User ${i}`,
             email: `user${i}@example.com`,
-            ssn: `${String(i).padStart(3, '0')}-${String(i).padStart(2, '0')}-${String(i).padStart(4, '0')}`
-          }))
+            ssn: `${String(i).padStart(3, '0')}-${String(i).padStart(2, '0')}-${String(i).padStart(4, '0')}`,
+          })),
         };
 
         const largeFile = path.join(tempDir, 'large-dataset.json');
@@ -1760,21 +1879,26 @@ rules:
         processors.set('json', new JsonProcessor());
 
         const mockRuleEngine = {
-          loadRulePack: jest.fn().mockResolvedValue(ok({
-            metadata: { name: 'Test' },
-            getEnabledRules: () => [],
-            getAllRules: () => [],
-            getRulesByCategory: () => [],
-            getRulesBySeverity: () => []
-          })),
-          applyRules: jest.fn().mockResolvedValue(ok([]))
+          loadRulePack: jest.fn().mockResolvedValue(
+            ok({
+              metadata: { name: 'Test' },
+              getEnabledRules: () => [],
+              getAllRules: () => [],
+              getRulesByCategory: () => [],
+              getRulesBySeverity: () => [],
+            })
+          ),
+          applyRules: jest.fn().mockResolvedValue(ok([])),
         };
 
         const strategy = { shouldUseStreaming: () => true };
         const metricsCollector = {
           start: () => {},
-          end: () => ({ processingTime: Date.now() - startTime, memoryUsage: process.memoryUsage().heapUsed }),
-          recordProcessing: () => {}
+          end: () => ({
+            processingTime: Date.now() - startTime,
+            memoryUsage: process.memoryUsage().heapUsed,
+          }),
+          recordProcessing: () => {},
         };
 
         const scanOrchestrator = new DefaultScanOrchestrator(
@@ -1787,7 +1911,7 @@ rules:
 
         const scanRequest = new ScanRequest(largeFile, {
           rulepack: rulepackFile,
-          outputFormat: 'json'
+          outputFormat: 'json',
         });
 
         const result = await scanOrchestrator.scan(scanRequest);
@@ -1845,7 +1969,10 @@ rules:
           // Register core services
           container.register('fileReader', new LocalFileReader());
           container.register('configManager', new ConfigManager());
-          container.register('logger', new Logger({ level: 'info', format: 'json' }));
+          container.register(
+            'logger',
+            new Logger({ level: 'info', format: 'json' })
+          );
 
           // Register domain services
           const processors = new Map();
@@ -1857,12 +1984,13 @@ rules:
           renderers.set('json', new JsonRenderer());
           renderers.set('csv', new CsvRenderer());
           container.register('renderers', renderers);
-
         }).not.toThrow();
 
         // Verify services are resolvable
         expect(container.resolve('fileReader')).toBeInstanceOf(LocalFileReader);
-        expect(container.resolve('configManager')).toBeInstanceOf(ConfigManager);
+        expect(container.resolve('configManager')).toBeInstanceOf(
+          ConfigManager
+        );
         expect(container.resolve('logger')).toBeInstanceOf(Logger);
       });
     });
@@ -1872,8 +2000,12 @@ rules:
         // Test event-driven communication between domains
         const eventBus = {
           events: [] as any[],
-          publish: function(event: any) { this.events.push(event); },
-          subscribe: function(eventType: string, handler: Function) { /* mock */ }
+          publish: function (event: any) {
+            this.events.push(event);
+          },
+          subscribe: function (eventType: string, handler: Function) {
+            /* mock */
+          },
         };
 
         // Simulate scan completion event
@@ -1881,7 +2013,7 @@ rules:
           type: 'ScanCompleted',
           scanId: 'scan-123',
           violations: 5,
-          timestamp: new Date()
+          timestamp: new Date(),
         };
 
         eventBus.publish(scanCompletedEvent);

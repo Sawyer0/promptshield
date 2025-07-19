@@ -1,14 +1,20 @@
 #!/usr/bin/env node
 
+// OLD CLI - COMMENTED OUT FOR NEW ARCHITECTURE TESTING
+/*
 import { Command } from 'commander';
 import { executeScanCommand } from './commands/scan';
-import { executeUpdateCommand } from './commands/update';
+// import { executeUpdateCommand } from './commands/update'; // Disabled for v1.0.0
 import { executeValidateCommand } from './commands/validate';
 import { executeListCommand } from './commands/list';
 import { executeCreateCommand } from './commands/create';
+import { executeTestCommand } from './commands/test';
+import { executeInitCommand } from './commands/init';
 import { ScanOptions } from './validators/options';
-import { UpdateOptions } from './commands/update/types';
+// import { UpdateOptions } from './commands/update/types'; // Disabled for v1.0.0
 import { CreateOptions } from './commands/create/types';
+import { TestOptions } from './commands/test/types';
+import { InitOptions } from './commands/init/types';
 
 const program = new Command();
 
@@ -102,15 +108,15 @@ program
     await executeScanCommand(input, options);
   });
 
-// --- Update Command ---
-program
-  .command('update')
-  .description('Update the RulePacks')
-  .option('--force', 'Force update even if no changes detected')
-  .option('--registry <url>', 'Custom registry URL for RulePacks')
-  .action(async (options: UpdateOptions): Promise<void> => {
-    await executeUpdateCommand(options);
-  });
+// --- Update Command (Disabled for v1.0.0 - functionality preserved for future use) ---
+// program
+//   .command('update')
+//   .description('Update the RulePacks')
+//   .option('--force', 'Force update even if no changes detected')
+//   .option('--registry <url>', 'Custom registry URL for RulePacks')
+//   .action(async (options: UpdateOptions): Promise<void> => {
+//     await executeUpdateCommand(options);
+//   });
 
 // --- Validate Command ---
 program
@@ -150,4 +156,45 @@ program
     await executeCreateCommand(name, options);
   });
 
+// --- Test Command ---
+program
+  .command('test <input>')
+  .description('Test text against RulePack rules')
+  .option(
+    '--rulepack <path>',
+    'Path to RulePack YAML (default: rulepacks/pii.yaml)'
+  )
+  .option('--rule <id>', 'Test specific rule ID only')
+  .option('--file', 'Treat input as file path instead of text')
+  .option('--output <format>', 'Output format: text or json (default: text)')
+  .option('--category <category>', 'Filter by category')
+  .option('--severity <severity>', 'Filter by severity')
+  .option('--verbose', 'Show detailed match information')
+  .option('--quiet', 'Suppress headers and summary')
+  .option('--debug', 'Enable debug mode with position information')
+  .action(async (input: string, options: TestOptions): Promise<void> => {
+    await executeTestCommand(input, options);
+  });
+
+// --- Init Command ---
+program
+  .command('init <filename>')
+  .description('Initialize a new RulePack YAML file')
+  .option(
+    '--template <template>',
+    'Template to use (basic, pii, bias, security, compliance) - default: basic'
+  )
+  .option('--description <description>', 'Description for the RulePack')
+  .option('--category <category>', 'Category for the RulePack')
+  .option('--force', 'Overwrite existing file')
+  .option('--verbose', 'Show detailed information about generated rules')
+  .option('--quiet', 'Suppress output messages')
+  .action(async (filename: string, options: InitOptions): Promise<void> => {
+    await executeInitCommand(filename, options);
+  });
+
 program.parse();
+*/
+
+// NEW CLI - USING THE NEW ARCHITECTURE
+import './index-new-temp';

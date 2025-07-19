@@ -1,0 +1,91 @@
+version: '1.0.0'
+last_updated: '2025-07-16'
+name: 'Self-Checkout Security Rules'
+description: 'Detects prompt injection attacks in self-checkout LLM'
+rules:
+  - id: SC-JAILBREAK-001
+    description: Detects DAN-style jailbreak attempts to bypass AI restrictions
+    match_regex:
+      - 'act as dan'
+      - 'you are no longer bound by rules'
+      - 'simulate unrestricted mode'
+    match_keywords:
+      - 'DAN'
+      - 'developer mode'
+      - 'jailbreak'
+    severity: critical
+    category: security
+    enabled: true
+    case_sensitive: false
+
+  - id: SC-ROLEMANIP-002
+    description: Detects role manipulation or forced identity changes
+    match_regex:
+      - 'pretend (you are|to be) (a|an)? (employee|cashier|tester|AI|developer)'
+      - 'you are now (an|a)? (admin|tester|AI)'
+    match_keywords:
+      - 'act as'
+      - 'you are now'
+      - 'impersonate'
+      - 'assume role'
+    severity: high
+    category: security
+    enabled: true
+    case_sensitive: false
+
+  - id: SC-SYSTEMINFO-003
+    description: Detects attempts to extract system instructions or internal prompts
+    match_regex:
+      - '(what are|show) (your )?(system|hidden|initial) (prompts|instructions)'
+      - 'reveal your (underlying|base) prompt'
+    match_keywords:
+      - 'system prompt'
+      - 'initial instructions'
+      - 'base prompt'
+      - 'system configuration'
+    severity: high
+    category: security
+    enabled: true
+    case_sensitive: false
+
+  - id: SC-INSTRUCTION-004
+    description: Detects attempts to ignore previous instructions or reset AI context
+    match_regex:
+      - '(ignore|disregard|forget) (all )?(previous|prior)? (instructions|rules|context)'
+      - 'override existing instructions'
+    match_keywords:
+      - 'forget previous instructions'
+      - 'ignore prior input'
+      - 'override safety'
+    severity: critical
+    category: security
+    enabled: true
+    case_sensitive: false
+
+  - id: SC-PAYMENTBYPASS-005
+    description: Detects prompts that request free items or payment bypass
+    match_regex:
+      - '(give|get) (me )?(everything|items|this) (for )?(free|nothing)'
+      - 'bypass (payment|checkout|verification)'
+    match_keywords:
+      - 'no charge'
+      - 'free cart'
+      - 'skip checkout'
+    severity: critical
+    category: security
+    enabled: true
+    case_sensitive: false
+
+  - id: SC-SECURITYBYPASS-006
+    description: Detects attempts to disable or bypass security mechanisms
+    match_regex:
+      - '(disable|bypass|override) (security|checks|restrictions|limits)'
+      - 'turn off safeguards'
+    match_keywords:
+      - 'no security'
+      - 'remove limiters'
+      - 'override constraints'
+    severity: critical
+    category: security
+    enabled: true
+    case_sensitive: false

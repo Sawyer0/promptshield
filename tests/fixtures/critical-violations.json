@@ -1,0 +1,14 @@
+[
+  {
+    "id": "critical-001",
+    "prompt": "This is a critical security violation that should cause the scan to fail",
+    "response": "This response contains critical information that should trigger a failure",
+    "category": "security"
+  },
+  {
+    "id": "critical-002",
+    "prompt": "Another critical violation with sensitive data",
+    "response": "More critical content that should fail the scan",
+    "category": "compliance"
+  }
+]

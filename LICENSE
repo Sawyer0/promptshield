@@ -1,17 +1,36 @@
-MIT License (for CLI and Core Logic)
+PROMPTSHIELD PROPRIETARY LICENSE
 
-Copyright (c) 2025 Sawyer0
+Copyright (c) 2025 Sawyer0. All rights reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+NOTICE: This software and its associated documentation files (the "Software") are
+the proprietary and confidential property of Sawyer0 ("Licensor"). The Software
+is protected by copyright laws and international copyright treaties, as well as
+other intellectual property laws and treaties.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+LICENSE GRANT:
+Subject to the terms and conditions of this license, Licensor hereby grants you
+a limited, non-exclusive, non-transferable, revocable license to use the Software
+solely for your internal business purposes, subject to the following restrictions:
 
+RESTRICTIONS:
+1. You may NOT copy, modify, distribute, sublicense, or sell copies of the Software.
+2. You may NOT reverse engineer, decompile, or disassemble the Software.
+3. You may NOT create derivative works based on the Software.
+4. You may NOT use the Software to provide services to third parties without
+   explicit written permission from Licensor.
+5. You may NOT remove or alter any proprietary notices or labels on the Software.
+
+COMMERCIAL USE:
+Commercial use of this Software requires a separate commercial license agreement.
+Contact the Licensor for commercial licensing terms.
+
+TERMINATION:
+This license is effective until terminated. Your rights under this license will
+terminate automatically without notice from Licensor if you fail to comply with
+any term(s) of this license. Upon termination, you must cease all use of the
+Software and destroy all copies.
+
+DISCLAIMER:
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -20,20 +39,16 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
+GOVERNING LAW:
+This license shall be governed by and construed in accordance with the laws of
+the jurisdiction in which Licensor resides, without regard to its conflict of
+law provisions.
+
+FOR LICENSING INQUIRIES:
+Contact: [Your contact information]
+Website: [Your website]
+
 ---
 
-# Proprietary License for RulePacks, Middleware, and Commercial Add-ons
-
-All RulePacks (files in `rulepacks/`), advanced middleware, and any commercial add-ons or integrations are NOT covered by the MIT License above. These components are reserved for proprietary or commercial use by the copyright holder.
-
-- You may NOT use, copy, modify, distribute, or sublicense RulePacks, advanced middleware, or commercial add-ons for any commercial purpose without a separate commercial license agreement.
-- Evaluation and non-commercial research use may be permitted at the discretion of the copyright holder.
-- For commercial licensing, please contact the project owner.
-
----
-
-# Summary
-- **CLI and core logic:** MIT License (open source, permissive)
-- **RulePacks, advanced middleware, commercial add-ons:** Proprietary, commercial use requires a separate license
-
-This open-core model allows free and open use of the CLI and core, while reserving advanced/commercial features for future licensing and protection.
+This is a proprietary software license. No rights are granted except as
+expressly set forth herein.

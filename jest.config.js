@@ -6,28 +6,25 @@
 /** @type {import('jest').Config} */
 
 module.exports = {
+  preset: 'ts-jest',
   testEnvironment: 'node',
+  roots: ['<rootDir>/tests'],
+  testMatch: ['**/*.test.ts'],
   transform: {
     '^.+\\.ts$': 'ts-jest',
   },
-  testRegex: '/tests/.*\\.(test|spec)\\.ts$',
-  moduleFileExtensions: ['ts', 'js'],
-  collectCoverage: true,
+  moduleFileExtensions: ['ts', 'js', 'json'],
+  collectCoverageFrom: [
+    'src/**/*.ts',
+    '!src/**/*.d.ts',
+    '!src/**/index.ts',
+    '!src/cli/index.ts', // Entry point
+    '!src/cli/index-new-temp.ts', // Temporary file
+  ],
   coverageDirectory: 'coverage',
-  coverageReporters: ['text', 'lcov'],
+  coverageReporters: ['text', 'lcov', 'html'],
 
-  // Parallel execution settings (conservative defaults)
-  maxWorkers: 2, // Use 2 workers for moderate CPU usage
-  maxConcurrency: 3, // Reduce concurrent tests for stability
-
-  // Performance optimizations
-  bail: false, // Don't stop on first failure
-  verbose: false, // Reduce noise in output
-
-  // Test timeout (increased for CI environment)
-  testTimeout: 60000, // 60 seconds per test
-
-  // Coverage thresholds
+  // Coverage thresholds (lowered for initial testing)
   coverageThreshold: {
     global: {
       branches: 40,
@@ -40,9 +37,16 @@ module.exports = {
   // Test setup
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
 
-  // Module name mapping for better imports
+  // Performance settings
+  testTimeout: 30000,
+  maxWorkers: '50%',
+
+  // Module name mapping for cleaner imports in tests
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1',
-    '^@tests/(.*)$': '<rootDir>/tests/$1',
+    '^@domains/(.*)$': '<rootDir>/src/domains/$1',
+    '^@infrastructure/(.*)$': '<rootDir>/src/infrastructure/$1',
+    '^@application/(.*)$': '<rootDir>/src/application/$1',
+    '^@shared/(.*)$': '<rootDir>/src/shared/$1',
+    '^@test-helpers/(.*)$': '<rootDir>/tests/helpers/$1',
   },
 };

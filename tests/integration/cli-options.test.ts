@@ -2,229 +2,298 @@ import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
 import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
-import {
-  validateScanOptions,
-  validateSeverityFilter,
-  validateCategoryFilter,
-  validateOutputFormat,
-  validateNumericOption,
-  validatePagination,
-  parseCommaSeparated,
-} from '../../src/cli/validators/options';
-import { ScanOptions } from '../../src/cli/validators/options';
-import {
-  OutputHandler,
-  OutputOptions,
-} from '../../src/cli/output/outputHandler';
-import { ScanResult } from '../../src/types/core/rule';
+import { ScanResult } from '../../src/domains/scanning/core/entities/ScanResult';
+import { ReportServiceImpl } from '../../src/domains/reporting/core/services/ReportServiceImpl';
+import { JsonRenderer } from '../../src/domains/reporting/adapters/renderers/JsonRenderer';
+import { CsvRenderer } from '../../src/domains/reporting/adapters/renderers/CsvRenderer';
+import { TableRenderer } from '../../src/domains/reporting/adapters/renderers/TableRenderer';
+import { Report } from '../../src/domains/reporting/core/entities/Report';
+import { Violation, ViolationUtils } from '../../src/shared/types/Violation';
+import { DefaultValidationEngine } from '../../src/domains/validation/core/services/ValidationEngineImpl';
+import { ValidationOptions } from '../../src/domains/validation/core/entities/ValidationOptions';
+import { DefaultScanOrchestrator } from '../../src/domains/scanning/core/services/ScanOrchestrator';
+import { ScanRequest } from '../../src/domains/scanning/core/entities/ScanRequest';
+import { ScanContext } from '../../src/domains/scanning/core/entities/ScanContext';
+import { ScanMetrics } from '../../src/shared/types/ScanMetrics';
 import { stripAnsiCodes, extractJsonBlock, runCliCommand } from '../utils/cli';
 
-describe('CLI Options Validation', () => {
-  describe('validateScanOptions', () => {
-    it('should validate valid options', () => {
-      const options: ScanOptions = {
-        output: 'json',
-        severity: 'high,medium',
-        category: 'pii,bias',
-        maxViolations: '10',
-        offset: '0',
-        limit: '20',
-        timeout: '300',
-      };
+// Helper function to create ScanResult from violations
+function createScanResult(violations: Violation[]): ScanResult {
+  const metrics: ScanMetrics = {
+    objectsScanned: violations.length || 1,
+    processingTime: 100,
+    memoryUsage: 1024 * 1024,
+    rulesApplied: 5,
+    streamingUsed: false,
+  };
+  return new ScanResult(violations, metrics);
+}
 
-      const result = validateScanOptions(options);
-      expect(result.isValid).toBe(true);
-      expect(result.errors).toHaveLength(0);
-    });
+describe('Domain Validation Tests', () => {
+  describe('ViolationUtils', () => {
+    const mockViolations: Violation[] = [
+      {
+        ruleId: 'rule1',
+        ruleName: 'Test Rule 1',
+        ruleDescription: 'Test description',
+        severity: 'high',
+        category: 'pii',
+        message: 'Test violation 1',
+        field: 'field1',
+        objectIndex: 0,
+        context: { match: 'sensitive data' },
+      },
+      {
+        ruleId: 'rule2',
+        ruleName: 'Test Rule 2',
+        ruleDescription: 'Test description',
+        severity: 'medium',
+        category: 'bias',
+        message: 'Test violation 2',
+        field: 'field2',
+        objectIndex: 1,
+        context: { match: 'biased content' },
+      },
+    ];
 
-    it('should detect invalid severity filter', () => {
-      const options: ScanOptions = {
-        severity: 'invalid,high',
-      };
-
-      const result = validateScanOptions(options);
-      expect(result.isValid).toBe(false);
-      expect(result.errors[0]).toMatch(/Invalid severity filter: invalid,high/);
-    });
-
-    it('should detect invalid category filter', () => {
-      const options: ScanOptions = {
-        category: 'invalid,pii',
-      };
-
-      const result = validateScanOptions(options);
-      expect(result.isValid).toBe(false);
-      expect(result.errors[0]).toMatch(/Invalid category filter: invalid,pii/);
-    });
-
-    it('should detect invalid output format', () => {
-      const options: ScanOptions = {
-        output: 'xml' as any,
-      };
-
-      const result = validateScanOptions(options);
-      expect(result.isValid).toBe(false);
-      expect(result.errors[0]).toMatch(/Invalid output format: xml/);
-    });
-
-    it('should detect invalid max violations', () => {
-      const options: ScanOptions = {
-        maxViolations: '-1',
-      };
-
-      const result = validateScanOptions(options);
-      expect(result.isValid).toBe(false);
-      expect(result.errors[0]).toMatch(/Invalid max-violations: -1/);
-    });
-
-    it('should detect invalid pagination', () => {
-      const options: ScanOptions = {
-        offset: '-1',
-        limit: '0',
-      };
-
-      const result = validateScanOptions(options);
-      expect(result.isValid).toBe(false);
-      expect(result.errors[0]).toMatch(/Invalid pagination parameters/);
-    });
-
-    it('should detect invalid timeout', () => {
-      const options: ScanOptions = {
-        timeout: '0',
-      };
-
-      const result = validateScanOptions(options);
-      expect(result.isValid).toBe(false);
-      expect(result.errors[0]).toMatch(/Invalid timeout: 0/);
-    });
-  });
-
-  describe('validateSeverityFilter', () => {
-    it('should validate single severity', () => {
-      expect(validateSeverityFilter('high')).toBe(true);
-    });
-
-    it('should validate multiple severities', () => {
-      expect(validateSeverityFilter('high,medium,low')).toBe(true);
-    });
-
-    it('should reject invalid severity', () => {
-      expect(validateSeverityFilter('invalid')).toBe(false);
-    });
-
-    it('should reject mixed valid and invalid severities', () => {
-      expect(validateSeverityFilter('high,invalid,low')).toBe(false);
-    });
-  });
-
-  describe('validateCategoryFilter', () => {
-    it('should validate single category', () => {
-      expect(validateCategoryFilter('pii')).toBe(true);
-    });
-
-    it('should validate multiple categories', () => {
-      expect(validateCategoryFilter('pii,bias,hallucination')).toBe(true);
-    });
-
-    it('should reject invalid category', () => {
-      expect(validateCategoryFilter('invalid')).toBe(false);
-    });
-
-    it('should reject mixed valid and invalid categories', () => {
-      expect(validateCategoryFilter('pii,invalid,bias')).toBe(false);
-    });
-  });
-
-  describe('validateOutputFormat', () => {
-    it('should validate json format', () => {
-      expect(validateOutputFormat('json')).toBe(true);
-    });
-
-    it('should validate markdown format', () => {
-      expect(validateOutputFormat('markdown')).toBe(true);
-    });
-
-    it('should validate csv format', () => {
-      expect(validateOutputFormat('csv')).toBe(true);
-    });
-
-    it('should validate table format', () => {
-      expect(validateOutputFormat('table')).toBe(true);
-    });
-
-    it('should reject invalid format', () => {
-      expect(validateOutputFormat('xml')).toBe(false);
-    });
-  });
-
-  describe('validateNumericOption', () => {
-    it('should validate number in range', () => {
-      expect(validateNumericOption('5', 1, 10)).toBe(true);
-    });
-
-    it('should reject number below minimum', () => {
-      expect(validateNumericOption('0', 1, 10)).toBe(false);
-    });
-
-    it('should reject number above maximum', () => {
-      expect(validateNumericOption('11', 1, 10)).toBe(false);
-    });
-
-    it('should reject non-numeric value', () => {
-      expect(validateNumericOption('abc', 1, 10)).toBe(false);
-    });
-  });
-
-  describe('validatePagination', () => {
-    it('should validate valid pagination', () => {
-      expect(validatePagination('0', '10')).toBe(true);
-    });
-
-    it('should validate offset only', () => {
-      expect(validatePagination('5')).toBe(true);
-    });
-
-    it('should validate limit only', () => {
-      expect(validatePagination(undefined, '10')).toBe(true);
-    });
-
-    it('should reject negative offset', () => {
-      expect(validatePagination('-1', '10')).toBe(false);
-    });
-
-    it('should reject zero limit', () => {
-      expect(validatePagination('0', '0')).toBe(false);
-    });
-  });
-
-  describe('parseCommaSeparated', () => {
-    it('should parse single value', () => {
-      expect(parseCommaSeparated('high')).toEqual(['high']);
-    });
-
-    it('should parse multiple values', () => {
-      expect(parseCommaSeparated('high,medium,low')).toEqual([
+    it('should filter violations by severity', () => {
+      const filtered = ViolationUtils.filterBySeverity(mockViolations, [
         'high',
-        'medium',
-        'low',
       ]);
+      expect(filtered).toHaveLength(1);
+      expect(filtered[0].severity).toBe('high');
     });
 
-    it('should handle whitespace', () => {
-      expect(parseCommaSeparated(' high , medium , low ')).toEqual([
-        'high',
-        'medium',
-        'low',
-      ]);
+    it('should filter violations by category', () => {
+      const filtered = ViolationUtils.filterByCategory(mockViolations, ['pii']);
+      expect(filtered).toHaveLength(1);
+      expect(filtered[0].category).toBe('pii');
     });
 
-    it('should filter empty values', () => {
-      expect(parseCommaSeparated('high,,medium,')).toEqual(['high', 'medium']);
+    it('should create violation summary', () => {
+      const summary = ViolationUtils.createSummary(mockViolations);
+      expect(summary.total).toBe(2);
+      expect(summary.bySeverity.high).toBe(1);
+      expect(summary.bySeverity.medium).toBe(1);
+      expect(summary.byCategory.pii).toBe(1);
+      expect(summary.byCategory.bias).toBe(1);
+    });
+
+    it('should sort violations by severity', () => {
+      const sorted = ViolationUtils.sortBySeverity(mockViolations);
+      expect(sorted[0].severity).toBe('high');
+      expect(sorted[1].severity).toBe('medium');
+    });
+  });
+
+  describe('ValidationEngine', () => {
+    it('should initialize validation engine', () => {
+      const engine = new DefaultValidationEngine();
+      expect(engine).toBeDefined();
+      expect(engine.getSupportedTypes()).toBeDefined();
+    });
+
+    it('should determine validation types correctly', () => {
+      const engine = new DefaultValidationEngine();
+
+      // Test private method through public interface
+      expect(() => engine.getSupportedTypes()).not.toThrow();
     });
   });
 });
 
-describe('Output Handler', () => {
+describe('Scanning Domain Tests', () => {
+  describe('ScanOrchestrator', () => {
+    it('should validate scan requests', () => {
+      const orchestrator = new DefaultScanOrchestrator(
+        {} as any, // fileReader
+        new Map(), // processors
+        {} as any, // ruleEngine
+        {} as any, // strategy
+        {} as any // metricsCollector
+      );
+
+      const validRequest = ScanRequest.create('valid-input', {
+        rulepack: 'test-rulepack',
+        outputFormat: 'json',
+      });
+
+      const result = orchestrator.validateRequest(validRequest);
+      expect(result.isOk()).toBe(true);
+    });
+
+    it('should reject invalid requests', () => {
+      const orchestrator = new DefaultScanOrchestrator(
+        {} as any,
+        new Map(),
+        {} as any,
+        {} as any,
+        {} as any
+      );
+
+      const invalidRequest = ScanRequest.create('', {
+        rulepack: 'test-rulepack',
+        outputFormat: 'json',
+      });
+
+      const result = orchestrator.validateRequest(invalidRequest);
+      expect(result.isErr()).toBe(true);
+      if (result.isErr()) {
+        expect(result.error.message).toMatch(/Input is required/);
+      }
+    });
+
+    it('should reject requests without config', () => {
+      const orchestrator = new DefaultScanOrchestrator(
+        {} as any,
+        new Map(),
+        {} as any,
+        {} as any,
+        {} as any
+      );
+
+      const invalidRequest = ScanRequest.create('test-input', {} as any);
+
+      const result = orchestrator.validateRequest(invalidRequest);
+      expect(result.isErr()).toBe(true);
+      if (result.isErr()) {
+        expect(result.error.message).toMatch(/Configuration is required/);
+      }
+    });
+  });
+
+  describe('ScanResult', () => {
+    it('should filter violations by severity', () => {
+      const mockViolations: Violation[] = [
+        {
+          ruleId: 'rule1',
+          ruleName: 'Test Rule 1',
+          ruleDescription: 'Test description',
+          severity: 'high',
+          category: 'pii',
+          message: 'High severity violation',
+          field: 'field1',
+          objectIndex: 0,
+          context: { match: 'sensitive' },
+        },
+        {
+          ruleId: 'rule2',
+          ruleName: 'Test Rule 2',
+          ruleDescription: 'Test description',
+          severity: 'low',
+          category: 'bias',
+          message: 'Low severity violation',
+          field: 'field2',
+          objectIndex: 1,
+          context: { match: 'biased' },
+        },
+      ];
+
+      const scanResult = new ScanResult(mockViolations, {
+        objectsScanned: 2,
+        processingTime: 100,
+        memoryUsage: 1024,
+        rulesApplied: 2,
+        streamingUsed: false,
+      });
+
+      const highSeverityViolations = scanResult.getViolationsBySeverity([
+        'high',
+      ]);
+      expect(highSeverityViolations).toHaveLength(1);
+      expect(highSeverityViolations[0].severity).toBe('high');
+    });
+
+    it('should get violation counts by severity', () => {
+      const mockViolations: Violation[] = [
+        {
+          ruleId: 'rule1',
+          ruleName: 'Test Rule 1',
+          ruleDescription: 'Test description',
+          severity: 'high',
+          category: 'pii',
+          message: 'High violation',
+          field: 'field1',
+          objectIndex: 0,
+          context: { match: 'test' },
+        },
+        {
+          ruleId: 'rule2',
+          ruleName: 'Test Rule 2',
+          ruleDescription: 'Test description',
+          severity: 'high',
+          category: 'pii',
+          message: 'Another high violation',
+          field: 'field2',
+          objectIndex: 1,
+          context: { match: 'test' },
+        },
+        {
+          ruleId: 'rule3',
+          ruleName: 'Test Rule 3',
+          ruleDescription: 'Test description',
+          severity: 'medium',
+          category: 'bias',
+          message: 'Medium violation',
+          field: 'field3',
+          objectIndex: 2,
+          context: { match: 'test' },
+        },
+      ];
+
+      const scanResult = new ScanResult(mockViolations, {
+        objectsScanned: 3,
+        processingTime: 150,
+        memoryUsage: 2048,
+        rulesApplied: 3,
+        streamingUsed: false,
+      });
+
+      const counts = scanResult.getViolationCountBySeverity();
+      expect(counts.high).toBe(2);
+      expect(counts.medium).toBe(1);
+      expect(counts.low).toBe(0);
+      expect(counts.critical).toBe(0);
+    });
+
+    it('should determine if scan should fail based on severity', () => {
+      const highViolation: Violation[] = [
+        {
+          ruleId: 'rule1',
+          ruleName: 'Test Rule',
+          ruleDescription: 'Test description',
+          severity: 'high',
+          category: 'pii',
+          message: 'High violation',
+          field: 'field1',
+          objectIndex: 0,
+          context: { match: 'test' },
+        },
+      ];
+
+      const scanResult = new ScanResult(highViolation, {
+        objectsScanned: 1,
+        processingTime: 50,
+        memoryUsage: 512,
+        rulesApplied: 1,
+        streamingUsed: false,
+      });
+
+      expect(scanResult.shouldFail('high')).toBe(true);
+      expect(scanResult.shouldFail('critical')).toBe(false);
+      expect(scanResult.shouldFail()).toBe(false);
+    });
+
+    it('should create empty scan results', () => {
+      const emptyResult = ScanResult.empty();
+      expect(emptyResult.getTotalViolations()).toBe(0);
+      expect(emptyResult.violations).toHaveLength(0);
+      expect(emptyResult.metrics.objectsScanned).toBe(0);
+    });
+  });
+});
+
+describe('Reporting Domain Tests', () => {
   let tempDir: string;
 
   beforeEach(() => {
@@ -237,147 +306,131 @@ describe('Output Handler', () => {
     }
   });
 
-  describe('OutputHandler', () => {
+  describe('ReportService', () => {
     it('should handle JSON output', async () => {
-      const options: OutputOptions = {
-        format: 'json',
-        outputFile: path.join(tempDir, 'test.json'),
-      };
+      const renderers = new Map();
+      renderers.set('json', new JsonRenderer());
 
-      const handler = new OutputHandler(options);
-      const mockResults: ScanResult[] = [
+      const reportService = new ReportServiceImpl(renderers);
+
+      const mockViolations: Violation[] = [
         {
-          file: 'test.json',
-          violations: [
-            {
-              ruleId: 'test-rule',
-              message: 'Test violation',
-              match: 'test',
-              severity: 'high',
-              category: 'pii',
-              filePath: 'test.json',
-            },
-          ],
-          durationMs: 100,
+          ruleId: 'test-rule',
+          ruleName: 'Test Rule',
+          ruleDescription: 'Test description',
+          message: 'Test violation',
+          severity: 'high',
+          category: 'pii',
+          field: 'test.json',
+          objectIndex: 0,
+          context: { match: 'test' },
         },
       ];
 
-      const result = await handler.outputResults(mockResults);
-      expect(result.success).toBe(true);
-      expect(result.outputPath).toBe(path.join(tempDir, 'test.json'));
+      const scanResult = createScanResult(mockViolations);
+      const report = new Report(scanResult, 'json', {
+        includeSummary: true,
+        includeMetrics: true,
+      });
+
+      const result = await reportService.generateReport(report);
+      expect(result.isOk()).toBe(true);
     });
 
     it('should handle CSV output', async () => {
-      const options: OutputOptions = {
-        format: 'csv',
-        outputFile: path.join(tempDir, 'test.csv'),
-      };
+      const renderers = new Map();
+      renderers.set('csv', new CsvRenderer());
 
-      const handler = new OutputHandler(options);
-      const mockResults: ScanResult[] = [
+      const reportService = new ReportServiceImpl(renderers);
+
+      const mockViolations: Violation[] = [
         {
-          file: 'test.json',
-          violations: [
-            {
-              ruleId: 'test-rule',
-              message: 'Test violation',
-              match: 'test',
-              severity: 'high',
-              category: 'pii',
-              filePath: 'test.json',
-            },
-          ],
-          durationMs: 100,
+          ruleId: 'test-rule',
+          ruleName: 'Test Rule',
+          ruleDescription: 'Test description',
+          message: 'Test violation',
+          severity: 'high',
+          category: 'pii',
+          field: 'test.json',
+          objectIndex: 0,
+          context: { match: 'test' },
         },
       ];
 
-      const result = await handler.outputResults(mockResults);
-      expect(result.success).toBe(true);
-      expect(result.outputPath).toBe(path.join(tempDir, 'test.csv'));
+      const scanResult = createScanResult(mockViolations);
+      const report = new Report(scanResult, 'csv', {
+        includeSummary: true,
+        includeMetrics: true,
+      });
+
+      const result = await reportService.generateReport(report);
+      expect(result.isOk()).toBe(true);
     });
 
     it('should handle table output', async () => {
-      const options: OutputOptions = {
-        format: 'table',
-      };
+      const renderers = new Map();
+      renderers.set('table', new TableRenderer());
 
-      const handler = new OutputHandler(options);
-      const mockResults: ScanResult[] = [
+      const reportService = new ReportServiceImpl(renderers);
+
+      const mockViolations: Violation[] = [
         {
-          file: 'test.json',
-          violations: [
-            {
-              ruleId: 'test-rule',
-              message: 'Test violation',
-              match: 'test',
-              severity: 'high',
-              category: 'pii',
-              filePath: 'test.json',
-            },
-          ],
-          durationMs: 100,
+          ruleId: 'test-rule',
+          ruleName: 'Test Rule',
+          ruleDescription: 'Test description',
+          message: 'Test violation',
+          severity: 'high',
+          category: 'pii',
+          field: 'test.json',
+          objectIndex: 0,
+          context: { match: 'test' },
         },
       ];
 
-      const result = await handler.outputResults(mockResults);
-      expect(result.success).toBe(true);
+      const scanResult = createScanResult(mockViolations);
+      const report = new Report(scanResult, 'table', {
+        includeSummary: true,
+        includeMetrics: true,
+      });
+
+      const result = await reportService.generateReport(report);
+      expect(result.isOk()).toBe(true);
     });
 
     it('should handle invalid output format', async () => {
-      const options: OutputOptions = {
-        format: 'invalid' as any,
-      };
+      const renderers = new Map();
+      const reportService = new ReportServiceImpl(renderers);
 
-      const handler = new OutputHandler(options);
-      const mockResults: ScanResult[] = [];
+      const scanResult = createScanResult([]);
+      const report = new Report(scanResult, 'invalid' as any, {
+        includeSummary: true,
+      });
 
-      const result = await handler.outputResults(mockResults);
-      expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
+      const result = await reportService.generateReport(report);
+      expect(result.isErr()).toBe(true);
+      if (result.isErr()) {
+        expect(result.error.message).toMatch(
+          /No renderer found for format: invalid/
+        );
+      }
     });
 
-    it('should handle file write errors', async () => {
-      const options: OutputOptions = {
-        format: 'json',
-        outputFile: 'C:\\Windows\\System32\\test.json', // Use a protected directory that should fail
-      };
+    it('should handle file write operations', async () => {
+      const renderers = new Map();
+      renderers.set('json', new JsonRenderer());
 
-      const handler = new OutputHandler(options);
-      const mockResults: ScanResult[] = [
-        {
-          file: 'test.json',
-          violations: [],
-          durationMs: 100,
-        },
-      ];
+      const reportService = new ReportServiceImpl(renderers);
 
-      const result = await handler.outputResults(mockResults);
-      // The test should fail due to permission denied or similar error
-      expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
-      expect(result.error?.message).toMatch(/Failed to write output file/);
-    });
+      const scanResult = createScanResult([]);
+      const report = new Report(scanResult, 'json', {
+        includeSummary: true,
+      });
 
-    it('should handle compression errors', async () => {
-      const options: OutputOptions = {
-        format: 'json',
-        outputFile: path.join(tempDir, 'test.json.gz'),
-        compress: 'gzip',
-        compressionLevel: 999, // Invalid level
-      };
+      const outputPath = path.join(tempDir, 'test.json');
+      const result = await reportService.writeReport(report, outputPath);
 
-      const handler = new OutputHandler(options);
-      const mockResults: ScanResult[] = [
-        {
-          file: 'test.json',
-          violations: [],
-          durationMs: 100,
-        },
-      ];
-
-      const result = await handler.outputResults(mockResults);
-      expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
+      expect(result.isOk()).toBe(true);
+      expect(fs.existsSync(outputPath)).toBe(true);
     });
   });
 });

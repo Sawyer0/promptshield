@@ -1,7 +1,7 @@
 # PromptShield 🛡️
 
 [![npm version](https://img.shields.io/npm/v/@dawans/promptshield.svg)](https://www.npmjs.com/package/@dawans/promptshield)
-[![License: Proprietary](https://img.shields.io/badge/License-Proprietary-blue.svg)](LICENSE)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen.svg)](https://nodejs.org)
 
 > Enterprise-grade AI security scanning for LLMs. Detect prompt injections, jailbreaks, PII leaks, and compliance violations with custom RulePacks.
@@ -191,12 +191,13 @@ console.log(`Found ${report.summary.total_violations} violations`);
 
 ## 📜 License
 
-**PromptShield** is proprietary software that is free to use.
+**PromptShield** is open source software licensed under the Apache 2.0 License.
 
-- Software is UNLICENSED (see [LICENSE](LICENSE))
-- Free for personal and commercial use
-- No warranty provided
-- Cannot modify or redistribute code
+- ✅ **Free for personal and commercial use**
+- ✅ **Can modify and redistribute**
+- ✅ **Patent protection included**
+- ✅ **Attribution required**
+- 📄 See [LICENSE](LICENSE) for full terms
 
 ---
 

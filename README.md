@@ -83,6 +83,26 @@ npm install @dawans/promptshield --save-dev
 | `init`     | Create new RulePack from templates |
 | `validate` | Validate files and RulePacks       |
 
+## 📄 Input File Format
+
+PromptShield supports both **single objects** and **arrays of objects**:
+
+```json
+// ✅ Single object format
+{"prompt": "Hello, how are you?", "response": "I'm doing well!"}
+
+// ✅ Array format (recommended for multiple items)
+[
+  {"prompt": "Hello, how are you?", "response": "I'm doing well!"},
+  {"prompt": "What's 2+2?", "response": "2+2 equals 4"}
+]
+```
+
+**Supported formats:**
+- JSON arrays: `[{...}, {...}]`
+- NDJSON (newline-delimited): One JSON object per line
+- Text files: Plain text content
+
 ## 📋 RulePacks
 
 PromptShield uses YAML-based RulePacks for detection rules:

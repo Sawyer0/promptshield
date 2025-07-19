@@ -1,5 +1,5 @@
 {
-  "name": "promptshield",
+  "name": "@dawans/promptshield",
   "version": "1.0.1",
   "publishConfig": {
     "access": "restricted"

@@ -12,9 +12,6 @@ export class ConfigManager {
     this.config = { ...defaultScanConfig };
   }
 
-  /**
-   * Gets the singleton instance
-   */
   static getInstance(): ConfigManager {
     if (!ConfigManager.instance) {
       ConfigManager.instance = new ConfigManager();
@@ -22,9 +19,6 @@ export class ConfigManager {
     return ConfigManager.instance;
   }
 
-  /**
-   * Loads configuration from environment variables
-   */
   loadFromEnvironment(): Result<void, Error> {
     try {
       const envConfig: Partial<ScanConfig> = {};
@@ -106,16 +100,10 @@ export class ConfigManager {
     }
   }
 
-  /**
-   * Gets the current configuration
-   */
   getConfig(): ScanConfig {
     return { ...this.config };
   }
 
-  /**
-   * Updates configuration
-   */
   updateConfig(updates: Partial<ScanConfig>): Result<void, Error> {
     try {
       this.config = { ...this.config, ...updates };
@@ -125,13 +113,9 @@ export class ConfigManager {
     }
   }
 
-  /**
-   * Validates configuration
-   */
   validateConfig(config: ScanConfig): Result<void, Error> {
     const errors: string[] = [];
 
-    // Validate output format
     if (
       !['json', 'markdown', 'csv', 'table', 'html', 'ndjson'].includes(
         config.outputFormat
@@ -140,7 +124,6 @@ export class ConfigManager {
       errors.push(`Invalid output format: ${config.outputFormat}`);
     }
 
-    // Validate severity levels
     const validSeverities = ['low', 'medium', 'high', 'critical'];
     config.severity.forEach((severity) => {
       if (!validSeverities.includes(severity)) {
@@ -148,7 +131,6 @@ export class ConfigManager {
       }
     });
 
-    // Validate numeric values
     if (config.maxDepth && config.maxDepth < 1) {
       errors.push('Max depth must be at least 1');
     }
@@ -179,7 +161,6 @@ export class ConfigManager {
       errors.push('Compression level must be between 0 and 9');
     }
 
-    // Validate fields
     if (config.fields.length === 0) {
       errors.push('At least one field must be specified');
     }
@@ -193,9 +174,6 @@ export class ConfigManager {
     return ok(undefined);
   }
 
-  /**
-   * Resets configuration to defaults
-   */
   resetToDefaults(): void {
     this.config = { ...defaultScanConfig };
   }

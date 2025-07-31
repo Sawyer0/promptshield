@@ -6,6 +6,7 @@ import { Result, ok, err } from '../../../shared/types/Result';
 import { ScanRequest } from '../../../domains/scanning/core/entities/ScanRequest';
 import { Report } from '../../../domains/reporting/core/entities/Report';
 import { ValidationError } from '../../../infrastructure/errors/DomainError';
+import * as fs from 'fs';
 
 /**
  * Handles scan command execution
@@ -17,14 +18,16 @@ export class ScanCommandHandler {
     private logger: Logger
   ) {}
 
-  /**
-   * Executes the scan command
-   */
   async execute(command: ScanCommand): Promise<Result<void, Error>> {
     try {
+      // Validate command first
+      const validationResult = this.validateCommand(command);
+      if (validationResult.isErr()) {
+        return err(validationResult.error);
+      }
+
       this.logger.info('Starting scan', { input: command.input });
 
-      // Create scan request
       const scanConfig = command.toScanConfig();
       const scanRequest = ScanRequest.create(command.input, scanConfig);
 
@@ -40,7 +43,6 @@ export class ScanCommandHandler {
         duration: scanResult.value.metrics.processingTime,
       });
 
-      // Create report
       const report = new Report(scanResult.value, scanConfig.outputFormat, {
         severity: scanConfig.severity,
         category: scanConfig.category,
@@ -55,6 +57,7 @@ export class ScanCommandHandler {
         outputFile: scanConfig.outputFile,
         compress: scanConfig.compress,
         compressionLevel: scanConfig.compressionLevel,
+        inputFile: command.input,
       });
 
       // Generate and output report
@@ -78,18 +81,14 @@ export class ScanCommandHandler {
           return err(renderResult.error);
         }
 
-        // Output to console
         console.log(renderResult.value);
       }
 
-      // Check if should fail based on severity
+      // Check fail-on condition and exit with error if violations found
       if (scanConfig.failOn && scanResult.value.shouldFail(scanConfig.failOn)) {
         const message = `Found violations with severity: ${scanConfig.failOn}`;
         this.logger.warn(message);
-
-        if (scanConfig.strict) {
-          return err(new Error(message));
-        }
+        return err(new Error(message));
       }
 
       return ok(undefined);
@@ -99,14 +98,31 @@ export class ScanCommandHandler {
     }
   }
 
-  /**
-   * Validates command before execution
-   */
   validateCommand(command: ScanCommand): Result<void, Error> {
     const errors: string[] = [];
 
     if (!command.input || command.input.trim() === '') {
       errors.push('Input is required');
+    }
+
+    // Check if input file exists (unless it's stdin or direct content)
+    if (
+      command.input &&
+      command.input !== '-' &&
+      !command.input.startsWith('{') &&
+      !command.input.startsWith('[')
+    ) {
+      if (!fs.existsSync(command.input)) {
+        errors.push(`Input file not found: ${command.input}`);
+      }
+    }
+
+    if (!command.options.rulepack || command.options.rulepack.trim() === '') {
+      errors.push('Rulepack is required (use -r or --rulepack)');
+    }
+
+    if (command.options.rulepack && !fs.existsSync(command.options.rulepack)) {
+      errors.push(`Rulepack file not found: ${command.options.rulepack}`);
     }
 
     const validFormats = ['json', 'markdown', 'csv', 'table', 'html', 'ndjson'];

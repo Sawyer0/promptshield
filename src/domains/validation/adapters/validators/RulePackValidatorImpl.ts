@@ -38,7 +38,6 @@ export class RulePackValidatorImpl implements RulePackValidator {
     const builder = new ValidationResultBuilder(filePath, 'rulepack');
 
     try {
-      // Check if file exists
       if (!fs.existsSync(filePath)) {
         builder.addError(
           'file',
@@ -48,7 +47,6 @@ export class RulePackValidatorImpl implements RulePackValidator {
         return ok(builder.build());
       }
 
-      // Check if file is readable
       try {
         fs.accessSync(filePath, fs.constants.R_OK);
       } catch {
@@ -63,14 +61,12 @@ export class RulePackValidatorImpl implements RulePackValidator {
       // Read file content
       const content = await fs.promises.readFile(filePath, 'utf-8');
 
-      // Validate YAML syntax
       const yamlResult = await this.validateYamlSyntax(content);
       if (yamlResult.isErr()) {
         builder.addError('yaml', yamlResult.error.message, 'YAML_SYNTAX_ERROR');
         return ok(builder.build());
       }
 
-      // Parse YAML
       let rulePackData: RulePackYamlData;
       try {
         rulePackData = yaml.load(content) as RulePackYamlData;
@@ -79,7 +75,6 @@ export class RulePackValidatorImpl implements RulePackValidator {
         return ok(builder.build());
       }
 
-      // Validate basic structure
       if (!rulePackData || typeof rulePackData !== 'object') {
         builder.addError(
           'structure',
@@ -89,10 +84,8 @@ export class RulePackValidatorImpl implements RulePackValidator {
         return ok(builder.build());
       }
 
-      // Validate required fields
       this.validateRequiredFields(rulePackData, builder, options);
 
-      // Validate rules array
       if (rulePackData.rules && Array.isArray(rulePackData.rules)) {
         await this.validateRulesArray(rulePackData.rules, builder, options);
       } else {

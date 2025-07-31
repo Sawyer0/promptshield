@@ -1,200 +1,282 @@
 #!/usr/bin/env node
 
-// OLD CLI - COMMENTED OUT FOR NEW ARCHITECTURE TESTING
-/*
 import { Command } from 'commander';
-import { executeScanCommand } from './commands/scan';
-// import { executeUpdateCommand } from './commands/update'; // Disabled for v1.0.0
-import { executeValidateCommand } from './commands/validate';
-import { executeListCommand } from './commands/list';
-import { executeCreateCommand } from './commands/create';
-import { executeTestCommand } from './commands/test';
-import { executeInitCommand } from './commands/init';
-import { ScanOptions } from './validators/options';
-// import { UpdateOptions } from './commands/update/types'; // Disabled for v1.0.0
-import { CreateOptions } from './commands/create/types';
-import { TestOptions } from './commands/test/types';
-import { InitOptions } from './commands/init/types';
+import { Container } from '../infrastructure/container/Container';
+import { setupContainer } from './bootstrap';
+import {
+  ScanCommand,
+  ScanCommandOptions,
+} from '../application/commands/scan/ScanCommand';
+import { ScanCommandHandler } from '../application/commands/scan/ScanCommandHandler';
+import { ListCommand } from '../application/commands/list/ListCommand';
+import { ListCommandHandler } from '../application/commands/list/ListCommandHandler';
+import { InitCommand } from '../application/commands/init/InitCommand';
+import { InitCommandHandler } from '../application/commands/init/InitCommandHandler';
+import {
+  ValidateCommand,
+  ValidateCommandOptions,
+} from '../application/commands/validate/ValidateCommand';
+import { ValidateCommandHandler } from '../application/commands/validate/ValidateCommandHandler';
+import { LoggerFactory } from '../infrastructure/logging/Logger';
 
 const program = new Command();
+const container = new Container();
+const logger = LoggerFactory.getLogger();
+
+// Bootstrap the container with all dependencies
+setupContainer(container);
 
 program
   .name('promptshield')
-  .description('Scan prompts and responses for risky content')
+  .description(
+    'AI safety scanner for LLM outputs - detect prompt injections, PII leaks, and security issues'
+  )
   .version('1.0.0');
 
 // --- Scan Command ---
 program
   .command('scan <input>')
-  .description(
-    'Scan a JSON file of prompts/responses (supports streaming output for NDJSON, Markdown, and CSV when writing to a file for large result sets. Streaming improves performance and memory usage. Order may not be fully preserved; truncation warnings will be shown if limits are hit.)'
-  )
-  .option('--debug', 'Enable debug mode for detailed output')
+  .description('Scan LLM outputs for safety violations using rulepacks')
+  .option('-r, --rulepack <path>', 'Path to RulePack YAML (required)')
   .option(
-    '--fail-on <severity>',
-    'Fail the scan on specified severity (low, medium, high, critical)'
+    '-o, --output <format>',
+    'Output format: json, markdown, csv, table, html, ndjson (default: markdown)'
   )
-  .option('--rulepack <path>', 'Path to RulePack YAML')
-  .option(
-    '--output <format>',
-    'Output format: json, markdown, csv, table, html, or ndjson (default: markdown). NDJSON, Markdown, and CSV support streaming output to files for large results.'
-  )
-  .option('--output-file <file>', 'Write report to file instead of stdout')
+  .option('-f, --output-file <file>', 'Write report to file instead of stdout')
+
+  // Filtering options
   .option(
     '--severity <levels>',
-    'Filter by severity levels (comma-separated: low,medium,high,critical)'
+    'Filter by severity: low,medium,high,critical (comma-separated)'
   )
   .option(
     '--category <categories>',
-    'Filter by categories (comma-separated: pii,bias,hallucination,security,compliance)'
+    'Filter by categories: pii,bias,security,compliance (comma-separated)'
   )
+  .option('--max-violations <number>', 'Maximum violations to report', parseInt)
+  .option('--offset <number>', 'Pagination offset', parseInt)
+  .option('--limit <number>', 'Pagination limit', parseInt)
+
+  // Processing options
+  .option('--fields <fields>', 'Fields to scan (default: prompt,response)')
+  .option('--scan-entire-object', 'Also scan entire object as string')
+  .option('--max-objects <number>', 'Maximum objects to process', parseInt)
   .option(
-    '--max-violations <number>',
-    'Maximum number of violations to report (for large result sets, may truncate output and show a warning)'
-  )
-  .option('--offset <number>', 'Offset for pagination (default: 0)')
-  .option(
-    '--limit <number>',
-    'Limit for pagination (default: all, may truncate output and show a warning)'
-  )
-  .option('--quiet', 'Suppress progress output and summary')
-  .option('--verbose', 'Enable verbose output with detailed information')
-  .option(
-    '--fields <fields>',
-    'Comma-separated list of fields to scan (default: prompt,response)'
-  )
-  .option('--scan-entire-object', 'Also scan the entire object as a string')
-  .option(
-    '--max-objects <number>',
-    'Maximum number of objects to process (for large files)'
-  )
-  .option(
-    '--ndjson',
-    'Force NDJSON mode (treat input as newline-delimited JSON)'
+    '--max-depth <number>',
+    'Max nested object depth (default: 4)',
+    parseInt
   )
   .option(
     '--schema <schema>',
-    'JSON schema to validate against (basic, extended, flexible, or custom schema file)'
+    'JSON schema validation: basic, extended, flexible, or file path'
   )
-  .option('--compress <type>', 'Compress output file (gzip or deflate)')
-  .option('--compression-level <level>', 'Compression level (0-9, default: 6)')
-  .option('--no-color', 'Disable colored output')
-  .option('--strict', 'Enable strict mode (treat warnings as errors)')
-  .option(
-    '--timeout <seconds>',
-    'Timeout for processing large files (default: 300)'
-  )
-  .option(
-    '--max-depth <number>',
-    'Maximum depth for nested object traversal (default: 4)'
-  )
+
+  // Performance options
+  .option('--ndjson', 'Force NDJSON mode')
   .option(
     '--streaming-threshold <number>',
-    'Threshold for switching to streaming mode for large JSON arrays (default: 1000)'
+    'Threshold for streaming mode (default: 1000)',
+    parseInt
   )
-  .option(
-    '--memory-warning-threshold <number>',
-    'Memory usage threshold (0.0-1.0) for warnings during large scans (default: 0.8)'
-  )
-  .option(
-    '--parallel [workers]',
-    'Enable parallel scanning (optional: specify number of workers, default: CPU cores)'
-  )
+  .option('--parallel [workers]', 'Enable parallel processing')
   .option(
     '--batch-size <number>',
-    'Batch size for parallel processing (default: 10)'
+    'Batch size for parallel (default: 10)',
+    parseInt
   )
-  .action(async (input: string, options: ScanOptions): Promise<void> => {
-    await executeScanCommand(input, options);
-  });
+  .option('--timeout <seconds>', 'Processing timeout (default: 300)', parseInt)
+  .option(
+    '--memory-warning-threshold <number>',
+    'Memory warning threshold 0-1 (default: 0.8)',
+    parseFloat
+  )
 
-// --- Update Command (Disabled for v1.0.0 - functionality preserved for future use) ---
-// program
-//   .command('update')
-//   .description('Update the RulePacks')
-//   .option('--force', 'Force update even if no changes detected')
-//   .option('--registry <url>', 'Custom registry URL for RulePacks')
-//   .action(async (options: UpdateOptions): Promise<void> => {
-//     await executeUpdateCommand(options);
-//   });
+  // Compression options
+  .option('--compress <type>', 'Output compression: gzip or deflate')
+  .option(
+    '--compression-level <level>',
+    'Compression level 0-9 (default: 6)',
+    parseInt
+  )
 
-// --- Validate Command ---
-program
-  .command('validate <input>')
-  .description('Validate input file format and structure')
-  .option('--schema <schema>', 'JSON schema to validate against')
-  .option('--rulepack <path>', 'Validate against specific RulePack')
-  .option('--output <format>', 'Output format: json or text', 'text')
-  .action(async (input: string, options: ScanOptions): Promise<void> => {
-    await executeValidateCommand(input, options);
+  // Output control
+  .option('-q, --quiet', 'Suppress progress and summary')
+  .option('-v, --verbose', 'Enable verbose output')
+  .option('--debug', 'Enable debug mode')
+  .option('--no-color', 'Disable colored output')
+  .option('--strict', 'Treat warnings as errors')
+  .option(
+    '--fail-on <severity>',
+    'Exit with error on severity: low,medium,high,critical'
+  )
+  .action(async (input: string, options: ScanCommandOptions) => {
+    try {
+      // Handle stdin input
+      let actualInput = input;
+      if (input === '-') {
+        // Read from stdin
+        actualInput = await new Promise<string>((resolve, reject) => {
+          let data = '';
+          process.stdin.setEncoding('utf8');
+          process.stdin.on('readable', () => {
+            let chunk;
+            while (null !== (chunk = process.stdin.read())) {
+              data += chunk;
+            }
+          });
+          process.stdin.on('end', () => {
+            resolve(data.trim());
+          });
+          process.stdin.on('error', reject);
+        });
+      }
+
+      const command = new ScanCommand(actualInput, options);
+
+      const commandLogger = options.quiet
+        ? LoggerFactory.createQuietLogger()
+        : LoggerFactory.create({
+            level: options.debug ? 'DEBUG' : 'ERROR',
+            options: { includeTimestamp: true },
+          });
+
+      const handler = new ScanCommandHandler(
+        container.resolve('scanEngine'),
+        container.resolve('reportService'),
+        commandLogger
+      );
+
+      const result = await handler.execute(command);
+
+      if (result.isErr()) {
+        if (!options.quiet) {
+          process.stderr.write(`Error: ${result.error.message}\n`);
+        }
+        process.exit(1);
+      }
+    } catch (error) {
+      if (!options.quiet) {
+        process.stderr.write(`Error: ${(error as Error).message}\n`);
+      }
+      process.exit(1);
+    }
   });
 
 // --- List Command ---
 program
   .command('list')
-  .description('List available RulePacks and rules')
-  .option('--rulepack <path>', 'List rules from specific RulePack')
+  .description('List rules in a RulePack')
+  .option('-r, --rulepack <path>', 'Path to RulePack YAML (required)')
   .option('--category <category>', 'Filter by category')
   .option('--severity <severity>', 'Filter by severity')
   .option('--enabled-only', 'Show only enabled rules')
-  .action(async (options: ScanOptions): Promise<void> => {
-    await executeListCommand(options);
-  });
+  .action(
+    async (options: {
+      rulepack?: string;
+      category?: string;
+      severity?: string;
+      enabledOnly?: boolean;
+    }) => {
+      try {
+        const command = new ListCommand(options);
+        const handler =
+          container.resolve<ListCommandHandler>('listCommandHandler');
 
-// --- Create Command ---
-program
-  .command('create <name>')
-  .description('Create a new RulePack with templates')
-  .option(
-    '--template <template>',
-    'Template to use (basic, pii, bias, security, compliance)'
-  )
-  .option('--description <description>', 'Description for the RulePack')
-  .option('--category <category>', 'Category for the RulePack')
-  .option('--force', 'Overwrite existing RulePack')
-  .action(async (name: string, options: CreateOptions): Promise<void> => {
-    await executeCreateCommand(name, options);
-  });
+        const result = await handler.execute(command);
 
-// --- Test Command ---
-program
-  .command('test <input>')
-  .description('Test text against RulePack rules')
-  .option(
-    '--rulepack <path>',
-    'Path to RulePack YAML (default: rulepacks/pii.yaml)'
-  )
-  .option('--rule <id>', 'Test specific rule ID only')
-  .option('--file', 'Treat input as file path instead of text')
-  .option('--output <format>', 'Output format: text or json (default: text)')
-  .option('--category <category>', 'Filter by category')
-  .option('--severity <severity>', 'Filter by severity')
-  .option('--verbose', 'Show detailed match information')
-  .option('--quiet', 'Suppress headers and summary')
-  .option('--debug', 'Enable debug mode with position information')
-  .action(async (input: string, options: TestOptions): Promise<void> => {
-    await executeTestCommand(input, options);
-  });
+        if (result.isErr()) {
+          logger.error('List failed', result.error);
+          process.exit(1);
+        }
+      } catch (error) {
+        logger.error('Unexpected error', error as Error);
+        console.error('Error:', (error as Error).message);
+        process.exit(1);
+      }
+    }
+  );
 
 // --- Init Command ---
 program
   .command('init <filename>')
-  .description('Initialize a new RulePack YAML file')
-  .option(
-    '--template <template>',
-    'Template to use (basic, pii, bias, security, compliance) - default: basic'
-  )
-  .option('--description <description>', 'Description for the RulePack')
-  .option('--category <category>', 'Category for the RulePack')
+  .description('Initialize a new RulePack YAML file with example structure')
+  .option('-n, --name <name>', 'RulePack name')
+  .option('-d, --description <description>', 'RulePack description')
   .option('--force', 'Overwrite existing file')
-  .option('--verbose', 'Show detailed information about generated rules')
-  .option('--quiet', 'Suppress output messages')
-  .action(async (filename: string, options: InitOptions): Promise<void> => {
-    await executeInitCommand(filename, options);
+  .option('-v, --verbose', 'Show detailed information')
+  .option('-q, --quiet', 'Suppress output messages')
+  .action(
+    async (
+      filename: string,
+      options: {
+        name?: string;
+        description?: string;
+        force?: boolean;
+        verbose?: boolean;
+        quiet?: boolean;
+      }
+    ) => {
+      try {
+        const command = new InitCommand(filename, options);
+        const handler =
+          container.resolve<InitCommandHandler>('initCommandHandler');
+
+        const result = await handler.execute(command);
+
+        if (result.isErr()) {
+          logger.error('Init failed', result.error);
+          process.exit(1);
+        }
+      } catch (error) {
+        logger.error('Unexpected error', error as Error);
+        console.error('Error:', (error as Error).message);
+        process.exit(1);
+      }
+    }
+  );
+
+// --- Validate Command ---
+program
+  .command('validate <target>')
+  .description('Validate RulePacks and input files')
+  .option('--strict', 'Enable strict validation mode')
+  .option('-v, --verbose', 'Enable verbose output')
+  .option('--skip-warnings', 'Skip warnings in output')
+  .option('--max-errors <number>', 'Maximum errors to report', parseInt)
+  .option('--format <format>', 'Expected file format: json, ndjson, yaml, txt')
+  .option(
+    '--output <format>',
+    'Output format: json, table, summary (default: table)'
+  )
+  .option('--batch', 'Enable batch validation mode')
+  .action(async (target: string, options: ValidateCommandOptions) => {
+    try {
+      const command = new ValidateCommand(target, options);
+      const handler = container.resolve<ValidateCommandHandler>(
+        'validateCommandHandler'
+      );
+
+      const result = await handler.execute(command);
+
+      if (result.isErr()) {
+        logger.error('Validate failed', result.error);
+        process.exit(1);
+      }
+
+      // Exit with error code if validation failed
+      if (!result.value.isValid) {
+        process.exit(1);
+      }
+    } catch (error) {
+      logger.error('Unexpected error', error as Error);
+      console.error('Error:', (error as Error).message);
+      process.exit(1);
+    }
   });
 
 program.parse();
-*/
 
-// NEW CLI - USING THE NEW ARCHITECTURE
-import './index-new-temp';
+// Show help if no command provided
+if (!process.argv.slice(2).length) {
+  program.outputHelp();
+}

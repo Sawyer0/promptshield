@@ -10,12 +10,9 @@ export class ScanRequest {
     public readonly timestamp: Date = new Date()
   ) {}
 
-  /**
-   * Creates a scan request with default configuration
-   */
   static create(input: string, config: Partial<ScanConfig> = {}): ScanRequest {
     const defaultConfig: ScanConfig = {
-      rulepack: 'default',
+      rulepack: '',
       outputFormat: 'markdown',
       severity: ['low', 'medium', 'high', 'critical'],
       category: [],

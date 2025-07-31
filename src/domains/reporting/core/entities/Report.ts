@@ -11,30 +11,18 @@ export class Report {
     public readonly options: ReportOptions = {}
   ) {}
 
-  /**
-   * Gets the total number of violations
-   */
   getTotalViolations(): number {
     return this.scanResult.getTotalViolations();
   }
 
-  /**
-   * Checks if the report should include summary
-   */
   shouldIncludeSummary(): boolean {
     return this.options.includeSummary !== false;
   }
 
-  /**
-   * Checks if the report should include metrics
-   */
   shouldIncludeMetrics(): boolean {
     return this.options.includeMetrics !== false;
   }
 
-  /**
-   * Gets filtered violations based on options
-   */
   getFilteredViolations() {
     let violations = this.scanResult.violations;
 
@@ -88,11 +76,11 @@ export interface ReportOptions {
   outputFile?: string;
   compress?: 'gzip' | 'deflate';
   compressionLevel?: number;
+
+  // Input information
+  inputFile?: string;
 }
 
-/**
- * Metadata for a generated report
- */
 export interface ReportMetadata {
   generatedAt: Date;
   format: OutputFormat;

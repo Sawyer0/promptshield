@@ -12,8 +12,8 @@ echo ""
 echo "Scanning for real-world prompt injection attacks..."
 echo ""
 
-# Run the scan with colored console output
-./bin/promptshield scan examples/real-world-injections.json --rulepack rulepacks/prompt-injection.yaml --output console
+# Run the scan with colored console output (default markdown format)
+./bin/promptshield scan examples/real-world-injections.json --rulepack rulepacks/prompt-injection.yaml
 
 echo ""
 echo "✅ Detection completed!"

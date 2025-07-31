@@ -8,9 +8,6 @@ import { ScanMetricsUtils } from '../../../../shared/types/ScanMetrics';
  * Table format renderer
  */
 export class TableRenderer implements Renderer {
-  /**
-   * Renders a report to table format
-   */
   async render(report: Report): Promise<Result<string, Error>> {
     try {
       const violations = report.getFilteredViolations();
@@ -23,7 +20,7 @@ export class TableRenderer implements Renderer {
       output +=
         '┌─────────────────────────────────────────────────────────────────────────────────┐\n';
       output +=
-        '│                            PromptShield Scan Report                            │\n';
+        '│                            PromptShield Scan Report                             │\n';
       output +=
         '└─────────────────────────────────────────────────────────────────────────────────┘\n\n';
 
@@ -88,13 +85,13 @@ export class TableRenderer implements Renderer {
         output +=
           '┌─────────────────────────────────────────────────────────────────────────────────┐\n';
         output +=
-          '│ No safety violations detected in the scanned content.                          │\n';
+          '│ No safety violations detected in the scanned content.                           │\n';
         output +=
           '└─────────────────────────────────────────────────────────────────────────────────┘\n\n';
       }
 
       // Footer
-      output += `Generated at ${new Date().toISOString()} by PromptShield v1.0.0\n`;
+      output += `Generated at ${new Date().toISOString()} by PromptShield v1.0.4\n`;
 
       return ok(output);
     } catch (error) {
@@ -102,23 +99,14 @@ export class TableRenderer implements Renderer {
     }
   }
 
-  /**
-   * Gets the output format this renderer handles
-   */
   getFormat(): string {
     return 'table';
   }
 
-  /**
-   * Checks if this renderer supports streaming
-   */
   supportsStreaming(): boolean {
     return false;
   }
 
-  /**
-   * Gets emoji for severity level
-   */
   private getSeverityEmoji(severity: string): string {
     switch (severity.toLowerCase()) {
       case 'critical':
@@ -134,9 +122,6 @@ export class TableRenderer implements Renderer {
     }
   }
 
-  /**
-   * Truncates text to fit in table cells
-   */
   private truncateText(text: string, maxLength: number): string {
     if (text.length <= maxLength) {
       return text.padEnd(maxLength);

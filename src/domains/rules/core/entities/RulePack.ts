@@ -9,15 +9,12 @@ export class RulePack {
     public readonly name: string,
     public readonly description: string,
     public readonly rules: Rule[],
-    public readonly version: string = '1.0.0',
+    public readonly version: string = '1.0.4',
     public readonly lastUpdated: Date = new Date()
   ) {
     this.validate();
   }
 
-  /**
-   * Validates the rulepack configuration
-   */
   private validate(): void {
     if (!this.name || this.name.trim() === '') {
       throw new Error('RulePack name is required');
@@ -41,69 +38,42 @@ export class RulePack {
     });
   }
 
-  /**
-   * Gets enabled rules only
-   */
   getEnabledRules(): Rule[] {
     return this.rules.filter((rule) => rule.enabled);
   }
 
-  /**
-   * Gets rules by category
-   */
   getRulesByCategory(category: RuleCategory): Rule[] {
     return this.rules.filter((rule) => rule.category === category);
   }
 
-  /**
-   * Gets rules by severity
-   */
   getRulesBySeverity(severity: RuleSeverity): Rule[] {
     return this.rules.filter((rule) => rule.severity === severity);
   }
 
-  /**
-   * Gets rules by multiple categories
-   */
   getRulesByCategories(categories: RuleCategory[]): Rule[] {
     if (categories.length === 0) return this.rules;
     return this.rules.filter((rule) => categories.includes(rule.category));
   }
 
-  /**
-   * Gets rules by multiple severities
-   */
   getRulesBySeverities(severities: RuleSeverity[]): Rule[] {
     if (severities.length === 0) return this.rules;
     return this.rules.filter((rule) => severities.includes(rule.severity));
   }
 
-  /**
-   * Finds a rule by ID
-   */
   findRuleById(id: string): Rule | undefined {
     return this.rules.find((rule) => rule.id === id);
   }
 
-  /**
-   * Gets all categories present in this rulepack
-   */
   getCategories(): RuleCategory[] {
     const categories = new Set(this.rules.map((rule) => rule.category));
     return Array.from(categories);
   }
 
-  /**
-   * Gets all severities present in this rulepack
-   */
   getSeverities(): RuleSeverity[] {
     const severities = new Set(this.rules.map((rule) => rule.severity));
     return Array.from(severities);
   }
 
-  /**
-   * Gets rule count by category
-   */
   getRuleCountByCategory(): Record<RuleCategory, number> {
     const counts = {} as Record<RuleCategory, number>;
     this.rules.forEach((rule) => {
@@ -112,9 +82,6 @@ export class RulePack {
     return counts;
   }
 
-  /**
-   * Gets rule count by severity
-   */
   getRuleCountBySeverity(): Record<RuleSeverity, number> {
     const counts = {} as Record<RuleSeverity, number>;
     this.rules.forEach((rule) => {
@@ -123,9 +90,6 @@ export class RulePack {
     return counts;
   }
 
-  /**
-   * Creates a rulepack from YAML data
-   */
   static fromYaml(data: unknown): RulePack {
     // Type guard to ensure data has required properties
     if (!data || typeof data !== 'object') {
@@ -161,9 +125,6 @@ export class RulePack {
     );
   }
 
-  /**
-   * Converts rulepack to YAML format
-   */
   toYaml(): RulePackYamlData {
     return {
       version: this.version,
@@ -174,9 +135,6 @@ export class RulePack {
     };
   }
 
-  /**
-   * Creates an empty rulepack
-   */
   static empty(): RulePack {
     return new RulePack('Empty RulePack', 'No rules defined', []);
   }

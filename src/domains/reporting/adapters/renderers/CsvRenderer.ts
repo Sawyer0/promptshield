@@ -6,9 +6,6 @@ import { Result, ok, err } from '../../../../shared/types/Result';
  * CSV format renderer
  */
 export class CsvRenderer implements Renderer {
-  /**
-   * Renders a report to CSV format
-   */
   async render(report: Report): Promise<Result<string, Error>> {
     try {
       const violations = report.getFilteredViolations();
@@ -46,23 +43,14 @@ export class CsvRenderer implements Renderer {
     }
   }
 
-  /**
-   * Gets the output format this renderer handles
-   */
   getFormat(): string {
     return 'csv';
   }
 
-  /**
-   * Checks if this renderer supports streaming
-   */
   supportsStreaming(): boolean {
     return true;
   }
 
-  /**
-   * Escapes CSV values properly
-   */
   private escapeCsvValue(value: string): string {
     if (!value) return '';
 

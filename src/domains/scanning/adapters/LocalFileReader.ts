@@ -8,9 +8,6 @@ import { Result, ok, err } from '../../../shared/types/Result';
  * Local file system implementation of FileReader
  */
 export class LocalFileReader implements FileReader {
-  /**
-   * Reads a file and returns its content
-   */
   async readFile(filePath: string): Promise<Result<string, Error>> {
     try {
       const content = await fs.promises.readFile(filePath, 'utf-8');
@@ -20,9 +17,6 @@ export class LocalFileReader implements FileReader {
     }
   }
 
-  /**
-   * Checks if a file exists
-   */
   async exists(filePath: string): Promise<boolean> {
     try {
       await fs.promises.access(filePath);
@@ -32,9 +26,6 @@ export class LocalFileReader implements FileReader {
     }
   }
 
-  /**
-   * Checks if a path is a directory
-   */
   async isDirectory(filePath: string): Promise<boolean> {
     try {
       const stats = await fs.promises.stat(filePath);
@@ -44,9 +35,6 @@ export class LocalFileReader implements FileReader {
     }
   }
 
-  /**
-   * Lists files in a directory
-   */
   async listFiles(
     dirPath: string,
     pattern?: string
@@ -69,9 +57,6 @@ export class LocalFileReader implements FileReader {
     }
   }
 
-  /**
-   * Gets file size in bytes
-   */
   async getFileSize(filePath: string): Promise<Result<number, Error>> {
     try {
       const stats = await fs.promises.stat(filePath);
@@ -83,9 +68,6 @@ export class LocalFileReader implements FileReader {
     }
   }
 
-  /**
-   * Gets file metadata
-   */
   async getFileMetadata(
     filePath: string
   ): Promise<Result<FileMetadata, Error>> {
@@ -110,18 +92,12 @@ export class LocalFileReader implements FileReader {
     }
   }
 
-  /**
-   * Determines if a file should be treated as NDJSON
-   */
   isNdjsonFile(filePath: string, ndjsonFlag?: boolean): boolean {
     return (
       ndjsonFlag || filePath.endsWith('.ndjson') || filePath.endsWith('.jsonl')
     );
   }
 
-  /**
-   * Creates a read stream for a file
-   */
   createReadStream(filePath: string): fs.ReadStream {
     return fs.createReadStream(filePath, { encoding: 'utf-8' });
   }

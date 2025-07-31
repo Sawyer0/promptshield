@@ -17,9 +17,6 @@ export class Rule {
     this.validate();
   }
 
-  /**
-   * Validates the rule configuration
-   */
   private validate(): void {
     if (!this.id || this.id.trim() === '') {
       throw new Error('Rule ID is required');
@@ -43,40 +40,25 @@ export class Rule {
     });
   }
 
-  /**
-   * Checks if this rule has regex patterns
-   */
   hasRegexPatterns(): boolean {
     return this.matchRegex.length > 0;
   }
 
-  /**
-   * Checks if this rule has keyword patterns
-   */
   hasKeywordPatterns(): boolean {
     return this.matchKeywords.length > 0;
   }
 
-  /**
-   * Gets compiled regex patterns
-   */
   getCompiledRegexPatterns(): RegExp[] {
     const flags = this.caseSensitive ? 'g' : 'gi';
     return this.matchRegex.map((pattern) => new RegExp(pattern, flags));
   }
 
-  /**
-   * Gets normalized keywords for matching
-   */
   getNormalizedKeywords(): string[] {
     return this.caseSensitive
       ? this.matchKeywords
       : this.matchKeywords.map((k) => k.toLowerCase());
   }
 
-  /**
-   * Creates a rule from YAML data
-   */
   static fromYaml(data: unknown): Rule {
     // Type guard to ensure data has required properties
     if (!data || typeof data !== 'object') {
@@ -113,9 +95,6 @@ export class Rule {
     );
   }
 
-  /**
-   * Converts rule to YAML format
-   */
   toYaml(): RuleYamlData {
     return {
       id: this.id,
@@ -132,14 +111,8 @@ export class Rule {
   }
 }
 
-/**
- * Rule severity levels
- */
 export type RuleSeverity = 'low' | 'medium' | 'high' | 'critical';
 
-/**
- * Rule categories
- */
 export type RuleCategory =
   | 'pii'
   | 'bias'

@@ -52,7 +52,7 @@ promptshield scan <input> [options]
 
 | Option                     | Description                     | Default    | Type   |
 | -------------------------- | ------------------------------- | ---------- | ------ |
-| `--rulepack <path>`        | Path to RulePack YAML           | `default`  | string |
+| `-r, --rulepack <path>`    | Path to RulePack YAML (required)| -          | string |
 | `-o, --output <format>`    | Output format                   | `markdown` | string |
 | `-f, --output-file <file>` | Write to file instead of stdout | -          | string |
 
@@ -135,34 +135,28 @@ promptshield scan <input> [options]
 #### Examples
 
 ```bash
-# Basic scan
-promptshield scan data.json
-
-# Scan with specific RulePack
-promptshield scan data.json --rulepack rulepacks/pii.yaml
-
-# Scan directory
-promptshield scan /path/to/data/
+# Basic scan (rulepack required)
+promptshield scan data.json -r my-rules.yaml
 
 # Scan with filtering
-promptshield scan data.json --severity critical,high --category security
+promptshield scan data.json -r my-rules.yaml --severity critical,high
 
 # Scan with custom output
-promptshield scan data.json --output json --output-file report.json
+promptshield scan data.json -r my-rules.yaml --output json --output-file report.json
 
 # Scan with performance options
-promptshield scan large-file.json --parallel 4 --streaming-threshold 100
+promptshield scan large-file.json -r my-rules.yaml --parallel 4 --streaming-threshold 100
 
 # Scan from stdin
-echo '{"prompt": "test"}' | promptshield scan -
+echo '{"prompt": "test"}' | promptshield scan - -r my-rules.yaml
 
 # CI/CD integration
-promptshield scan data.json --fail-on critical --quiet
+promptshield scan data.json -r security-rules.yaml --fail-on critical --quiet
 ```
 
-### 📋 `list` - List Rules and RulePacks
+### 📋 `list` - List Rules in a RulePack
 
-View available RulePacks and their rules.
+View rules in a specific RulePack.
 
 ```bash
 promptshield list [options]
@@ -172,7 +166,7 @@ promptshield list [options]
 
 | Option                  | Description                       | Default | Type    |
 | ----------------------- | --------------------------------- | ------- | ------- |
-| `--rulepack <path>`     | List rules from specific RulePack | -       | string  |
+| `-r, --rulepack <path>` | Path to RulePack YAML (required)  | -       | string  |
 | `--category <category>` | Filter by category                | -       | string  |
 | `--severity <severity>` | Filter by severity                | -       | string  |
 | `--enabled-only`        | Show only enabled rules           | false   | boolean |
@@ -180,11 +174,11 @@ promptshield list [options]
 #### Examples
 
 ```bash
-# List all RulePacks
-promptshield list
+# List rules in your RulePack
+promptshield list -r my-rules.yaml
 
-# List rules in specific RulePack
-promptshield list --rulepack rulepacks/security.yaml
+# List with filters
+promptshield list -r my-rules.yaml --category security --enabled-only
 
 # Filter by category
 promptshield list --category security --enabled-only
@@ -308,39 +302,39 @@ promptshield validate data.json --format json --output summary
 
 ```bash
 # Scan for prompt injection attacks
-promptshield scan chat-logs.json --rulepack rulepacks/prompt-injection.yaml
+promptshield scan chat-logs.json --rulepack my-security-rules.yaml
 
 # Scan with critical severity only
-promptshield scan data.json --severity critical --output json --output-file critical-violations.json
+promptshield scan data.json -r my-rules.yaml --severity critical --output json --output-file critical-violations.json
 
 # Scan directory with parallel processing
-promptshield scan /data/ --parallel 4 --rulepack rulepacks/security.yaml
+promptshield scan /data/ --parallel 4 --rulepack my-security-rules.yaml
 ```
 
 #### PII Detection
 
 ```bash
 # Scan for personal information
-promptshield scan user-data.json --rulepack rulepacks/pii.yaml
+promptshield scan user-data.json --rulepack my-pii-rules.yaml
 
 # Filter by PII category
-promptshield scan data.json --category pii --severity high,critical
+promptshield scan data.json -r my-rules.yaml --category pii --severity high,critical
 
 # Generate CSV report
-promptshield scan data.json --output csv --output-file pii-report.csv
+promptshield scan data.json -r my-rules.yaml --output csv --output-file pii-report.csv
 ```
 
 #### Compliance Checking
 
 ```bash
 # Scan for compliance violations
-promptshield scan data.json --rulepack rulepacks/compliance.yaml
+promptshield scan data.json --rulepack my-compliance-rules.yaml
 
 # Generate HTML report for stakeholders
-promptshield scan data.json --output html --output-file compliance-report.html
+promptshield scan data.json -r my-rules.yaml --output html --output-file compliance-report.html
 
 # Fail on high severity violations
-promptshield scan data.json --fail-on high --quiet
+promptshield scan data.json -r my-rules.yaml --fail-on high --quiet
 ```
 
 ### Advanced Workflows
@@ -376,7 +370,7 @@ promptshield scan test-data.json --rulepack my-rules.yaml
 ```bash
 # Automated security scan
 promptshield scan /data/ \
-  --rulepack rulepacks/security.yaml \
+  --rulepack my-security-rules.yaml \
   --output json \
   --output-file security-report.json \
   --fail-on critical \
@@ -385,6 +379,7 @@ promptshield scan /data/ \
 # Batch processing multiple files
 for file in data/*.json; do
   promptshield scan "$file" \
+    --rulepack my-rules.yaml \
     --output json \
     --output-file "report-$(basename "$file")"
 done
@@ -395,13 +390,13 @@ done
 ```bash
 # Daily security scan
 promptshield scan /daily-data/ \
-  --rulepack rulepacks/security.yaml \
+  --rulepack my-security-rules.yaml \
   --output json \
   --output-file "/reports/daily-$(date +%Y%m%d).json"
 
 # Weekly compliance report
 promptshield scan /weekly-data/ \
-  --rulepack rulepacks/compliance.yaml \
+  --rulepack my-compliance-rules.yaml \
   --output markdown \
   --output-file "/reports/weekly-$(date +%Y%m%d).md"
 ```

@@ -38,8 +38,8 @@ program
   .command('scan <input>')
   .description('Scan LLM outputs for safety violations using rulepacks')
   .option(
-    '--rulepack <path>',
-    'Path to RulePack YAML (default: built-in prompt-injection rules)'
+    '-r, --rulepack <path>',
+    'Path to RulePack YAML (required)'
   )
   .option(
     '-o, --output <format>',
@@ -135,18 +135,33 @@ program
       }
 
       const command = new ScanCommand(actualInput, options);
-      const handler =
-        container.resolve<ScanCommandHandler>('scanCommandHandler');
+      
+      // Create a command-specific logger that respects quiet mode
+      const commandLogger = options.quiet 
+        ? LoggerFactory.createQuietLogger()
+        : LoggerFactory.create({
+            level: options.debug ? 'DEBUG' : 'ERROR',
+            options: { includeTimestamp: true }
+          });
+
+      const handler = new ScanCommandHandler(
+        container.resolve('scanEngine'),
+        container.resolve('reportService'),
+        commandLogger
+      );
 
       const result = await handler.execute(command);
 
       if (result.isErr()) {
-        logger.error('Scan failed', result.error);
+        if (!options.quiet) {
+          process.stderr.write(`Error: ${result.error.message}\n`);
+        }
         process.exit(1);
       }
     } catch (error) {
-      logger.error('Unexpected error', error as Error);
-      console.error('Error:', (error as Error).message);
+      if (!options.quiet) {
+        process.stderr.write(`Error: ${(error as Error).message}\n`);
+      }
       process.exit(1);
     }
   });
@@ -154,8 +169,8 @@ program
 // --- List Command ---
 program
   .command('list')
-  .description('List available RulePacks and rules')
-  .option('--rulepack <path>', 'List rules from specific RulePack')
+  .description('List rules in a RulePack')
+  .option('-r, --rulepack <path>', 'Path to RulePack YAML (required)')
   .option('--category <category>', 'Filter by category')
   .option('--severity <severity>', 'Filter by severity')
   .option('--enabled-only', 'Show only enabled rules')
@@ -188,23 +203,18 @@ program
 // --- Init Command ---
 program
   .command('init <filename>')
-  .description('Initialize a new RulePack YAML file with templates')
-  .option(
-    '-t, --template <template>',
-    'Template: basic, pii, security, bias, compliance (default: basic)'
-  )
+  .description('Initialize a new RulePack YAML file with example structure')
+  .option('-n, --name <name>', 'RulePack name')
   .option('-d, --description <description>', 'RulePack description')
-  .option('-c, --category <category>', 'RulePack category (default: custom)')
   .option('--force', 'Overwrite existing file')
-  .option('-v, --verbose', 'Show detailed rule information')
+  .option('-v, --verbose', 'Show detailed information')
   .option('-q, --quiet', 'Suppress output messages')
   .action(
     async (
       filename: string,
       options: {
-        template?: string;
+        name?: string;
         description?: string;
-        category?: string;
         force?: boolean;
         verbose?: boolean;
         quiet?: boolean;
@@ -268,7 +278,6 @@ program
     }
   });
 
-// Parse command line arguments
 program.parse();
 
 // Show help if no command provided

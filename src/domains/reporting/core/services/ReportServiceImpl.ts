@@ -14,9 +14,6 @@ export class ReportServiceImpl implements ReportService {
     this.renderers = renderers;
   }
 
-  /**
-   * Generates a report in the specified format
-   */
   async generateReport(report: Report): Promise<Result<string, Error>> {
     const renderer = this.renderers.get(report.format);
     if (!renderer) {
@@ -31,21 +28,16 @@ export class ReportServiceImpl implements ReportService {
     }
   }
 
-  /**
-   * Writes a report to a file
-   */
   async writeReport(
     report: Report,
     outputPath: string
   ): Promise<Result<void, Error>> {
     try {
-      // Generate the report content
       const contentResult = await this.generateReport(report);
       if (contentResult.isErr()) {
         return err(contentResult.error);
       }
 
-      // Ensure directory exists
       const dir = path.dirname(outputPath);
       if (!fs.existsSync(dir)) {
         await fs.promises.mkdir(dir, { recursive: true });
@@ -62,9 +54,6 @@ export class ReportServiceImpl implements ReportService {
     }
   }
 
-  /**
-   * Lists available output formats
-   */
   getAvailableFormats(): string[] {
     return Array.from(this.renderers.keys());
   }

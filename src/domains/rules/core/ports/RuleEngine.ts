@@ -3,23 +3,11 @@ import { Rule } from '../entities/Rule';
 import { RulePack } from '../entities/RulePack';
 import { Violation } from '../../../../shared/types/Violation';
 
-/**
- * Interface for rule engine operations
- */
 export interface RuleEngine {
-  /**
-   * Loads a rulepack from a file or default location
-   */
   loadRulePack(path: string): Promise<Result<RulePack, Error>>;
 
-  /**
-   * Validates a rulepack
-   */
   validateRulePack(rulePack: RulePack): Result<void, Error>;
 
-  /**
-   * Applies rules to content and returns violations
-   */
   applyRules(
     fields: Record<string, string>,
     rules: Rule[],
@@ -46,19 +34,10 @@ export interface RuleEngine {
   >;
 }
 
-/**
- * Interface for rule matching
- */
 export interface RuleMatcher {
-  /**
-   * Matches a rule against content
-   */
   match(content: string, rule: Rule): MatchResult[];
 }
 
-/**
- * Result of a rule match
- */
 export interface MatchResult {
   matched: boolean;
   position: {
@@ -75,27 +54,8 @@ export interface MatchResult {
   pattern?: string;
 }
 
-/**
- * Interface for rule repository
- */
 export interface RuleRepository {
-  /**
-   * Loads rules from a YAML file
-   */
   loadFromYaml(path: string): Promise<Result<RulePack, Error>>;
 
-  /**
-   * Saves rules to a YAML file
-   */
   saveToYaml(path: string, rulePack: RulePack): Promise<Result<void, Error>>;
-
-  /**
-   * Lists available rulepacks
-   */
-  listAvailable(): Promise<Result<string[], Error>>;
-
-  /**
-   * Gets the default rulepack path
-   */
-  getDefaultPath(): string;
 }

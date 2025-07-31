@@ -1,57 +1,222 @@
 # Copyright (c) 2025 Sawyer0
 # Licensed under proprietary terms. See LICENSE for details.
-schema_version: 1.0.0
-version: 1.2.0
-last_updated: 2025-06-01
-name: "PII Detection"
-description: "Detects personally identifiable information (PII) in prompts, responses, and datasets."
+version: '1.0.0'
+last_updated: '2025-01-15'
+name: PII Rules
+description: Detects various types of personally identifiable information
 rules:
-  - id: "pii-email"
-    name: "Email Address Detection"
-    description: "Detects email addresses in content."
-    severity: "high"
+  # Email detection using keywords and regex
+  - id: email
+    description: Detects email addresses
+    match_keywords: ['@gmail.com', '@yahoo.com', '@hotmail.com', '@outlook.com']
+    match_regex: ["\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\\b"]
+    severity: high
+    category: pii
     enabled: true
-    type: "regex"
-    pattern: "\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
-    message: "Email address detected: {match}"
-    tags: ["pii", "email"]
+    case_sensitive: false
 
-  - id: "pii-phone"
-    name: "Phone Number Detection"
-    description: "Detects US phone numbers in content."
-    severity: "medium"
+  # Phone number detection
+  - id: phone
+    description: Detects US phone numbers
+    match_regex: ["\\b\\d{3}[-.\\s]?\\d{3}[-.\\s]?\\d{4}\\b"]
+    severity: medium
+    category: pii
     enabled: true
-    type: "regex"
-    pattern: "\b(?:\+1[-.\s]?)?(?:\(?\d{3}\)?[-.\s]?)?\d{3}[-.\s]?\d{4}\b"
-    message: "Phone number detected: {match}"
-    tags: ["pii", "phone"]
 
-  - id: "pii-ssn"
-    name: "Social Security Number Detection"
-    description: "Detects US Social Security Numbers (SSN) in content."
-    severity: "critical"
+  # Social Security Number detection
+  - id: ssn
+    description: Detects US Social Security Numbers
+    match_regex: ["\\b\\d{3}-\\d{2}-\\d{4}\\b"]
+    severity: high
+    category: pii
     enabled: true
-    type: "regex"
-    pattern: "\b\d{3}-\d{2}-\d{4}\b"
-    message: "SSN detected: {match}"
-    tags: ["pii", "ssn"]
 
-  - id: "pii-cc"
-    name: "Credit Card Number Detection"
-    description: "Detects common credit card numbers (Visa, MasterCard, Amex, Discover)."
-    severity: "critical"
+  # Credit card detection
+  - id: cc
+    description: Detects credit card numbers
+    match_regex:
+      [
+        "\\b(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13}|6(?:011|5[0-9]{2})[0-9]{12})\\b",
+      ]
+    severity: high
+    category: pii
     enabled: true
-    type: "regex"
-    pattern: "\b(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13}|6(?:011|5[0-9]{2})[0-9]{12})\b"
-    message: "Credit card number detected: {match}"
-    tags: ["pii", "credit_card"]
 
-  - id: "pii-address"
-    name: "Street Address Detection"
-    description: "Detects US-style street addresses (simple heuristic)."
-    severity: "medium"
+  # Address detection using keywords
+  - id: address_keywords
+    description: Detects address-related keywords
+    match_keywords:
+      [
+        'Street',
+        'Avenue',
+        'Boulevard',
+        'Road',
+        'Lane',
+        'Drive',
+        'Court',
+        'Circle',
+        'Way',
+        'Place',
+      ]
+    severity: medium
+    category: pii
     enabled: true
-    type: "regex"
-    pattern: "\b\d{1,5}\s+([A-Za-z0-9.,'\-\s]+)\s+(Street|St|Avenue|Ave|Boulevard|Blvd|Road|Rd|Lane|Ln|Drive|Dr|Court|Ct|Circle|Cir|Way|Place|Pl)\b"
-    message: "Possible street address detected: {match}"
-    tags: ["pii", "address"]
+
+  # Full address detection using regex
+  - id: address_regex
+    description: Detects US-style street addresses
+    match_regex:
+      [
+        "\\d{1,5}\\s+([A-Za-z0-9.,'\\-\\s]+)\\s+(Street|St|Avenue|Ave|Boulevard|Blvd|Road|Rd|Lane|Ln|Drive|Dr|Court|Ct|Circle|Cir|Way|Place|Pl)",
+      ]
+    severity: medium
+    category: pii
+    enabled: true
+
+  # Username detection
+  - id: username
+    description: Detects usernames and handles
+    match_regex:
+      [
+        "\\b@[a-zA-Z0-9_]{3,20}\\b",
+        "\\buser_[a-zA-Z0-9_]{3,20}\\b",
+        "\\bhandle_[a-zA-Z0-9_]{3,20}\\b",
+      ]
+    match_keywords: ['username:', 'handle:', 'user_id:', 'user_handle:']
+    severity: low
+    category: pii
+    enabled: true
+
+  # Driver's License detection
+  - id: drivers_license
+    description: Detects US driver's license patterns
+    match_regex:
+      [
+        "\\b[A-Z]{1,2}\\d{6,8}\\b",
+        "\\bDL[\\s-]?\\d{8,12}\\b",
+        "\\bLIC[\\s-]?\\d{8,12}\\b",
+      ]
+    severity: high
+    category: pii
+    enabled: true
+
+  # Bank account detection
+  - id: bank_account
+    description: Detects bank account numbers
+    match_regex:
+      [
+        "\\b\\d{8,17}\\b",
+        "\\bACCT[\\s-]?\\d{8,17}\\b",
+        "\\bAccount[\\s-]?\\d{8,17}\\b",
+      ]
+    match_keywords: ['account number:', 'acct:', 'routing number:']
+    severity: high
+    category: pii
+    enabled: true
+
+  # IP Address detection
+  - id: ip_address
+    description: Detects IP addresses
+    match_regex:
+      [
+        "\\b(?:[0-9]{1,3}\\.){3}[0-9]{1,3}\\b",
+        "\\b(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}\\b",
+      ]
+    severity: medium
+    category: pii
+    enabled: true
+
+  # Passport detection
+  - id: passport
+    description: Detects passport numbers
+    match_regex:
+      [
+        "\\b[A-Z]{1,2}\\d{6,9}\\b",
+        "\\bPASS[\\s-]?\\d{6,9}\\b",
+        "\\bPASSPORT[\\s-]?\\d{6,9}\\b",
+      ]
+    severity: high
+    category: pii
+    enabled: true
+
+  # Date of birth detection
+  - id: date_of_birth
+    description: Detects date of birth patterns
+    match_regex:
+      [
+        "\\b(0?[1-9]|1[0-2])/(0?[1-9]|[12]\\d|3[01])/(19|20)\\d{2}\\b",
+        "\\b(19|20)\\d{2}-(0?[1-9]|1[0-2])-(0?[1-9]|[12]\\d|3[01])\\b",
+      ]
+    match_keywords: ['date of birth:', 'DOB:', 'born:', 'birthday:']
+    severity: medium
+    category: pii
+    enabled: true
+
+  # Medical information
+  - id: medical_info
+    description: Detects medical record numbers and health information
+    match_regex:
+      ["\\bMRN[\\s-]?\\d{6,12}\\b", "\\bMEDICAL[\\s-]?ID[\\s-]?\\d{6,12}\\b"]
+    match_keywords:
+      [
+        'medical record:',
+        'patient id:',
+        'health insurance:',
+        'medicare:',
+        'medicaid:',
+        'diagnosis:',
+        'prescription:',
+        'treatment:',
+      ]
+    severity: high
+    category: pii
+    enabled: true
+
+  # Financial information
+  - id: financial_info
+    description: Detects various financial identifiers
+    match_keywords:
+      [
+        'tax id:',
+        'ein:',
+        'employer id:',
+        'aba routing:',
+        'swift code:',
+        'iban:',
+        'bitcoin address:',
+        'wallet address:',
+      ]
+    severity: high
+    category: pii
+    enabled: true
+
+  # Government ID detection
+  - id: government_id
+    description: Detects government issued IDs
+    match_regex:
+      [
+        "\\bTIN[\\s-]?\\d{9}\\b",
+        "\\bEIN[\\s-]?\\d{2}-\\d{7}\\b",
+        "\\bITIN[\\s-]?\\d{3}-\\d{2}-\\d{4}\\b",
+      ]
+    severity: high
+    category: pii
+    enabled: true
+
+  # Biometric identifiers
+  - id: biometric_data
+    description: Detects references to biometric data
+    match_keywords:
+      [
+        'fingerprint',
+        'biometric',
+        'facial recognition',
+        'iris scan',
+        'voice print',
+        'dna sample',
+        'genetic data',
+        'retinal scan',
+      ]
+    severity: high
+    category: pii
+    enabled: true

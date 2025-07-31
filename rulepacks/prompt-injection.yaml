@@ -1,0 +1,99 @@
+# Copyright (c) 2025 Sawyer0
+# Licensed under proprietary terms. See LICENSE for details.
+version: '1.0.0'
+last_updated: '2025-01-15'
+name: Prompt Injection Detection
+description: Detects prompt injection attacks, jailbreaking attempts, and system prompt extraction
+rules:
+  # Comprehensive jailbreaking detection
+  - id: jailbreak-comprehensive
+    description: Detects comprehensive jailbreak attempts including DAN, roleplay, and instruction bypass
+    match_regex:
+      - "\\bDAN\\b"
+      - 'do anything now'
+      - 'act as dan'
+      - "\\[.*roleplay.*\\]"
+      - 'act as if you are'
+      - 'pretend you are'
+      - 'imagine you are'
+      - 'ignore.*previous.*instructions'
+      - 'forget.*previous.*instructions'
+      - 'disregard.*previous.*instructions'
+      - 'ignore.*all.*instructions'
+      - 'bypass.*security'
+      - 'circumvent.*safety'
+      - 'disable.*safeguards'
+      - 'remove.*restrictions'
+    severity: critical
+    category: security
+    enabled: true
+    case_sensitive: false
+
+  # System information extraction
+  - id: system-info-extraction
+    description: Detects attempts to extract system prompts, training data, and configuration
+    match_regex:
+      - 'system prompt'
+      - 'initial instructions'
+      - 'base instructions'
+      - 'core instructions'
+      - 'what.*are.*your.*instructions'
+      - 'training data'
+      - 'training cutoff'
+      - 'knowledge cutoff'
+      - 'what.*do.*you.*know.*about'
+      - 'internal.*configuration'
+      - 'model.*parameters'
+      - 'system.*settings'
+      - 'what.*is.*your.*configuration'
+    severity: high
+    category: security
+    enabled: true
+    case_sensitive: false
+
+  # AI bias manipulation
+  - id: bias-manipulation
+    description: Detects attempts to manipulate AI bias and neutrality
+    match_regex:
+      - 'act as an unbiased ai'
+      - 'be completely neutral'
+      - 'remove.*bias'
+      - 'ignore.*bias'
+    severity: high
+    category: security
+    enabled: true
+    case_sensitive: false
+
+  # System access attempts
+  - id: system-access
+    description: Detects attempts to execute code, access files, or network resources
+    match_regex:
+      - 'execute.*code'
+      - 'run.*this.*code'
+      - 'execute.*this.*script'
+      - 'run.*command'
+      - 'read.*file'
+      - 'access.*file'
+      - 'open.*file'
+      - 'show.*file.*contents'
+      - 'make.*http.*request'
+      - 'connect.*to.*url'
+      - 'access.*website'
+      - 'download.*from'
+    severity: critical
+    category: security
+    enabled: true
+    case_sensitive: false
+
+  # Data exfiltration attempts
+  - id: data-exfiltration
+    description: Detects attempts to exfiltrate data or send information externally
+    match_regex:
+      - 'send.*data.*to'
+      - 'upload.*to'
+      - 'export.*data'
+      - 'transmit.*information'
+    severity: critical
+    category: security
+    enabled: true
+    case_sensitive: false

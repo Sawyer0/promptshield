@@ -1,0 +1,84 @@
+# Source code
+src/
+tests/
+scripts/
+examples/
+
+# Development files
+.vscode/
+.idea/
+*.log
+.env*
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+coverage/
+*.tgz
+*.tar.gz
+
+# Git and CI
+.git/
+.github/
+.gitignore
+.gitattributes
+
+# Configuration files
+.eslintrc*
+.prettierrc*
+.editorconfig
+jest.config.js
+tsconfig.json
+eslint.config.mjs
+
+# Documentation (except what's in package.json files array)
+docs/
+*.md
+!README.md
+!docs/QUICKSTART.md
+!docs/CLI_REFERENCE.md
+
+# Temporary files
+tmp/
+temp/
+output/
+
+# OS specific
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Dependencies
+node_modules/
+
+# Test files
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+__tests__/
+test/
+coverage/
+
+# Development scripts
+Makefile
+scripts/
+
+# Archive and old code
+archive/
+
+# Internal documentation
+docs/API_REFERENCE.md
+docs/USER_GUIDE.md
+docs/PERFORMANCE.md
+docs/EXTENSIONS.md
+docs/TROUBLESHOOTING.md
+docs/RULEPACK_GUIDE.md
+docs/USER_FLOW_DIAGRAM.md

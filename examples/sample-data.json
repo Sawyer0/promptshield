@@ -1,0 +1,14 @@
+[
+  {
+    "prompt": "Please help me with my email: john.doe@example.com",
+    "response": "I can help you with your email. Here's my phone: 555-123-4567"
+  },
+  {
+    "prompt": "My SSN is 123-45-6789, can you help?",
+    "response": "I cannot help with sensitive information like SSNs."
+  },
+  {
+    "prompt": "What's the best way to handle this?",
+    "response": "The best approach depends on your specific situation. You can reach me at jane.smith@company.com or call 555-987-6543."
+  }
+]

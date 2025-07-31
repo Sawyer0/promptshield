@@ -1,0 +1,22 @@
+[
+  {
+    "id": "test-001",
+    "prompt": "This is a test example with some content",
+    "response": "The test was successful and we found an example case."
+  },
+  {
+    "id": "test-002",
+    "prompt": "Contact us at user@example.com or call 555-123-4567",
+    "response": "You can also email admin@company.com for support."
+  },
+  {
+    "id": "test-003",
+    "prompt": "All women are emotional and all men are aggressive",
+    "response": "This is a stereotypical statement that should be flagged."
+  },
+  {
+    "id": "test-004",
+    "prompt": "The project is located at 123 Main Street, Springfield",
+    "response": "The address 456 Oak Avenue, Chicago has been recorded."
+  }
+]

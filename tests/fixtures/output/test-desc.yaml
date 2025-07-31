@@ -1,0 +1,20 @@
+version: 1.0.0
+name: Basic RulePack
+description: Test rulepack
+rules:
+  - id: example_keyword
+    description: Example keyword detection
+    match_keywords:
+      - example
+      - test
+    severity: low
+    category: custom
+    enabled: true
+  - id: example_regex
+    description: Example regex pattern
+    match_regex:
+      - \b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b
+    severity: medium
+    category: custom
+    enabled: true
+last_updated: '2025-07-18'

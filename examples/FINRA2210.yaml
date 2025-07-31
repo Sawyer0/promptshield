@@ -1,0 +1,206 @@
+version: '1.0.0'
+last_updated: '2025-01-15'
+name: 'FINRA Rule 2210 Compliance'
+description: 'Rules for detecting FINRA Rule 2210 violations in retail communications and marketing materials'
+rules:
+  - id: 'FINRA-2210-PD-001'
+    description: 'Missing standardized performance information, maximum sales charge, or total annual fund operating expense ratio for non-money market fund open-end management investment companies'
+    match_keywords:
+      - 'non-money market fund'
+      - 'open-end management investment company'
+      - 'performance data'
+      - 'standardized performance information'
+      - 'maximum sales charge'
+      - 'total annual fund operating expense ratio'
+    match_regex:
+      - 'Securities Act Rule 482'
+      - 'Rule 34b-1'
+    severity: high
+    category: compliance
+    enabled: true
+    case_sensitive: false
+
+  - id: 'FINRA-2210-PD-002'
+    description: 'Improper prominence or formatting of required performance and fee information in print advertisements for non-money market fund open-end management investment companies'
+    match_keywords:
+      - 'not set forth prominently'
+      - 'not in a prominent text box'
+      - 'contains only the required information'
+    severity: medium
+    category: compliance
+    enabled: true
+    case_sensitive: false
+
+  - id: 'FINRA-2210-TC-001'
+    description: 'Failure to disclose that a testimonial was paid for, if the payment exceeds $100 in value'
+    match_keywords:
+      - 'testimonial'
+      - 'paid testimonial'
+    match_regex:
+      - "more than \\$?100.*paid"
+      - "\\$?100.*value.*paid"
+      - "paid.*\\$?100.*value"
+    severity: high
+    category: compliance
+    enabled: true
+    case_sensitive: false
+
+  - id: 'FINRA-2210-HL-001'
+    description: "Missing or incorrectly placed BrokerCheck hyperlink on a member's website"
+    match_keywords:
+      - 'website'
+      - 'BrokerCheck'
+      - 'hyperlink to BrokerCheck'
+      - 'initial webpage'
+      - 'retail investors'
+      - 'professional profile'
+      - 'registered persons'
+    severity: high
+    category: compliance
+    enabled: true
+    case_sensitive: false
+
+  - id: 'FINRA-2210-HL-002'
+    description: 'Misuse of FINRA name implying endorsement or guarantee, or incorrect phrasing for Department review'
+    match_regex:
+      - 'FINRA.*(endorses|indemnifies|guarantees|approves)'
+      - 'Reviewed by FINRA'
+      - 'FINRA Reviewed'
+    match_keywords:
+      - 'FINRA endorses'
+      - 'FINRA guarantees'
+      - 'FINRA approves'
+      - 'not limited to'
+    severity: high
+    category: compliance
+    enabled: true
+    case_sensitive: false
+
+  - id: 'FINRA-2210-HL-003'
+    description: "Missing hyperlink to FINRA's main website (www.finra.org) in close proximity to the indication of FINRA membership on a member's website"
+    match_keywords:
+      - 'FINRA membership'
+      - 'www.finra.org'
+      - 'close proximity'
+    match_regex:
+      - 'hyperlink.*FINRA.*internet.*home.*page'
+    severity: high
+    category: compliance
+    enabled: true
+    case_sensitive: false
+
+  - id: 'FINRA-2210-FC-001'
+    description: 'New member (within first year) publishing retail communication in public media without pre-filing 10 business days prior to first use'
+    match_keywords:
+      - 'new member'
+      - 'retail communication'
+      - 'public media'
+      - '10 business days'
+      - 'prior to first use'
+    match_regex:
+      - 'within.*one year.*Central Registration Depository'
+      - 'file.*Department.*10 business days.*first use'
+      - 'electronic.*public media'
+    severity: high
+    category: compliance
+    enabled: true
+    case_sensitive: false
+
+  - id: 'FINRA-2210-FC-002'
+    description: 'Retail communication concerning registered investment companies with certain performance rankings/comparisons published without pre-filing 10 business days prior to first use'
+    match_keywords:
+      - 'retail communications'
+      - 'registered investment companies'
+      - 'performance rankings'
+      - 'performance comparisons'
+      - '10 business days'
+      - 'prior to first use'
+    match_regex:
+      - 'ranking.*comparison category.*not generally published'
+      - 'creation.*investment company'
+    severity: high
+    category: compliance
+    enabled: true
+    case_sensitive: false
+
+  - id: 'FINRA-2210-FC-003'
+    description: 'Retail communication concerning security futures published without pre-filing 10 business days prior to first use (with exceptions)'
+    match_keywords:
+      - 'retail communications'
+      - 'security futures'
+      - '10 business days'
+      - 'prior to first use'
+    match_regex:
+      - 'file.*Department.*10 business days'
+      - 'exceptions.*SRO.*listing.*services'
+    severity: high
+    category: compliance
+    enabled: true
+    case_sensitive: false
+
+  - id: 'FINRA-2210-FC-004'
+    description: 'Failure to file certain retail communications (e.g., promoting specific investment companies, public DPPs, CMOs, certain registered securities) within 10 business days of first use'
+    match_keywords:
+      - '10 business days of first use'
+      - 'retail communications'
+      - 'registered investment company'
+      - 'direct participation programs'
+      - 'collateralized mortgage obligations'
+    match_regex:
+      - 'Within 10 business days.*first use.*publication'
+      - 'promote.*recommend.*specific.*registered investment company'
+      - 'public direct participation programs'
+      - 'registered under.*Securities Act'
+    severity: medium
+    category: compliance
+    enabled: true
+    case_sensitive: false
+
+  - id: 'FINRA-2210-FC-005'
+    description: 'Failure to file the final filmed version of a television or video retail communication within 10 business days of first use or broadcast, after a draft was filed'
+    match_keywords:
+      - 'final filmed version'
+      - 'television'
+      - 'video retail communication'
+      - '10 business days'
+      - 'first use or broadcast'
+      - 'draft version'
+      - 'story board'
+    severity: medium
+    category: compliance
+    enabled: true
+    case_sensitive: false
+
+  - id: 'FINRA-2210-FC-006'
+    description: "Missing actual/anticipated date of first use, approving principal's name/title/CRD, or approval date in a FINRA filing"
+    match_keywords:
+      - 'each filing'
+      - 'date of first use'
+      - 'approving principal'
+      - 'Central Registration Depository'
+      - 'CRD number'
+      - 'approval date'
+    match_regex:
+      - 'actual.*anticipated.*date.*first use'
+      - 'name.*title.*CRD.*number.*registered principal'
+      - 'date.*approval.*given'
+    severity: high
+    category: compliance
+    enabled: true
+    case_sensitive: false
+
+  - id: 'FINRA-2210-SD-001'
+    description: 'Failure to include information concerning the source of any statistical table, chart, graph, or other illustration used in a communication'
+    match_keywords:
+      - 'statistical table'
+      - 'chart'
+      - 'graph'
+      - 'illustration'
+      - 'source'
+    match_regex:
+      - 'without.*including.*information.*source'
+      - 'statistical.*table.*chart.*graph.*illustration'
+    severity: medium
+    category: compliance
+    enabled: true
+    case_sensitive: false

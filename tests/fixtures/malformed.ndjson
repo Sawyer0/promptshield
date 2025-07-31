@@ -1,0 +1,5 @@
+{"prompt": "Valid line", "response": "This is valid"}
+{"prompt": "Invalid line", "response": "This is missing closing brace
+{"prompt": "Another valid line", "response": "This is also valid"}
+{"prompt": "Another invalid", "response": "This has extra comma",}
+{"prompt": "Final valid line", "response": "This is the end"}

@@ -1,0 +1,68 @@
+{
+  "metadata": {
+    "scanDate": "2025-07-14T18:28:32.133Z",
+    "fileCount": 1,
+    "totalViolations": 4,
+    "severityBreakdown": {
+      "high": 2,
+      "medium": 2
+    },
+    "categoryBreakdown": {
+      "pii": 4
+    }
+  },
+  "results": [
+    {
+      "file": "tests/fixtures/sample.json",
+      "violations": [
+        {
+          "ruleId": "email",
+          "severity": "high",
+          "category": "pii",
+          "message": "Detects email addresses",
+          "match": "john.doe@example.com",
+          "objectIndex": 0,
+          "field": "response"
+        },
+        {
+          "ruleId": "ssn",
+          "severity": "high",
+          "category": "pii",
+          "message": "Detects US Social Security Numbers",
+          "match": "123-45-6789",
+          "objectIndex": 0,
+          "field": "response"
+        },
+        {
+          "ruleId": "address_keywords",
+          "severity": "medium",
+          "category": "pii",
+          "message": "Detects address-related keywords",
+          "match": "Street",
+          "objectIndex": 0,
+          "field": "response"
+        },
+        {
+          "ruleId": "address_regex",
+          "severity": "medium",
+          "category": "pii",
+          "message": "Detects US-style street addresses",
+          "match": "123 Main Street, Springfield, IL 62704. For verification, my SSN is 123-45-6789. Pl",
+          "objectIndex": 0,
+          "field": "response"
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "totalFiles": 1,
+    "totalViolations": 4,
+    "severityBreakdown": {
+      "high": 2,
+      "medium": 2
+    },
+    "categoryBreakdown": {
+      "pii": 4
+    }
+  }
+}

@@ -1,0 +1,122 @@
+RulePack:
+  - id: OAI-HARM-001
+    description: 'Generation or distribution of Child Sexual Abuse Material (CSAM).'
+    pattern:
+      - 'CSAM' # While the pattern here is generic, automated systems would rely on perceptual hashing (e.g., PhotoDNA) or advanced AI models trained to detect CSAM.
+    category: 'Direct Harmful Content Detection (Categorical)'
+    severity: 'Critical'
+    detection_type: 'static | dynamic' # Static for stored content, dynamic for real-time generation/upload.
+    enabled: true
+
+  - id: OAI-HARM-002
+    description: 'Generation or distribution of content promoting self-harm.'
+    pattern:
+      - 'self-harm' # Keyword for general detection, but AI models would classify intent.
+      - 'suicide'
+    category: 'Direct Harmful Content Detection (Categorical)'
+    severity: 'High'
+    detection_type: 'static | dynamic'
+    enabled: true
+
+  - id: OAI-HARM-003
+    description: 'Generation or distribution of sexually explicit or suggestive content, especially involving minors.'
+    pattern:
+      - 'sexually explicit'
+      - 'suggestive content'
+      - 'minors' # Keywords indicating content related to this violation.
+      - '(?i)sex(ual|ually)?.*(child|kid|minor)' # Regex for more direct matching
+    category: 'Direct Harmful Content Detection (Categorical)'
+    severity: 'Critical'
+    detection_type: 'static | dynamic'
+    enabled: true
+
+  - id: OAI-HARM-004
+    description: 'Generation or distribution of content containing hate speech or promoting violence.'
+    pattern:
+      - 'hate speech'
+      - 'promotes violence'
+      - 'discrimination based on protected attributes'
+      - 'violence against'
+    category: 'Direct Harmful Content Detection (Categorical)'
+    severity: 'High'
+    detection_type: 'static | dynamic'
+    enabled: true
+
+  - id: OAI-BIO-001
+    description: 'Use of biometric systems for identification or assessment (e.g., facial recognition).'
+    pattern:
+      - 'biometric systems for identification'
+      - 'biometric identification systems for identification'
+      - 'facial recognition'
+      - 'categorize individuals based on their biometric data'
+      - 'infer sensitive attributes.*biometric data'
+    category: 'Biometric System Usage'
+    severity: 'High'
+    detection_type: 'static | dynamic' # Static for code/config analysis, dynamic for API call patterns.
+    enabled: true
+
+  - id: OAI-SENS-001
+    description: 'Soliciting or collecting payment card information (e.g., credit card numbers, bank account info).'
+    pattern:
+      - "\\b(?:4\\d{12}(?:\\d{3})?|5[1-5]\\d{14}|6(?:011|5\\d{2})\\d{12}|3[47]\\d{13}|3(?:0[0-5]|[68]\\d)\\d{11}|(?:2131|1800|35\\d{3})\\d{11})\\b" # Regex for common credit card patterns
+      - "\\b(?:account|bank|credit card|debit card) number\\b"
+    category: 'Sensitive Identifier Collection'
+    severity: 'Critical'
+    detection_type: 'static | dynamic' # Static for stored content, dynamic for real-time input/output.
+    enabled: true
+
+  - id: OAI-SENS-002
+    description: 'Soliciting or collecting government identifiers (e.g., SSNs).'
+    pattern:
+      - "\\b\\d{3}-\\d{2}-\\d{4}\\b" # Regex for SSN format
+      - "\\b(?:SSN|Social Security Number|ITIN)\\b"
+      - "\\b(?:government|national|ID) number\\b"
+    category: 'Sensitive Identifier Collection'
+    severity: 'Critical'
+    detection_type: 'static | dynamic'
+    enabled: true
+
+  - id: OAI-SENS-003
+    description: 'Soliciting or collecting API keys or passwords.'
+    pattern:
+      - "\\b(?:api_key|API Key|OpenAI_API_KEY|auth_token|access_token|secret_key)\\b" # Common API key references
+      - "\\b(?:password|passwd|pwd)\\b"
+      - '(sk-[a-zA-Z0-9]{32,})' # Pattern for OpenAI API keys (often start with sk-)
+    category: 'Sensitive Identifier Collection'
+    severity: 'Critical'
+    detection_type: 'static | dynamic'
+    enabled: true
+
+  - id: OAI-AGE-001
+    description: 'Building tools or GPTs explicitly targeting users under 13 years of age.'
+    pattern:
+      - '(?i)for kids (under )?13'
+      - '(?i)children( ages)? (under |0-12|0-13)'
+      - '(?i)designed for primary school'
+    category: 'Age-Gating / Target Audience'
+    severity: 'High'
+    detection_type: 'static' # Primarily based on GPT descriptions, instructions, or marketing materials.
+    enabled: true
+
+  - id: OAI-AGE-002
+    description: 'GPT name or description in GPT Store containing profanity or depicting/promoting graphic violence.'
+    pattern:
+      - '(?i)(fuck|shit|bitch|cunt|asshole|damn)' # Common profanity
+      - '(?i)(graphic violence|gory|explicit violence|depicts torture|brutal combat)'
+    category: 'Age-Gating / Target Audience'
+    severity: 'High'
+    detection_type: 'static' # Based on analysis of GPT metadata.
+    enabled: true
+
+  - id: OAI-CIRCUM-001
+    description: "Attempts to circumvent safeguards or safety mitigations (e.g., 'jailbreaking' prompts)."
+    pattern:
+      - "\\[.*roleplay.*\\]" # Common pattern in jailbreaking prompts
+      - '(?i)ignore previous instructions'
+      - '(?i)act as an unbiased AI' # Often used in conjunction with other prompts to bypass safety
+      - '(?i)DAN' # 'Do Anything Now' - a well-known jailbreak persona
+      - '(?i)Bypass security'
+    category: "Circumvention of Safeguards ('Jailbreaking')"
+    severity: 'High'
+    detection_type: 'dynamic' # Requires analysis of prompt structure and iterative user-model interactions.
+    enabled: true

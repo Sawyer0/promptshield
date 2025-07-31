@@ -1,281 +1,444 @@
-# Vibecode to GitHub Conversion Scripts
+# Scripts Directory
 
-This directory contains scripts to convert the vibecode development plan into GitHub issues, projects, and milestones.
+This directory contains utility scripts for testing, validation, and development workflows.
 
-## 🚀 Quick Start
+## Test Runners
 
-### Option 1: Using the Shell Script (Recommended)
+### 1. Parallel Test Runner (`parallel-test-runner.js`)
+
+Runs Jest tests in parallel with better error handling and reporting.
+
+**Usage:**
 
 ```bash
-# Make the script executable
-chmod +x scripts/create_github_issues.sh
+# Run all tests in parallel
+npm run test:parallel
 
-# Run the conversion (smart - only creates what doesn't exist)
+# Run with specific number of workers
+npm run test:parallel:workers=4
+
+# Run with coverage
+npm run test:parallel:coverage
+
+# Run with verbose output
+npm run test:parallel:verbose
+```
+
+**Features:**
+
+- Parallel test execution using multiple workers
+- Comprehensive error reporting
+- Test categorization (unit, integration, performance)
+- Memory and performance monitoring
+- Detailed test reports with success rates
+- Timeout handling for hanging tests
+
+### 2. CLI Test Runner (`cli-test-runner.js`)
+
+Runs CLI functionality tests in parallel with comprehensive validation.
+
+**Usage:**
+
+```bash
+# Run CLI tests
+npm run test:cli
+
+# Run with specific workers
+npm run test:cli:parallel
+
+# Run with verbose output
+npm run test:cli:verbose
+```
+
+**Test Scenarios:**
+
+- Help command validation
+- Version command validation
+- Invalid command handling
+- Missing file error handling
+- Missing rulepack error handling
+- Basic scan functionality
+- Schema validation
+- Output format validation
+- Error message validation
+
+### 3. Comprehensive Test Runner (`test-runner.js`)
+
+Runs all test categories in parallel with comprehensive reporting.
+
+**Usage:**
+
+```bash
+# Run all test categories
+npm run test:comprehensive
+
+# Run with verbose output
+npm run test:comprehensive:verbose
+
+# Run with specific workers
+npm run test:comprehensive:workers=4
+
+# Run with coverage
+npm run test:comprehensive:coverage
+```
+
+**Test Categories:**
+
+- Unit tests
+- Integration tests
+- Performance tests
+- CLI tests
+- Rule loading tests
+- Scanner tests
+- Renderer tests
+- Filtering tests
+
+## Output Validation
+
+### Output Format Validation (`validate-output.js`)
+
+Validates CLI output formats and generates test reports.
+
+**Usage:**
+
+```bash
+npm run validate:output
+```
+
+**Features:**
+
+- JSON output validation
+- Markdown output validation
+- CSV output validation
+- HTML output validation
+- Table output validation
+- NDJSON output validation
+- Error message validation
+- Performance benchmarking
+
+## Command Testing
+
+### All Commands Runner (`run-all-commands.sh`)
+
+Tests all CLI commands with various options and scenarios.
+
+**Usage:**
+
+```bash
+./scripts/run-all-commands.sh
+```
+
+**Test Categories:**
+
+- Basic scan commands
+- Output format commands
+- Filtering commands
+- Pagination commands
+- Performance commands
+- Schema validation commands
+- Debug and verbose commands
+
+## Performance Testing
+
+### Performance Test Runner (`test_smart_checking.sh`)
+
+Runs performance benchmarks and memory usage tests.
+
+**Usage:**
+
+```bash
+./scripts/test_smart_checking.sh
+```
+
+**Features:**
+
+- Large file processing
+- Memory usage monitoring
+- Processing time measurement
+- Concurrent scanning tests
+- Streaming performance tests
+
+## GitHub Integration
+
+### Issue Creation (`create_github_issues.sh`)
+
+Creates GitHub issues for test failures and improvements.
+
+**Usage:**
+
+```bash
 ./scripts/create_github_issues.sh
 ```
 
-### Option 2: Using the Python Script
+### Vibecode Conversion (`convert_vibecode_to_github.py`)
+
+Converts Vibecode project data to GitHub format.
+
+**Usage:**
 
 ```bash
-# Install dependencies
-pip install PyGithub
-
-# Run the conversion
-python scripts/convert_vibecode_to_github.py --token YOUR_GITHUB_TOKEN --repo owner/repo
+python scripts/convert_vibecode_to_github.py
 ```
 
-## 📋 What Gets Created
+## Test Data
 
-### Smart Creation
-The scripts are **intelligent** and will:
-- ✅ **Check for existing items** before creating new ones
-- ✅ **Skip duplicates** and show what was skipped
-- ✅ **Only create what's missing** to avoid conflicts
-- ✅ **Provide a summary** of what was created vs skipped
+### Fixtures (`tests/fixtures/`)
 
-### GitHub Issues
-- One issue per day in the vibecode plan
-- Properly labeled with week and task type
-- Includes deliverables and testing strategies
-- Links back to the vibecode directory structure
+Comprehensive test data for all scenarios:
 
-### GitHub Projects
-- One project board per week
-- Columns: Backlog, To Do, In Progress, Review, Done
-- Ready for Kanban-style workflow
+- **Basic Data**: `sample.json`, `valid.json`
+- **Large Datasets**: `large-result-set.json`, `large-result-set.ndjson`
+- **Error Scenarios**: `malformed.json`, `empty.json`
+- **Multiple Severities**: `multiple-severities.json`
+- **Multiple Categories**: `multiple-categories.json`
+- **Schema Validation**: `schema-basic.json`, `schema-extended.json`
+- **Performance**: Various sized datasets for benchmarking
 
-### GitHub Labels
-- **Vibecode labels**: `vibecode`, `week-1`, `week-2`, etc.
-- **Task type labels**: `cli`, `rules`, `output`, `testing`, `error-handling`
-- **Priority labels**: `priority-high`, `priority-medium`, `priority-low`
-- **Status labels**: `blocked`, `ready`, `in-progress`
+## Configuration
 
-### GitHub Milestones
-- One milestone per week
-- Due dates set 1 week apart
-- Ready for sprint planning
+### Jest Configuration (`jest.config.js`)
 
-### Issue Templates
-- **Task template**: For vibecode development tasks
-- **Bug template**: For bug reports
-- **Feature template**: For feature requests
+Enhanced Jest configuration with:
 
-## 🛠️ Prerequisites
+- Parallel execution settings
+- Coverage thresholds
+- Test timeouts
+- Module name mapping
+- Performance optimizations
 
-### For Shell Script
-- GitHub CLI (`gh`) installed and authenticated
-- Git repository with remote origin set
+### Package Scripts (`package.json`)
 
-### For Python Script
-- Python 3.7+
-- PyGithub library
-- GitHub personal access token
+Comprehensive npm scripts:
 
-## 📁 Output Structure
+- `test:parallel` - Parallel test execution
+- `test:cli` - CLI functionality tests
+- `test:comprehensive` - All test categories
+- `test:fast` - Quick test run with bail
+- `test:coverage` - Tests with coverage reporting
 
-After running the scripts, you'll have:
-
-```
-.github/
-├── ISSUE_TEMPLATE/
-│   ├── task.md
-│   ├── bug.md
-│   └── feature.md
-└── workflows/
-    └── create-vibecode-issues.yml
-
-github_outputs/ (Python script only)
-├── issues.json
-├── projects.json
-├── labels.json
-├── milestones.json
-└── summary.json
-```
-
-## 🔧 Configuration
-
-### Shell Script Configuration
-The shell script automatically detects:
-- Repository from git remote
-- GitHub CLI authentication
-- Creates all necessary directories
-
-### Python Script Configuration
-```bash
-python scripts/convert_vibecode_to_github.py \
-  --token YOUR_GITHUB_TOKEN \
-  --repo owner/repo \
-  --output-dir github_outputs
-```
-
-## 📊 Managing the Issues
-
-### View All Vibecode Issues
-```bash
-gh issue list --label vibecode
-```
-
-### View Issues by Week
-```bash
-gh issue list --label week-1
-gh issue list --label week-2
-# etc.
-```
-
-### View Issues by Type
-```bash
-gh issue list --label cli
-gh issue list --label testing
-gh issue list --label rules
-```
-
-### Assign Issues to Team Members
-```bash
-gh issue edit ISSUE_NUMBER --add-assignee username
-```
-
-### Move Issues Between Project Columns
-```bash
-# First, get the project ID
-gh api repos/owner/repo/projects
-
-# Then move the issue
-gh api repos/owner/repo/projects/PROJECT_ID/columns/COLUMN_ID/cards \
-  -f content_id=ISSUE_ID \
-  -f content_type=Issue
-```
-
-## 🎯 Workflow Integration
-
-### Daily Workflow
-1. **Start the day**: Move today's issues to "In Progress"
-2. **Work on tasks**: Follow the vibecode plan for that day
-3. **Update progress**: Comment on issues with progress
-4. **Complete tasks**: Move issues to "Done" when finished
-
-### Weekly Workflow
-1. **Week planning**: Review the week's project board
-2. **Sprint setup**: Assign team members to issues
-3. **Daily standups**: Use project board for status updates
-4. **Week review**: Close completed issues and plan next week
-
-### Automation Ideas
-- **Auto-assign**: Assign issues based on team member expertise
-- **Auto-label**: Automatically label issues based on content
-- **Auto-move**: Move issues to "Done" when PRs are merged
-- **Auto-close**: Close issues when milestones are completed
-
-## 🔄 Updating the Plan
-
-### Adding New Days
-1. Add the day directory to vibecode structure
-2. Create the README.md with detailed plan
-3. Run the conversion script again
-4. **Only new issues will be created** (existing ones are skipped)
-
-### Modifying Existing Days
-1. Update the vibecode README.md files
-2. Update corresponding GitHub issues manually
-3. Or delete and recreate issues using the script
-
-### Adding New Weeks
-1. Add the week directory to vibecode structure
-2. Create plan.md and day directories
-3. Run the conversion script again
-4. **Only new project boards and issues will be created**
-
-
-
-## 🚨 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
-#### GitHub CLI Not Authenticated
-```bash
-gh auth login
-```
+1. **Permission Denied:**
 
-#### Repository Not Found
-```bash
-git remote -v
-# Make sure origin is set to your GitHub repo
-```
+   ```bash
+   chmod +x scripts/*.sh
+   ```
 
-#### Permission Denied
-- Check that your GitHub token has repo permissions
-- For organization repos, ensure you have write access
+2. **Build Fails:**
 
-#### Issues Not Created
-- Check GitHub API rate limits
-- Verify the vibecode directory structure
-- Look for errors in the script output
+   ```bash
+   npm run clean && npm run build
+   ```
 
-### Debug Mode
-```bash
-# Enable debug output
-set -x
-./scripts/create_github_issues.sh
-```
+3. **Test Timeouts:**
 
-## 📈 Metrics and Reporting
+   - Increase timeout in Jest config
+   - Check for hanging processes
+   - Monitor system resources
 
-### Issue Statistics
-```bash
-# Count issues by week
-gh issue list --label vibecode --json number,labels | jq '.[] | select(.labels[].name | startswith("week-")) | .labels[].name' | sort | uniq -c
+4. **Memory Issues:**
+   - Reduce number of workers
+   - Increase Node.js memory limit
+   - Monitor system memory usage
 
-# Count issues by type
-gh issue list --label vibecode --json number,labels | jq '.[] | select(.labels[].name | IN("cli", "rules", "output", "testing", "error-handling")) | .labels[].name' | sort | uniq -c
-```
+### Performance Optimization
 
-### Project Progress
-```bash
-# View project board
-gh api repos/owner/repo/projects/PROJECT_ID
-```
+1. **Worker Count:**
 
-## 🎯 Best Practices
+   - Default: CPU cores - 1
+   - Optimal: 4-8 workers for most systems
+   - Monitor CPU usage during tests
 
-### Issue Management
-- **Keep issues small**: One issue per day, break down if needed
-- **Update regularly**: Comment on progress and blockers
-- **Link to code**: Reference specific files and commits
-- **Use labels**: Tag issues appropriately for filtering
+2. **Memory Management:**
 
-### Project Board Management
-- **Regular updates**: Move issues as work progresses
-- **Team visibility**: Use board for standups and planning
-- **Automation**: Set up rules for auto-moving issues
-- **Cleanup**: Archive completed projects
+   - Large files: Use streaming mode
+   - Concurrent tests: Limit parallel execution
+   - Node.js heap: Increase if needed
 
-### Documentation
-- **Keep vibecode updated**: Sync changes back to vibecode directory
-- **Update READMEs**: Keep day plans current with actual progress
-- **Share learnings**: Document insights in issue comments
+3. **Test Organization:**
+   - Group related tests
+   - Use test categories
+   - Separate fast and slow tests
 
-## 🔮 Future Enhancements
+## Best Practices
+
+### Test Organization
+
+- Keep tests focused and isolated
+- Use descriptive test names
+- Group related functionality
+- Separate unit and integration tests
+
+### Error Handling
+
+- Test both success and failure scenarios
+- Validate error messages
+- Test edge cases and boundaries
+- Handle async operations properly
+
+### Performance
+
+- Monitor test execution time
+- Use appropriate timeouts
+- Optimize for CI/CD environments
+- Balance speed and thoroughness
+
+### Reporting
+
+- Generate detailed test reports
+- Track success rates over time
+- Monitor test coverage
+- Document test scenarios
+
+## Integration
+
+### CI/CD Pipeline
+
+All test runners integrate with GitHub Actions:
+
+- Automated testing on PRs
+- Parallel job execution
+- Coverage reporting
+- Performance monitoring
+
+### Development Workflow
+
+- Pre-commit hooks for quick tests
+- Full test suite before merging
+- Performance regression testing
+- Automated issue creation
+
+## Future Enhancements
 
 ### Planned Features
-- **Auto-sync**: Keep vibecode and GitHub issues in sync
-- **Progress tracking**: Automatic progress reporting
-- **Team assignment**: Smart assignment based on skills
-- **Integration**: Connect with CI/CD pipelines
 
-### Customization
-- **Custom labels**: Add project-specific labels
-- **Custom templates**: Modify issue templates for your needs
-- **Custom workflows**: Adapt to your team's workflow
-- **Custom automation**: Add your own automation rules
+- **Test Categorization**: Automatic test categorization
+- **Performance Regression**: Historical performance tracking
+- **Smart Retries**: Automatic retry for flaky tests
+- **Test Prioritization**: Run critical tests first
+- **Distributed Testing**: Multi-machine test execution
 
-## 📞 Support
+### Monitoring
 
-For issues with the conversion scripts:
-1. Check the troubleshooting section
-2. Review the script output for errors
-3. Verify your GitHub permissions
-4. Create an issue in the repository
+- **Real-time Metrics**: Live test execution monitoring
+- **Resource Usage**: CPU, memory, and I/O tracking
+- **Test Analytics**: Success rate trends and patterns
+- **Alerting**: Notifications for test failures
 
-For questions about the vibecode structure:
-1. Review the vibecode directory documentation
-2. Check the individual day README files
-3. Refer to the main project documentation 
+## Code Organization
+
+### Codebase Organization (`organize-codebase.sh`)
+
+Analyzes and categorizes all files in the codebase, separating new architecture from old code.
+
+**Usage:**
+
+```bash
+./scripts/organize-codebase.sh
+```
+
+**Features:**
+
+- Identifies new architecture files (domains, shared, infrastructure, application)
+- Finds old/commented code files marked with "OLD CODE - COMMENTED OUT"
+- Provides statistics on code coverage and migration progress
+- Generates commands for safe cleanup of old code
+- Color-coded output for easy identification
+
+**Output Categories:**
+
+- **New Architecture**: Active files in the new modular structure
+- **Old Code**: Commented out/deprecated files
+- **Mixed Files**: Files that may contain both old and new code
+- **Statistics**: Coverage percentages and file counts
+
+### Dependency Analysis (`analyze-dependencies.sh`)
+
+Analyzes which files are actually used by the new architecture and identifies unused code.
+
+**Usage:**
+
+```bash
+./scripts/analyze-dependencies.sh
+```
+
+**Features:**
+
+- Analyzes import dependencies in the new architecture
+- Identifies files that are never imported
+- Checks compiled output for verification
+- Finds dead code patterns and commented files
+- Provides optimization recommendations
+
+**Analysis Categories:**
+
+- **Import Analysis**: Shows which files import from old vs new architecture
+- **Unused Files**: Files that are never imported by other modules
+- **Compiled Output**: Verification against the built dist directory
+- **Dead Code**: Files marked as old or containing only comments
+
+### Safe Cleanup (`safe-cleanup.sh`)
+
+Safely removes confirmed old code files with rollback capability.
+
+**Usage:**
+
+```bash
+./scripts/safe-cleanup.sh
+```
+
+**Safety Features:**
+
+- User confirmation before any changes
+- Moves files to archive directory instead of deleting
+- Tests build after cleanup
+- Automatic rollback if build fails
+- Verifies CLI functionality after cleanup
+- Provides restoration instructions
+
+**Cleanup Process:**
+
+1. Creates archive/old-code directory
+2. Moves definitively old files to archive
+3. Removes empty directories
+4. Updates tsconfig.json exclude section
+5. Tests build and CLI functionality
+6. Provides rollback if anything fails
+
+### Aggressive Cleanup (`clean-old-code.sh`)
+
+More aggressive cleanup option for removing old code files.
+
+**Usage:**
+
+```bash
+./scripts/clean-old-code.sh
+```
+
+**Features:**
+
+- Archives old code files with descriptive names
+- Removes empty directories
+- Updates TypeScript configuration
+- Tests build after cleanup
+- Provides restoration and deletion instructions
+
+**File Categories Removed:**
+
+- Old CLI commands (scan, test)
+- Old core files (scanner, processor)
+- Old services (compression)
+- Old utilities (validators, parsers)
+- Old processing modules
+
+## Contributing
+
+When adding new tests:
+
+1. Follow existing patterns
+2. Add appropriate test data
+3. Update documentation
+4. Ensure parallel compatibility
+5. Add to relevant test categories

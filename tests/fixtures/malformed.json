@@ -1,0 +1,42 @@
+[
+  {
+    "id": "prompt-001",
+    "prompt": "Write a professional email to a client about project updates",
+    "response": "Dear [Client Name], I hope this email finds you well. I wanted to provide you with an update on our project progress...",
+    "category": "business",
+    "metadata": {
+      "created_at": "2024-01-15T10:30:00Z",
+      "user_id": "user123"
+    }
+  },
+  {
+    "id": "prompt-002",
+    "prompt": "Explain quantum computing in simple terms",
+    "response": "Quantum computing is like having a computer that can be in multiple states at once...",
+    "category": "education",
+    "metadata": {
+      "created_at": "2024-01-15T11:45:00Z",
+      "user_id": "user456"
+    }
+  },
+  {
+    "id": "prompt-003",
+    "prompt": "Generate a creative story about a robot learning to paint",
+    "response": "In a world where art and technology danced together, there lived a robot named Pixel...",
+    "category": "creative",
+    "metadata": {
+      "created_at": "2024-01-15T14:20:00Z",
+      "user_id": "user789"
+    }
+  },
+  {
+    "id": "prompt-004",
+    "prompt": "This is a malformed object",
+    "response": "This object is missing a closing brace
+    "category": "test",
+    "metadata": {
+      "created_at": "2024-01-15T15:00:00Z",
+      "user_id": "user999"
+    }
+  }
+]

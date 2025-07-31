@@ -1,0 +1,10 @@
+{
+  "id": "single-prompt",
+  "prompt": "This is a single object, not an array",
+  "response": "This should fail validation because it's not an array of objects",
+  "category": "test",
+  "metadata": {
+    "created_at": "2024-01-15T16:00:00Z",
+    "user_id": "user999"
+  }
+}

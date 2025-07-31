@@ -1,0 +1,149 @@
+# Copyright (c) 2025 Sawyer0
+# Licensed under proprietary terms. See LICENSE for details.
+version: '1.0.0'
+last_updated: '2025-01-15'
+name: Hallucination Detection Rules
+description: Detects potential AI hallucination patterns and unreliable content
+rules:
+  # Uncertain or speculative language
+  - id: uncertain-language
+    description: Detects uncertain or speculative language that may indicate hallucination
+    match_keywords:
+      - 'I think'
+      - 'I believe'
+      - 'probably'
+      - 'maybe'
+      - 'possibly'
+      - 'might be'
+      - 'could be'
+      - 'seems like'
+      - 'appears to be'
+      - 'I guess'
+      - 'not sure'
+      - 'uncertain'
+      - 'unclear'
+      - 'I imagine'
+      - 'presumably'
+      - 'supposedly'
+      - 'allegedly'
+    severity: low
+    category: hallucination
+    enabled: true
+    case_sensitive: false
+
+  # Fabricated data patterns
+  - id: fabricated-data
+    description: Detects patterns that suggest fabricated specific data
+    match_regex:
+      - 'According to (a )?study (by|from|conducted)'
+      - 'Research shows? that'
+      - 'Studies have shown'
+      - 'Data indicates?'
+      - 'Statistics show'
+      - "\\d{1,3}% of (people|users|respondents)"
+      - 'In a recent (study|survey|poll)'
+      - 'Scientists have (found|discovered|proven)'
+      - 'Experts say'
+      - 'According to experts'
+    severity: medium
+    category: hallucination
+    enabled: true
+    case_sensitive: false
+
+  # Specific false claims indicators
+  - id: false-claims
+    description: Detects language patterns that often accompany false claims
+    match_keywords:
+      - 'definitely'
+      - 'absolutely'
+      - 'certainly'
+      - 'without a doubt'
+      - 'guaranteed'
+      - 'proven fact'
+      - 'scientific fact'
+      - 'it is known that'
+      - 'everyone knows'
+      - 'obviously'
+      - 'clearly'
+      - 'undoubtedly'
+    severity: medium
+    category: hallucination
+    enabled: true
+    case_sensitive: false
+
+  # Temporal inconsistencies
+  - id: temporal-inconsistencies
+    description: Detects temporal references that may be inconsistent
+    match_regex:
+      - 'yesterday.*today.*tomorrow'
+      - 'last (week|month|year).*next (week|month|year)'
+      - 'currently.*in the past'
+      - 'now.*previously'
+    severity: medium
+    category: hallucination
+    enabled: true
+    case_sensitive: false
+
+  # Contradictory statements
+  - id: contradictions
+    description: Detects potentially contradictory language patterns
+    match_regex:
+      - '(however|but|although).*(?:however|but|although)'
+      - '(always|never).*(?:sometimes|occasionally)'
+      - '(all|every|none).*(?:some|few|many)'
+      - 'impossible.*possible'
+      - 'cannot.*can'
+    severity: high
+    category: hallucination
+    enabled: true
+    case_sensitive: false
+
+  # Overgeneralization patterns
+  - id: overgeneralization
+    description: Detects overgeneralization that may indicate hallucination
+    match_regex:
+      - "\\b(all|every|no|never|always)\\s+\\w+\\s+(are|is|do|does|will|have|has)\\b"
+      - 'without exception'
+      - 'in all cases'
+      - 'universally'
+      - 'everyone agrees'
+      - 'no one disagrees'
+    severity: medium
+    category: hallucination
+    enabled: true
+    case_sensitive: false
+
+  # Unsupported claims
+  - id: unsupported-claims
+    description: Detects claims that are typically unsupported
+    match_keywords:
+      - 'breakthrough'
+      - 'revolutionary'
+      - 'never before seen'
+      - 'first time ever'
+      - 'unprecedented'
+      - 'game-changing'
+      - 'life-changing'
+      - 'miraculous'
+      - 'instantly'
+      - 'overnight success'
+    severity: medium
+    category: hallucination
+    enabled: true
+    case_sensitive: false
+
+  # Memory confusion indicators
+  - id: memory-confusion
+    description: Detects language suggesting memory confusion or fabrication
+    match_keywords:
+      - 'I remember'
+      - 'I recall'
+      - 'as I mentioned before'
+      - 'like I said earlier'
+      - 'previously discussed'
+      - 'as we talked about'
+      - 'from our last conversation'
+    severity: medium
+    category: hallucination
+    enabled: true
+    case_sensitive: false

@@ -6,9 +6,6 @@ import { Result, ok, err } from '../../../../shared/types/Result';
  * NDJSON (Newline Delimited JSON) format renderer
  */
 export class NdjsonRenderer implements Renderer {
-  /**
-   * Renders a report to NDJSON format
-   */
   async render(report: Report): Promise<Result<string, Error>> {
     try {
       const violations = report.getFilteredViolations();
@@ -41,16 +38,10 @@ export class NdjsonRenderer implements Renderer {
     }
   }
 
-  /**
-   * Gets the output format this renderer handles
-   */
   getFormat(): string {
     return 'ndjson';
   }
 
-  /**
-   * Checks if this renderer supports streaming
-   */
   supportsStreaming(): boolean {
     return true;
   }

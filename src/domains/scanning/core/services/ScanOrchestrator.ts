@@ -26,23 +26,17 @@ export class DefaultScanOrchestrator implements IScanOrchestrator, ScanEngine {
     private metricsCollector: ScanMetricsCollector
   ) {}
 
-  /**
-   * Executes a scan request
-   */
   async scan(request: ScanRequest): Promise<Result<ScanResult, Error>> {
-    // Validate request
     const validationResult = this.validateRequest(request);
     if (validationResult.isErr()) {
       return err(validationResult.error);
     }
 
-    // Create context
     const contextResult = await this.createContext(request);
     if (contextResult.isErr()) {
       return err(contextResult.error);
     }
 
-    // Execute scan
     const scanResult = await this.orchestrate(
       contextResult.value,
       request.input
@@ -50,9 +44,6 @@ export class DefaultScanOrchestrator implements IScanOrchestrator, ScanEngine {
     return scanResult;
   }
 
-  /**
-   * Validates a scan request
-   */
   validateRequest(request: ScanRequest): Result<void, Error> {
     if (!request.input || request.input.trim() === '') {
       return err(new Error('Input is required'));
@@ -65,14 +56,10 @@ export class DefaultScanOrchestrator implements IScanOrchestrator, ScanEngine {
     return ok(undefined);
   }
 
-  /**
-   * Creates a scan context from a request
-   */
   async createContext(
     request: ScanRequest
   ): Promise<Result<ScanContext, Error>> {
     try {
-      // Load rulepack
       const rulePackResult = await this.ruleEngine.loadRulePack(
         request.config.rulepack
       );
@@ -88,9 +75,6 @@ export class DefaultScanOrchestrator implements IScanOrchestrator, ScanEngine {
     }
   }
 
-  /**
-   * Orchestrates the entire scan process
-   */
   async orchestrate(
     context: ScanContext,
     input: string
@@ -98,7 +82,6 @@ export class DefaultScanOrchestrator implements IScanOrchestrator, ScanEngine {
     this.metricsCollector.start();
 
     try {
-      // Check if input is a file or directory
       const isFile = await this.fileReader.exists(input);
       const isDir = await this.fileReader.isDirectory(input);
 
@@ -107,7 +90,6 @@ export class DefaultScanOrchestrator implements IScanOrchestrator, ScanEngine {
       } else if (isFile) {
         return this.scanFile(context, input);
       } else {
-        // Treat as direct content
         return this.scanContent(context, input, 'direct');
       }
     } catch (error) {
@@ -115,9 +97,6 @@ export class DefaultScanOrchestrator implements IScanOrchestrator, ScanEngine {
     }
   }
 
-  /**
-   * Scans a directory
-   */
   private async scanDirectory(
     context: ScanContext,
     dirPath: string
@@ -148,30 +127,23 @@ export class DefaultScanOrchestrator implements IScanOrchestrator, ScanEngine {
     return ok(new ScanResult(allViolations, metrics));
   }
 
-  /**
-   * Scans a single file
-   */
   private async scanFile(
     context: ScanContext,
     filePath: string
   ): Promise<Result<ScanResult, Error>> {
-    // Read file content
     const contentResult = await this.fileReader.readFile(filePath);
     if (contentResult.isErr()) {
       return err(contentResult.error);
     }
 
-    // Get file size for streaming decision
     const sizeResult = await this.fileReader.getFileSize(filePath);
     const fileSize = sizeResult.isOk() ? sizeResult.value : 0;
 
-    // Find appropriate processor
     const processor = this.findProcessor(filePath);
     if (!processor) {
       return err(new Error(`No processor found for file: ${filePath}`));
     }
 
-    // Determine if streaming should be used
     const useStreaming = this.strategy.shouldUseStreaming(
       fileSize,
       context.getStreamingThreshold()
@@ -194,27 +166,21 @@ export class DefaultScanOrchestrator implements IScanOrchestrator, ScanEngine {
     }
   }
 
-  /**
-   * Scans content directly
-   */
   private async scanContent(
     context: ScanContext,
     content: string,
     source: string
   ): Promise<Result<ScanResult, Error>> {
-    // Find appropriate processor based on source
     const processor = this.findProcessor(source) || this.processors.get('text');
     if (!processor) {
       return err(new Error(`No processor found for content`));
     }
 
-    // Process content
     const processedResult = await processor.process(content, context);
     if (processedResult.isErr()) {
       return err(processedResult.error);
     }
 
-    // Apply rules to processed content
     const violations: Violation[] = [];
     const enabledRules = context.rulePack.getEnabledRules();
 
@@ -230,7 +196,6 @@ export class DefaultScanOrchestrator implements IScanOrchestrator, ScanEngine {
       }
     }
 
-    // Collect metrics
     const baseMetrics = this.metricsCollector.end();
     const metrics: ScanMetrics = {
       ...baseMetrics,
@@ -242,9 +207,6 @@ export class DefaultScanOrchestrator implements IScanOrchestrator, ScanEngine {
     return ok(new ScanResult(violations, metrics));
   }
 
-  /**
-   * Scans with streaming for large files
-   */
   private async scanWithStreaming(
     context: ScanContext,
     content: string,
@@ -297,9 +259,6 @@ export class DefaultScanOrchestrator implements IScanOrchestrator, ScanEngine {
     return ok(new ScanResult(violations, metrics));
   }
 
-  /**
-   * Finds appropriate processor for a file
-   */
   private findProcessor(filePath: string): ContentProcessor | undefined {
     for (const [, processor] of this.processors) {
       if (processor.canProcess(filePath)) {

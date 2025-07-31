@@ -1,8 +1,5 @@
 // Command handler interfaces for dependency injection
 
-/**
- * Interface for command handlers that are registered in the container
- */
 export interface CommandHandlerResult {
   isOk(): boolean;
   isErr(): boolean;
@@ -10,9 +7,6 @@ export interface CommandHandlerResult {
   value?: unknown;
 }
 
-/**
- * Init command handler interface for container registration
- */
 export interface InitCommandHandlerService {
   execute(command: {
     filename: string;
@@ -26,9 +20,6 @@ export interface InitCommandHandlerService {
   }): Promise<CommandHandlerResult>;
 }
 
-/**
- * List command handler interface for container registration
- */
 export interface ListCommandHandlerService {
   execute(command: {
     options: {

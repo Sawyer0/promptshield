@@ -12,24 +12,15 @@ import { streamArray } from 'stream-json/streamers/StreamArray';
  * Processes JSON and NDJSON content
  */
 export class JsonProcessor implements ContentProcessor, StreamingProcessor {
-  /**
-   * Checks if this processor can handle the given file type
-   */
   canProcess(filePath: string): boolean {
     const extensions = this.getSupportedExtensions();
     return extensions.some((ext) => filePath.toLowerCase().endsWith(ext));
   }
 
-  /**
-   * Gets the supported file extensions
-   */
   getSupportedExtensions(): string[] {
     return ['.json', '.ndjson', '.jsonl'];
   }
 
-  /**
-   * Processes JSON content and returns structured data
-   */
   async process(
     content: string,
     context: ScanContext
@@ -47,9 +38,6 @@ export class JsonProcessor implements ContentProcessor, StreamingProcessor {
     }
   }
 
-  /**
-   * Processes regular JSON (array or single object)
-   */
   private async processRegularJson(
     content: string,
     context: ScanContext
@@ -70,14 +58,12 @@ export class JsonProcessor implements ContentProcessor, StreamingProcessor {
         const item = items[i];
         const fields: Record<string, string> = {};
 
-        // Extract specified fields
         for (const field of fieldsToScan) {
           if (item[field] !== undefined) {
             fields[field] = String(item[field]);
           }
         }
 
-        // Optionally scan entire object
         if (context.shouldScanEntireObject()) {
           fields['_entire_object'] = JSON.stringify(item);
         }
@@ -99,9 +85,6 @@ export class JsonProcessor implements ContentProcessor, StreamingProcessor {
     }
   }
 
-  /**
-   * Processes NDJSON (newline-delimited JSON)
-   */
   private async processNdjson(
     content: string,
     context: ScanContext
@@ -122,14 +105,12 @@ export class JsonProcessor implements ContentProcessor, StreamingProcessor {
           const item = JSON.parse(line);
           const fields: Record<string, string> = {};
 
-          // Extract specified fields
           for (const field of fieldsToScan) {
             if (item[field] !== undefined) {
               fields[field] = String(item[field]);
             }
           }
 
-          // Optionally scan entire object
           if (context.shouldScanEntireObject()) {
             fields['_entire_object'] = JSON.stringify(item);
           }
@@ -157,9 +138,6 @@ export class JsonProcessor implements ContentProcessor, StreamingProcessor {
     }
   }
 
-  /**
-   * Processes content in streaming mode for large files
-   */
   async processStream(
     content: string,
     context: ScanContext,
@@ -178,9 +156,6 @@ export class JsonProcessor implements ContentProcessor, StreamingProcessor {
     }
   }
 
-  /**
-   * Processes JSON array in streaming mode
-   */
   private async processJsonStream(
     content: string,
     context: ScanContext,
@@ -202,14 +177,12 @@ export class JsonProcessor implements ContentProcessor, StreamingProcessor {
 
           const fields: Record<string, string> = {};
 
-          // Extract specified fields
           for (const field of fieldsToScan) {
             if (value[field] !== undefined) {
               fields[field] = String(value[field]);
             }
           }
 
-          // Optionally scan entire object
           if (context.shouldScanEntireObject()) {
             fields['_entire_object'] = JSON.stringify(value);
           }
@@ -232,7 +205,6 @@ export class JsonProcessor implements ContentProcessor, StreamingProcessor {
           resolve(err(new Error(`Stream error: ${error}`)))
         );
 
-        // Write content to pipeline
         pipeline.write(content);
         pipeline.end();
       } catch (error) {
@@ -241,9 +213,6 @@ export class JsonProcessor implements ContentProcessor, StreamingProcessor {
     });
   }
 
-  /**
-   * Processes NDJSON in streaming mode
-   */
   private async processNdjsonStream(
     content: string,
     context: ScanContext,
@@ -265,14 +234,12 @@ export class JsonProcessor implements ContentProcessor, StreamingProcessor {
           const value = JSON.parse(trimmedLine);
           const fields: Record<string, string> = {};
 
-          // Extract specified fields
           for (const field of fieldsToScan) {
             if (value[field] !== undefined) {
               fields[field] = String(value[field]);
             }
           }
 
-          // Optionally scan entire object
           if (context.shouldScanEntireObject()) {
             fields['_entire_object'] = JSON.stringify(value);
           }
@@ -302,9 +269,6 @@ export class JsonProcessor implements ContentProcessor, StreamingProcessor {
     }
   }
 
-  /**
-   * Determines if streaming should be used based on content size
-   */
   shouldUseStreaming(contentSize: number, threshold: number): boolean {
     return contentSize > threshold * 1024 * 1024; // Convert MB to bytes
   }

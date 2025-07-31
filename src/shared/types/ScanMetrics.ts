@@ -22,7 +22,6 @@ export interface ScanMetrics {
   batchesProcessed?: number;
   parallelWorkers?: number;
 
-  // Additional metrics
   metadata?: {
     startTime: Date;
     endTime: Date;
@@ -35,17 +34,11 @@ export interface ScanMetrics {
  * Utility functions for working with scan metrics
  */
 export const ScanMetricsUtils = {
-  /**
-   * Calculates average processing time per object
-   */
   calculateAverageTimePerObject(metrics: ScanMetrics): number {
     if (metrics.objectsScanned === 0) return 0;
     return metrics.processingTime / metrics.objectsScanned;
   },
 
-  /**
-   * Formats processing time as human-readable string
-   */
   formatProcessingTime(milliseconds: number): string {
     if (milliseconds < 1000) {
       return `${Math.round(milliseconds)}ms`;
@@ -58,9 +51,6 @@ export const ScanMetricsUtils = {
     }
   },
 
-  /**
-   * Formats memory usage as human-readable string
-   */
   formatMemoryUsage(bytes: number): string {
     const units = ['B', 'KB', 'MB', 'GB'];
     let value = bytes;
@@ -74,25 +64,16 @@ export const ScanMetricsUtils = {
     return `${value.toFixed(1)} ${units[unitIndex]}`;
   },
 
-  /**
-   * Calculates processing rate (objects per second)
-   */
   calculateProcessingRate(metrics: ScanMetrics): number {
     if (metrics.processingTime === 0) return 0;
     return (metrics.objectsScanned / metrics.processingTime) * 1000;
   },
 
-  /**
-   * Checks if memory usage is above threshold
-   */
   isMemoryUsageHigh(metrics: ScanMetrics, threshold: number): boolean {
     const totalMemory = process.memoryUsage().heapTotal;
     return metrics.memoryUsage / totalMemory > threshold;
   },
 
-  /**
-   * Creates a summary of key metrics
-   */
   createSummary(metrics: ScanMetrics): string {
     const items = [
       `${metrics.objectsScanned} objects scanned`,

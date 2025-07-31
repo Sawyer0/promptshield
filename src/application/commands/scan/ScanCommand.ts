@@ -14,7 +14,7 @@ export class ScanCommand {
    */
   toScanConfig(): ScanConfig {
     return {
-      rulepack: this.options.rulepack || 'default',
+      rulepack: this.options.rulepack || '',
       outputFormat: (this.options.output || 'markdown') as OutputFormat,
       outputFile: this.options.outputFile,
 

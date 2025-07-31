@@ -8,9 +8,6 @@ import { ScanMetricsUtils } from '../../../../shared/types/ScanMetrics';
  * HTML format renderer
  */
 export class HtmlRenderer implements Renderer {
-  /**
-   * Renders a report to HTML format
-   */
   async render(report: Report): Promise<Result<string, Error>> {
     try {
       const violations = report.getFilteredViolations();
@@ -140,23 +137,14 @@ export class HtmlRenderer implements Renderer {
     }
   }
 
-  /**
-   * Gets the output format this renderer handles
-   */
   getFormat(): string {
     return 'html';
   }
 
-  /**
-   * Checks if this renderer supports streaming
-   */
   supportsStreaming(): boolean {
     return false;
   }
 
-  /**
-   * Gets emoji for severity level
-   */
   private getSeverityEmoji(severity: string): string {
     switch (severity.toLowerCase()) {
       case 'critical':
@@ -172,9 +160,6 @@ export class HtmlRenderer implements Renderer {
     }
   }
 
-  /**
-   * Escapes HTML special characters
-   */
   private escapeHtml(text: string): string {
     return text
       .replace(/&/g, '&amp;')
@@ -184,9 +169,6 @@ export class HtmlRenderer implements Renderer {
       .replace(/'/g, '&#39;');
   }
 
-  /**
-   * Gets CSS styles for the HTML report
-   */
   private getStyles(): string {
     return `
     body {

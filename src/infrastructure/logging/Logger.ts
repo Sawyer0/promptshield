@@ -12,9 +12,6 @@ export interface Logger {
   ): void;
 }
 
-/**
- * Log levels
- */
 export enum LogLevel {
   DEBUG = 0,
   INFO = 1,
@@ -22,9 +19,6 @@ export enum LogLevel {
   ERROR = 3,
 }
 
-/**
- * Console logger implementation
- */
 export class ConsoleLogger implements Logger {
   constructor(
     private level: LogLevel = LogLevel.INFO,
@@ -34,21 +28,21 @@ export class ConsoleLogger implements Logger {
   debug(message: string, context?: Record<string, unknown>): void {
     if (this.level <= LogLevel.DEBUG) {
       const formatted = this.format('DEBUG', message, context);
-      console.debug(formatted);
+      process.stderr.write(formatted + '\n');
     }
   }
 
   info(message: string, context?: Record<string, unknown>): void {
     if (this.level <= LogLevel.INFO) {
       const formatted = this.format('INFO', message, context);
-      console.info(formatted);
+      process.stderr.write(formatted + '\n');
     }
   }
 
   warn(message: string, context?: Record<string, unknown>): void {
     if (this.level <= LogLevel.WARN) {
       const formatted = this.format('WARN', message, context);
-      console.warn(formatted);
+      process.stderr.write(formatted + '\n');
     }
   }
 
@@ -59,10 +53,10 @@ export class ConsoleLogger implements Logger {
   ): void {
     if (this.level <= LogLevel.ERROR) {
       const formatted = this.format('ERROR', message, context);
-      console.error(formatted);
+      process.stderr.write(formatted + '\n');
 
       if (error && this.options.includeStackTrace) {
-        console.error(error.stack);
+        process.stderr.write(error.stack + '\n');
       }
     }
   }
@@ -83,18 +77,12 @@ export class ConsoleLogger implements Logger {
   }
 }
 
-/**
- * Logger options
- */
 export interface LoggerOptions {
   includeTimestamp?: boolean;
   includeStackTrace?: boolean;
   colorize?: boolean;
 }
 
-/**
- * No-op logger for testing
- */
 export class NoOpLogger implements Logger {
   debug(message: string, context?: Record<string, unknown>): void {
     // No-op implementation - format but don't output
@@ -138,18 +126,12 @@ export class NoOpLogger implements Logger {
   }
 }
 
-/**
- * Logger factory
- */
 export class LoggerFactory {
   private static instance: Logger;
 
   static create(config: LoggerConfig): Logger {
-    if (!this.instance) {
-      const level = this.parseLogLevel(config.level);
-      this.instance = new ConsoleLogger(level, config.options);
-    }
-    return this.instance;
+    const level = this.parseLogLevel(config.level);
+    return new ConsoleLogger(level, config.options);
   }
 
   static getLogger(): Logger {
@@ -157,6 +139,10 @@ export class LoggerFactory {
       this.instance = new ConsoleLogger();
     }
     return this.instance;
+  }
+
+  static createQuietLogger(): Logger {
+    return new NoOpLogger();
   }
 
   private static parseLogLevel(level?: string): LogLevel {
@@ -175,9 +161,6 @@ export class LoggerFactory {
   }
 }
 
-/**
- * Logger configuration
- */
 export interface LoggerConfig {
   level?: string;
   options?: LoggerOptions;

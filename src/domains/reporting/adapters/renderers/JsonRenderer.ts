@@ -1,16 +1,13 @@
 import { Renderer } from '../../core/ports/Renderer';
 import { Report } from '../../core/entities/Report';
 import { Result, ok, err } from '../../../../shared/types/Result';
-import { ViolationUtils } from '../../../../shared/types/Violation';
+import { ViolationUtils, Violation } from '../../../../shared/types/Violation';
 import { ScanMetricsUtils } from '../../../../shared/types/ScanMetrics';
 
 /**
  * JSON format renderer
  */
 export class JsonRenderer implements Renderer {
-  /**
-   * Renders a report to JSON format
-   */
   async render(report: Report): Promise<Result<string, Error>> {
     try {
       const violations = report.getFilteredViolations();
@@ -28,17 +25,18 @@ export class JsonRenderer implements Renderer {
           rule_description: string;
           severity: string;
           category: string;
-          message: string;
-          field: string;
-          object_index: number;
-          position?: {
-            start: number;
-            end: number;
-            line?: number;
-            column?: number;
-          };
-          context: { before?: string; match: string; after?: string };
-          metadata?: Record<string, unknown>;
+          occurrences: number;
+          examples: Array<{
+            field: string;
+            object_index: number;
+            match: string;
+            position?: {
+              start: number;
+              end: number;
+              line?: number;
+              column?: number;
+            };
+          }>;
         }>;
         metrics?: {
           objects_scanned: number;
@@ -58,18 +56,7 @@ export class JsonRenderer implements Renderer {
           by_severity: summary.bySeverity,
           by_category: summary.byCategory,
         },
-        violations: violations.map((v) => ({
-          rule_id: v.ruleId,
-          rule_description: v.ruleDescription,
-          severity: v.severity,
-          category: v.category,
-          message: v.message,
-          field: v.field,
-          object_index: v.objectIndex,
-          position: v.position,
-          context: v.context,
-          metadata: v.metadata,
-        })),
+        violations: this.groupViolationsForJson(violations),
       };
 
       // Include metrics if requested
@@ -100,16 +87,81 @@ export class JsonRenderer implements Renderer {
     }
   }
 
-  /**
-   * Gets the output format this renderer handles
-   */
+  private groupViolationsForJson(violations: Violation[]): Array<{
+    rule_id: string;
+    rule_description: string;
+    severity: string;
+    category: string;
+    occurrences: number;
+    examples: Array<{
+      field: string;
+      object_index: number;
+      match: string;
+      position?: {
+        start: number;
+        end: number;
+        line?: number;
+        column?: number;
+      };
+    }>;
+  }> {
+    const groupedViolations = violations.reduce(
+      (groups, violation) => {
+        const key = `${violation.ruleId}:${violation.severity}:${violation.category}`;
+        if (!groups[key]) {
+          groups[key] = {
+            rule_id: violation.ruleId,
+            rule_description: violation.ruleDescription,
+            severity: violation.severity,
+            category: violation.category,
+            occurrences: 0,
+            examples: [],
+          };
+        }
+        groups[key].occurrences++;
+
+        // Add up to 3 examples per rule
+        if (groups[key].examples.length < 3) {
+          groups[key].examples.push({
+            field: violation.field,
+            object_index: violation.objectIndex,
+            match: violation.context?.match || '',
+            position: violation.position,
+          });
+        }
+
+        return groups;
+      },
+      {} as Record<
+        string,
+        {
+          rule_id: string;
+          rule_description: string;
+          severity: string;
+          category: string;
+          occurrences: number;
+          examples: Array<{
+            field: string;
+            object_index: number;
+            match: string;
+            position?: {
+              start: number;
+              end: number;
+              line?: number;
+              column?: number;
+            };
+          }>;
+        }
+      >
+    );
+
+    return Object.values(groupedViolations);
+  }
+
   getFormat(): string {
     return 'json';
   }
 
-  /**
-   * Checks if this renderer supports streaming
-   */
   supportsStreaming(): boolean {
     return false;
   }

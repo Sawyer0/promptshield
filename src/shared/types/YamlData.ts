@@ -2,9 +2,6 @@
  * Type definitions for YAML data structures
  */
 
-/**
- * Raw rule data as it appears in YAML files
- */
 export interface RuleYamlData {
   id: string;
   description: string;
@@ -16,9 +13,6 @@ export interface RuleYamlData {
   case_sensitive?: boolean;
 }
 
-/**
- * Raw rulepack data as it appears in YAML files
- */
 export interface RulePackYamlData {
   version: string;
   last_updated: string;
@@ -28,9 +22,6 @@ export interface RulePackYamlData {
   author?: string;
 }
 
-/**
- * Configuration data structure for scan settings
- */
 export interface ScanConfigData {
   parallel?: boolean;
   batchSize?: number;
@@ -41,9 +32,6 @@ export interface ScanConfigData {
   memoryWarningThreshold?: number;
 }
 
-/**
- * Configuration data structure for output settings
- */
 export interface OutputConfigData {
   format?: 'json' | 'markdown' | 'csv' | 'table' | 'html' | 'ndjson';
   file?: string;
@@ -52,9 +40,6 @@ export interface OutputConfigData {
   fields?: string[];
 }
 
-/**
- * Generic configuration data
- */
 export interface ConfigData {
   scan?: ScanConfigData;
   output?: OutputConfigData;

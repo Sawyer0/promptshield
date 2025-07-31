@@ -23,10 +23,8 @@ export class ValidateCommandHandler {
     try {
       this.logger.info('Starting validation', { target: command.target });
 
-      // Convert command options to validation options
       const validationOptions = this.buildValidationOptions(command.options);
 
-      // Perform validation
       const result = await this.validationEngine.validate(
         command.target,
         validationOptions
@@ -39,10 +37,8 @@ export class ValidateCommandHandler {
 
       const validationResult = result.value;
 
-      // Log results
       this.logValidationResult(validationResult, command.options);
 
-      // Display results
       this.displayValidationResult(validationResult, command.options);
 
       return ok(validationResult);
@@ -154,7 +150,6 @@ export class ValidateCommandHandler {
     console.log(`Warnings: ${warnings.length}`);
     console.log();
 
-    // Display errors
     if (errors.length > 0) {
       console.log('🚨 Errors:');
       console.log('─'.repeat(30));
@@ -184,7 +179,6 @@ export class ValidateCommandHandler {
       });
     }
 
-    // Display success message
     if (isValid) {
       console.log('✅ Validation passed successfully!');
       if (warnings.length > 0) {

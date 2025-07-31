@@ -60,11 +60,11 @@
     "dist",
     "README.md",
     "docs/QUICKSTART.md",
-    "docs/CLI_REFERENCE.md",
-    "rulepacks"
+    "docs/CLI_REFERENCE.md"
   ],
   "type": "commonjs",
   "devDependencies": {
+    "@types/chalk": "^2.2.4",
     "@types/glob": "^8.1.0",
     "@types/jest": "^30.0.0",
     "@types/js-yaml": "^4.0.9",
@@ -83,6 +83,7 @@
   },
   "dependencies": {
     "ajv": "^8.17.1",
+    "chalk": "^4.1.2",
     "commander": "^14.0.0",
     "glob": "^11.0.3",
     "js-yaml": "^4.1.0",

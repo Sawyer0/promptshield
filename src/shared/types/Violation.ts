@@ -22,14 +22,12 @@ export interface Violation {
     column?: number;
   };
 
-  // Context
   context: {
     before?: string;
     match: string;
     after?: string;
   };
 
-  // Additional data
   metadata?: {
     pattern?: string;
     confidence?: number;
@@ -37,9 +35,6 @@ export interface Violation {
   };
 }
 
-/**
- * Represents a collection of violations with summary information
- */
 export interface ViolationSummary {
   total: number;
   bySeverity: Record<string, number>;
@@ -51,9 +46,6 @@ export interface ViolationSummary {
  * Utility functions for working with violations
  */
 export const ViolationUtils = {
-  /**
-   * Creates a violation summary from a list of violations
-   */
   createSummary(violations: Violation[]): ViolationSummary {
     const summary: ViolationSummary = {
       total: violations.length,
@@ -63,15 +55,12 @@ export const ViolationUtils = {
     };
 
     violations.forEach((violation) => {
-      // Count by severity
       summary.bySeverity[violation.severity] =
         (summary.bySeverity[violation.severity] || 0) + 1;
 
-      // Count by category
       summary.byCategory[violation.category] =
         (summary.byCategory[violation.category] || 0) + 1;
 
-      // Count by rule
       summary.byRule[violation.ruleId] =
         (summary.byRule[violation.ruleId] || 0) + 1;
     });
@@ -79,25 +68,16 @@ export const ViolationUtils = {
     return summary;
   },
 
-  /**
-   * Filters violations by severity
-   */
   filterBySeverity(violations: Violation[], severities: string[]): Violation[] {
     if (severities.length === 0) return violations;
     return violations.filter((v) => severities.includes(v.severity));
   },
 
-  /**
-   * Filters violations by category
-   */
   filterByCategory(violations: Violation[], categories: string[]): Violation[] {
     if (categories.length === 0) return violations;
     return violations.filter((v) => categories.includes(v.category));
   },
 
-  /**
-   * Sorts violations by severity (critical first)
-   */
   sortBySeverity(violations: Violation[]): Violation[] {
     const severityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
     return violations.sort(
@@ -105,9 +85,6 @@ export const ViolationUtils = {
     );
   },
 
-  /**
-   * Groups violations by field
-   */
   groupByField(violations: Violation[]): Record<string, Violation[]> {
     const groups: Record<string, Violation[]> = {};
     violations.forEach((violation) => {

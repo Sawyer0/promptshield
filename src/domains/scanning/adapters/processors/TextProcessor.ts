@@ -9,24 +9,15 @@ import { ScanContext } from '../../core/entities/ScanContext';
  * Processes plain text content
  */
 export class TextProcessor implements ContentProcessor {
-  /**
-   * Checks if this processor can handle the given file type
-   */
   canProcess(filePath: string): boolean {
     const extensions = this.getSupportedExtensions();
     return extensions.some((ext) => filePath.toLowerCase().endsWith(ext));
   }
 
-  /**
-   * Gets the supported file extensions
-   */
   getSupportedExtensions(): string[] {
     return ['.txt', '.text', '.log', '.md'];
   }
 
-  /**
-   * Processes text content and returns structured data
-   */
   async process(
     content: string,
     context: ScanContext
@@ -49,7 +40,6 @@ export class TextProcessor implements ContentProcessor {
         },
       ];
 
-      // If maxObjects is set to 0, return empty array
       if (maxObjects === 0) {
         return ok([]);
       }
@@ -60,9 +50,6 @@ export class TextProcessor implements ContentProcessor {
     }
   }
 
-  /**
-   * Splits text into chunks if needed (for large text files)
-   */
   private splitIntoChunks(
     content: string,
     chunkSize: number = 10000
@@ -90,9 +77,6 @@ export class TextProcessor implements ContentProcessor {
     return chunks;
   }
 
-  /**
-   * Process text with chunking for large files
-   */
   async processWithChunking(
     content: string,
     context: ScanContext

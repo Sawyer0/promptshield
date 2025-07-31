@@ -1,6 +1,3 @@
-/**
- * Base class for domain errors
- */
 export abstract class DomainError extends Error {
   abstract readonly code: string;
   abstract readonly statusCode: number;
@@ -15,9 +12,6 @@ export abstract class DomainError extends Error {
   }
 }
 
-/**
- * Validation error
- */
 export class ValidationError extends DomainError {
   readonly code = 'VALIDATION_ERROR';
   readonly statusCode = 400;
@@ -31,9 +25,6 @@ export class ValidationError extends DomainError {
   }
 }
 
-/**
- * Not found error
- */
 export class NotFoundError extends DomainError {
   readonly code = 'NOT_FOUND';
   readonly statusCode = 404;
@@ -43,9 +34,6 @@ export class NotFoundError extends DomainError {
   }
 }
 
-/**
- * File system error
- */
 export class FileSystemError extends DomainError {
   readonly code = 'FILE_SYSTEM_ERROR';
   readonly statusCode = 500;
@@ -55,9 +43,6 @@ export class FileSystemError extends DomainError {
   }
 }
 
-/**
- * Rule execution error
- */
 export class RuleExecutionError extends DomainError {
   readonly code = 'RULE_EXECUTION_ERROR';
   readonly statusCode = 500;
@@ -67,9 +52,6 @@ export class RuleExecutionError extends DomainError {
   }
 }
 
-/**
- * Configuration error
- */
 export class ConfigurationError extends DomainError {
   readonly code = 'CONFIGURATION_ERROR';
   readonly statusCode = 400;
@@ -79,9 +61,6 @@ export class ConfigurationError extends DomainError {
   }
 }
 
-/**
- * Processing error
- */
 export class ProcessingError extends DomainError {
   readonly code = 'PROCESSING_ERROR';
   readonly statusCode = 500;
@@ -91,9 +70,6 @@ export class ProcessingError extends DomainError {
   }
 }
 
-/**
- * Timeout error
- */
 export class TimeoutError extends DomainError {
   readonly code = 'TIMEOUT_ERROR';
   readonly statusCode = 408;
@@ -106,9 +82,6 @@ export class TimeoutError extends DomainError {
   }
 }
 
-/**
- * Memory error
- */
 export class MemoryError extends DomainError {
   readonly code = 'MEMORY_ERROR';
   readonly statusCode = 507;

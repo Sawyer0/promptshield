@@ -42,9 +42,6 @@ export interface ScanConfig {
   failOn?: string;
 }
 
-/**
- * Supported output formats
- */
 export type OutputFormat =
   | 'json'
   | 'markdown'
@@ -53,11 +50,8 @@ export type OutputFormat =
   | 'html'
   | 'ndjson';
 
-/**
- * Default scan configuration
- */
 export const defaultScanConfig: ScanConfig = {
-  rulepack: 'default',
+  rulepack: '',
   outputFormat: 'markdown',
   severity: ['low', 'medium', 'high', 'critical'],
   category: [],

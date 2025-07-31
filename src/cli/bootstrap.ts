@@ -1,6 +1,7 @@
 import { Container } from '../infrastructure/container/Container';
 import { ConfigManager } from '../infrastructure/config/ConfigManager';
 import { LoggerFactory } from '../infrastructure/logging/Logger';
+import { err } from '../shared/types/Result';
 
 // Domain implementations
 import { LocalFileReader } from '../domains/scanning/adapters/LocalFileReader';
@@ -52,7 +53,6 @@ export function setupContainer(container: Container): void {
     })
   );
 
-  // Load configuration from environment
   const configManager = container.resolve<ConfigManager>('configManager');
   configManager.loadFromEnvironment();
 
@@ -222,29 +222,18 @@ export function setupContainer(container: Container): void {
         };
       }) => {
         const ruleEngine = container.resolve<DefaultRuleEngine>('ruleEngine');
-        const repository =
-          container.resolve<YamlRuleRepository>('ruleRepository');
+        // Repository is available but not used in current implementation
 
         try {
-          let rulepacks;
-          if (command.options.rulepack) {
-            const result = await ruleEngine.loadRulePack(
-              command.options.rulepack
-            );
-            if (result.isErr()) return result;
-            rulepacks = [result.value];
-          } else {
-            const availableResult = await repository.listAvailable();
-            if (availableResult.isErr()) return availableResult;
-
-            const loadResults = await Promise.all(
-              availableResult.value.map((path: string) =>
-                ruleEngine.loadRulePack(path)
-              )
-            );
-
-            rulepacks = loadResults.filter((r) => r.isOk()).map((r) => r.value);
+          if (!command.options.rulepack) {
+            return err(new Error('Rulepack path is required (use --rulepack)'));
           }
+
+          const result = await ruleEngine.loadRulePack(
+            command.options.rulepack
+          );
+          if (result.isErr()) return result;
+          const rulepacks = [result.value];
 
           // Display rulepacks and rules
           for (const rulepack of rulepacks) {
@@ -296,7 +285,6 @@ export function setupContainer(container: Container): void {
       execute: async (command: {
         filename: string;
         options: {
-          template?: string;
           name?: string;
           description?: string;
           quiet?: boolean;
@@ -305,39 +293,25 @@ export function setupContainer(container: Container): void {
       }) => {
         const repository =
           container.resolve<YamlRuleRepository>('ruleRepository');
-        const templates =
-          container.resolve<Map<string, RuleTemplate>>('ruleTemplates');
 
         try {
-          const template = templates.get(command.options.template || 'basic');
-          if (!template) {
-            return {
-              isErr: () => true,
-              error: new Error(`Unknown template: ${command.options.template}`),
-            };
-          }
-
-          // Create Rule instances from template
-          const rules = template.rules.map(
-            (ruleData) =>
-              new Rule(
-                ruleData.id,
-                ruleData.description,
-                ruleData.match_regex || [],
-                ruleData.match_keywords || [],
-                ruleData.severity as RuleSeverity,
-                ruleData.category as RuleCategory,
-                ruleData.enabled,
-                false // case_sensitive default
-              )
+          // Create a blank rulepack with example structure
+          const exampleRule = new Rule(
+            'example_rule',
+            'Example rule description',
+            ['pattern\\d+'], // Example regex pattern
+            ['keyword1', 'keyword2'], // Example keywords
+            'medium' as RuleSeverity,
+            'custom' as RuleCategory,
+            true, // enabled
+            false // case_sensitive
           );
 
-          // Create RulePack instance
           const rulePack = new RulePack(
-            command.options.name || template.name,
-            command.options.description || template.description,
-            rules,
-            template.version,
+            command.options.name || 'My RulePack',
+            command.options.description || 'Custom rules for prompt safety',
+            [exampleRule],
+            '1.0.0',
             new Date()
           );
 
@@ -347,10 +321,30 @@ export function setupContainer(container: Container): void {
           );
 
           if (result.isOk() && !command.options.quiet) {
-            console.log(`Created RulePack: ${command.filename}`);
+            console.log(`\nCreated RulePack: ${command.filename}`);
+            console.log('\nNext steps:');
+            console.log('1. Edit the file to add your custom rules');
+            console.log(
+              '2. Validate it: promptshield validate --rulepack ' +
+                command.filename
+            );
+            console.log(
+              '3. Use it: promptshield scan <input> --rulepack ' +
+                command.filename
+            );
+
             if (command.options.verbose) {
-              console.log(`Template: ${command.options.template || 'basic'}`);
-              console.log(`Rules: ${rulePack.rules.length}`);
+              console.log('\nRulePack structure:');
+              console.log('- name: Your rulepack name');
+              console.log('- description: What this rulepack detects');
+              console.log('- rules: Array of detection rules');
+              console.log('  - id: Unique identifier');
+              console.log('  - description: What this rule detects');
+              console.log('  - match_regex: Array of regex patterns');
+              console.log('  - match_keywords: Array of keywords to match');
+              console.log('  - severity: low, medium, high, or critical');
+              console.log('  - category: Rule category (e.g., pii, security)');
+              console.log('  - enabled: true or false');
             }
           }
 
@@ -362,95 +356,4 @@ export function setupContainer(container: Container): void {
     }),
     true
   );
-
-  // Rule templates
-  container.register('ruleTemplates', createRuleTemplates());
-}
-
-interface RuleTemplate {
-  version: string;
-  name: string;
-  description: string;
-  rules: Array<{
-    id: string;
-    description: string;
-    match_keywords?: string[];
-    match_regex?: string[];
-    severity: string;
-    category: string;
-    enabled: boolean;
-  }>;
-}
-
-/**
- * Creates rule templates
- */
-function createRuleTemplates(): Map<string, RuleTemplate> {
-  const templates = new Map();
-
-  // Basic template
-  templates.set('basic', {
-    version: '1.0.0',
-    name: 'Basic RulePack',
-    description: 'Basic example rules for getting started',
-    rules: [
-      {
-        id: 'example_keyword',
-        description: 'Example keyword detection',
-        match_keywords: ['example', 'test'],
-        severity: 'low',
-        category: 'custom',
-        enabled: true,
-      },
-      {
-        id: 'example_regex',
-        description: 'Example regex pattern',
-        match_regex: ['\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b'],
-        severity: 'medium',
-        category: 'custom',
-        enabled: true,
-      },
-    ],
-  });
-
-  // PII template
-  templates.set('pii', {
-    version: '1.0.0',
-    name: 'PII Detection',
-    description: 'Detects personally identifiable information',
-    rules: [
-      {
-        id: 'email_addresses',
-        description: 'Detects email addresses',
-        match_regex: ['\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b'],
-        severity: 'medium',
-        category: 'pii',
-        enabled: true,
-      },
-      {
-        id: 'phone_numbers',
-        description: 'Detects phone numbers',
-        match_regex: [
-          '\\b\\d{3}-\\d{3}-\\d{4}\\b',
-          '\\(\\d{3}\\)\\s?\\d{3}-\\d{4}',
-          '\\b\\d{10}\\b',
-        ],
-        severity: 'medium',
-        category: 'pii',
-        enabled: true,
-      },
-      {
-        id: 'ssn',
-        description: 'Detects Social Security Numbers',
-        match_regex: ['\\b\\d{3}-\\d{2}-\\d{4}\\b'],
-        severity: 'high',
-        category: 'pii',
-        enabled: true,
-      },
-    ],
-  });
-
-  // Add other templates (security, bias, compliance)...
-
-  return templates;
 }

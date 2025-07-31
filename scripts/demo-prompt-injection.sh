@@ -94,7 +94,7 @@ print_success "Severity filtering completed!"
 print_section "6. RulePack Validation"
 echo "Validating the prompt injection rulepack..."
 
-./bin/promptshield validate-rulepack rulepacks/prompt-injection.yaml
+./bin/promptshield validate rulepacks/prompt-injection.yaml
 
 print_success "RulePack validation completed!"
 

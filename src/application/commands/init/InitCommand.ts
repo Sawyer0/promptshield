@@ -1,6 +1,3 @@
-/**
- * Init command data transfer object
- */
 export class InitCommand {
   constructor(
     public readonly filename: string,
@@ -8,9 +5,6 @@ export class InitCommand {
   ) {}
 }
 
-/**
- * Init command options
- */
 export interface InitCommandOptions {
   template?: string;
   description?: string;

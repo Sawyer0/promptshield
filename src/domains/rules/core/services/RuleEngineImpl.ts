@@ -14,22 +14,18 @@ export class DefaultRuleEngine implements RuleEngine {
     private matcher: RuleMatcher
   ) {}
 
-  /**
-   * Loads a rulepack from a file or default location
-   */
   async loadRulePack(path: string): Promise<Result<RulePack, Error>> {
     try {
-      // Use default path if 'default' is specified
-      const rulePackPath =
-        path === 'default' ? this.repository.getDefaultPath() : path;
+      if (!path || path.trim() === '') {
+        return err(new Error('Rulepack path is required'));
+      }
 
-      const result = await this.repository.loadFromYaml(rulePackPath);
+      const result = await this.repository.loadFromYaml(path);
 
       if (result.isErr()) {
         return err(result.error);
       }
 
-      // Validate the loaded rulepack
       const validationResult = this.validateRulePack(result.value);
       if (validationResult.isErr()) {
         return err(validationResult.error);
@@ -41,12 +37,8 @@ export class DefaultRuleEngine implements RuleEngine {
     }
   }
 
-  /**
-   * Validates a rulepack
-   */
   validateRulePack(rulePack: RulePack): Result<void, Error> {
     try {
-      // RulePack constructor already validates, but we can add extra validation here
       if (rulePack.getEnabledRules().length === 0) {
         return err(new Error('RulePack has no enabled rules'));
       }
@@ -57,9 +49,6 @@ export class DefaultRuleEngine implements RuleEngine {
     }
   }
 
-  /**
-   * Applies rules to content and returns violations
-   */
   async applyRules(
     fields: Record<string, string>,
     rules: Rule[],
@@ -71,7 +60,6 @@ export class DefaultRuleEngine implements RuleEngine {
       for (const rule of rules) {
         if (!rule.enabled) continue;
 
-        // Apply rule to each field
         for (const [fieldName, fieldValue] of Object.entries(fields)) {
           if (!fieldValue) continue;
 
@@ -93,9 +81,6 @@ export class DefaultRuleEngine implements RuleEngine {
     }
   }
 
-  /**
-   * Tests a single rule against content
-   */
   testRule(
     content: string,
     rule: Rule
@@ -123,9 +108,6 @@ export class DefaultRuleEngine implements RuleEngine {
     }
   }
 
-  /**
-   * Creates a violation from a match
-   */
   private createViolation(
     rule: Rule,
     field: string,
@@ -156,19 +138,14 @@ export class DefaultRuleEngine implements RuleEngine {
  * Default implementation of rule matcher
  */
 export class DefaultRuleMatcher implements RuleMatcher {
-  /**
-   * Matches a rule against content
-   */
   match(content: string, rule: Rule): MatchResult[] {
     const matches: MatchResult[] = [];
 
-    // Match regex patterns
     if (rule.hasRegexPatterns()) {
       const regexMatches = this.matchRegexPatterns(content, rule);
       matches.push(...regexMatches);
     }
 
-    // Match keyword patterns
     if (rule.hasKeywordPatterns()) {
       const keywordMatches = this.matchKeywordPatterns(content, rule);
       matches.push(...keywordMatches);
@@ -177,9 +154,6 @@ export class DefaultRuleMatcher implements RuleMatcher {
     return matches;
   }
 
-  /**
-   * Matches regex patterns
-   */
   private matchRegexPatterns(content: string, rule: Rule): MatchResult[] {
     const matches: MatchResult[] = [];
     const patterns = rule.getCompiledRegexPatterns();
@@ -207,9 +181,6 @@ export class DefaultRuleMatcher implements RuleMatcher {
     return matches;
   }
 
-  /**
-   * Matches keyword patterns
-   */
   private matchKeywordPatterns(content: string, rule: Rule): MatchResult[] {
     const matches: MatchResult[] = [];
     const keywords = rule.getNormalizedKeywords();
@@ -240,9 +211,6 @@ export class DefaultRuleMatcher implements RuleMatcher {
     return matches;
   }
 
-  /**
-   * Gets context around a match
-   */
   private getContext(
     content: string,
     start: number,
@@ -263,17 +231,11 @@ export class DefaultRuleMatcher implements RuleMatcher {
     };
   }
 
-  /**
-   * Gets line number for a position
-   */
   private getLineNumber(content: string, position: number): number {
     const lines = content.substring(0, position).split('\n');
     return lines.length;
   }
 
-  /**
-   * Gets column number for a position
-   */
   private getColumnNumber(content: string, position: number): number {
     const lines = content.substring(0, position).split('\n');
     const lastLine = lines[lines.length - 1];

@@ -1,11 +1,5 @@
-/**
- * Represents the result of an operation that can succeed or fail
- */
 export type Result<T, E = Error> = Ok<T> | Err<E>;
 
-/**
- * Represents a successful result
- */
 export class Ok<T> {
   readonly kind = 'ok';
 
@@ -33,9 +27,6 @@ export class Ok<T> {
   }
 }
 
-/**
- * Represents a failed result
- */
 export class Err<E> {
   readonly kind = 'err';
 
@@ -64,19 +55,10 @@ export class Err<E> {
   }
 }
 
-/**
- * Creates a successful result
- */
 export const ok = <T>(value: T): Result<T, never> => new Ok(value);
 
-/**
- * Creates a failed result
- */
 export const err = <E>(error: E): Result<never, E> => new Err(error);
 
-/**
- * Pattern matching for Result types
- */
 export const match = <T, E, U>(
   result: Result<T, E>,
   handlers: {
@@ -91,9 +73,6 @@ export const match = <T, E, U>(
   }
 };
 
-/**
- * Unwraps a Result, throwing an error if it's an Err
- */
 export const unwrap = <T, E>(result: Result<T, E>): T => {
   if (result.isOk()) {
     return result.value;
@@ -102,9 +81,6 @@ export const unwrap = <T, E>(result: Result<T, E>): T => {
   }
 };
 
-/**
- * Unwraps a Result, returning a default value if it's an Err
- */
 export const unwrapOr = <T, E>(result: Result<T, E>, defaultValue: T): T => {
   if (result.isOk()) {
     return result.value;

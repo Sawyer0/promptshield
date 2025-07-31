@@ -1,307 +1,108 @@
-This is the Advanced Modular Architecture for PromptShield. A CLI Devtool designed to scan files and enforce rules.
+# CLAUDE.md
 
-## Core Principles
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-1. **Domain-Driven Design** - Organize by business domains
-2. **Hexagonal Architecture** - Core domain logic independent of infrastructure
-3. **Plugin Architecture** - Extensible components
-4. **Interface-Based Design** - Depend on abstractions, not implementations
-5. **Event-Driven Communication** - Loose coupling between modules
+## Development Commands
 
-## Proposed Architecture
+### Build and Development
+- `npm run build` - Clean and compile TypeScript to dist/
+- `npm run clean` - Remove dist/ directory
+- `npm run dev` - Run CLI directly with ts-node
+- `npm run type-check` - TypeScript type checking without emitting files
 
-```
-src/
-├── domains/                 # Business domain modules
-│   ├── scanning/
-│   │   ├── core/           # Domain logic (no external deps)
-│   │   │   ├── entities/
-│   │   │   │   ├── ScanRequest.ts
-│   │   │   │   ├── ScanResult.ts
-│   │   │   │   └── ScanContext.ts
-│   │   │   ├── services/
-│   │   │   │   ├── ScanOrchestrator.ts
-│   │   │   │   └── ScanStrategy.ts
-│   │   │   └── ports/      # Interfaces for external deps
-│   │   │       ├── FileReader.ts
-│   │   │       ├── ContentProcessor.ts
-│   │   │       └── ResultRepository.ts
-│   │   ├── adapters/       # Implementations
-│   │   │   ├── processors/
-│   │   │   │   ├── JsonProcessor.ts
-│   │   │   │   ├── TextProcessor.ts
-│   │   │   │   └── NdjsonProcessor.ts
-│   │   │   └── filesystem/
-│   │   │       └── LocalFileReader.ts
-│   │   └── index.ts
-│   │
-│   ├── rules/
-│   │   ├── core/
-│   │   │   ├── entities/
-│   │   │   │   ├── Rule.ts
-│   │   │   │   ├── RulePack.ts
-│   │   │   │   └── Match.ts
-│   │   │   ├── services/
-│   │   │   │   ├── RuleEngine.ts
-│   │   │   │   ├── PatternMatcher.ts
-│   │   │   │   └── RuleValidator.ts
-│   │   │   └── ports/
-│   │   │       ├── RuleRepository.ts
-│   │   │       └── MatchingEngine.ts
-│   │   ├── adapters/
-│   │   │   ├── engines/
-│   │   │   │   ├── RegexEngine.ts
-│   │   │   │   └── KeywordEngine.ts
-│   │   │   └── repositories/
-│   │   │       └── YamlRuleRepository.ts
-│   │   └── index.ts
-│   │
-│   ├── reporting/
-│   │   ├── core/
-│   │   │   ├── entities/
-│   │   │   │   ├── Report.ts
-│   │   │   │   └── Format.ts
-│   │   │   ├── services/
-│   │   │   │   └── ReportGenerator.ts
-│   │   │   └── ports/
-│   │   │       └── Renderer.ts
-│   │   ├── adapters/
-│   │   │   └── renderers/
-│   │   │       ├── JsonRenderer.ts
-│   │   │       ├── HtmlRenderer.ts
-│   │   │       ├── MarkdownRenderer.ts
-│   │   │       └── CsvRenderer.ts
-│   │   └── index.ts
-│   │
-│   └── validation/
-│       ├── core/
-│       │   ├── entities/
-│       │   │   └── ValidationResult.ts
-│       │   ├── services/
-│       │   │   └── Validator.ts
-│       │   └── ports/
-│       │       └── ValidationRule.ts
-│       ├── adapters/
-│       │   └── rules/
-│       │       ├── FileValidation.ts
-│       │       ├── RuleValidation.ts
-│       │       └── ConfigValidation.ts
-│       └── index.ts
-│
-├── infrastructure/          # Technical concerns
-│   ├── config/
-│   │   ├── ConfigLoader.ts
-│   │   ├── ConfigValidator.ts
-│   │   └── defaults/
-│   │       ├── scan.config.ts
-│   │       └── rule.config.ts
-│   ├── logging/
-│   │   ├── Logger.ts
-│   │   └── adapters/
-│   │       ├── ConsoleLogger.ts
-│   │       └── FileLogger.ts
-│   ├── storage/
-│   │   ├── FileSystem.ts
-│   │   └── Cache.ts
-│   ├── monitoring/
-│   │   ├── PerformanceMonitor.ts
-│   │   └── MemoryMonitor.ts
-│   └── errors/
-│       ├── ErrorHandler.ts
-│       └── ErrorTypes.ts
-│
-├── application/            # Application services
-│   ├── commands/          # CLI command handlers
-│   │   ├── scan/
-│   │   │   ├── ScanCommand.ts
-│   │   │   ├── ScanCommandHandler.ts
-│   │   │   └── ScanCommandValidator.ts
-│   │   ├── validate/
-│   │   │   ├── ValidateCommand.ts
-│   │   │   └── ValidateCommandHandler.ts
-│   │   └── shared/
-│   │       ├── CommandBus.ts
-│   │       └── CommandHandler.ts
-│   ├── queries/           # Query handlers
-│   │   ├── ListRulesQuery.ts
-│   │   └── GetStatsQuery.ts
-│   └── events/            # Event system
-│       ├── EventBus.ts
-│       ├── EventHandler.ts
-│       └── events/
-│           ├── ScanStarted.ts
-│           ├── ScanCompleted.ts
-│           └── RuleMatched.ts
-│
-├── shared/                # Shared kernel
-│   ├── types/
-│   │   ├── Result.ts     # Result<T, E> type
-│   │   ├── Either.ts     # Either monad
-│   │   └── Option.ts     # Option type
-│   ├── utils/
-│   │   ├── functional/   # FP utilities
-│   │   │   ├── pipe.ts
-│   │   │   ├── compose.ts
-│   │   │   └── curry.ts
-│   │   └── async/        # Async utilities
-│   │       ├── retry.ts
-│   │       └── timeout.ts
-│   └── constants/
-│       └── index.ts
-│
-├── plugins/               # Plugin system
-│   ├── core/
-│   │   ├── PluginManager.ts
-│   │   ├── PluginRegistry.ts
-│   │   └── PluginInterface.ts
-│   └── builtin/
-│       ├── processors/    # Content processors
-│       ├── matchers/      # Custom matchers
-│       └── renderers/     # Output renderers
-│
-└── cli/                   # CLI entry point
-    ├── index.ts
-    ├── bootstrap.ts       # DI container setup
-    └── container.ts       # Dependency injection
+### Testing
+- `npm test` - Run all tests using unified test runner
+- `npm run test:unit` - Run only unit tests
+- `npm run test:integration` - Run only integration tests
+- `npm run test:performance` - Run only performance tests
+- `npm run test:cli` - Run only CLI functionality tests
+- `npm run test:coverage` - Run tests with coverage reporting
+- `npm run test:verbose` - Run tests with detailed output
+- `npm run test:fast` - Run tests with early bailout on failures
 
+### Code Quality
+- `npm run lint` - Lint TypeScript files in src/
+- `npm run lint:fix` - Auto-fix linting issues
+- `npm run format` - Format code with Prettier
+- `npm run format:check` - Check code formatting
+- `npm run validate` - Full validation (type-check, lint, format, security audit)
+
+### Single Test Execution
+Run individual test files using Jest directly:
+```bash
+npx jest tests/unit/domains/scanning/services/ScanOrchestrator.test.ts
+npx jest tests/integration/commands/scan/ScanCommand.test.ts --verbose
 ```
 
-## Key Improvements
+## Architecture Overview
 
-### 1. Domain-Driven Design
+PromptShield follows Clean Architecture principles with clear domain separation:
 
-- Each domain (scanning, rules, reporting) is self-contained
-- Core domain logic has no external dependencies
-- Clear boundaries between domains
+### Domain-Driven Structure
+- **`src/domains/`** - Core business domains (scanning, rules, reporting, validation)
+- **`src/application/`** - Command handlers and application services
+- **`src/infrastructure/`** - External concerns (config, logging, DI container)
+- **`src/cli/`** - CLI entry points and bootstrapping
+- **`src/shared/`** - Shared types and utilities
 
-### 2. Hexagonal Architecture (Ports & Adapters)
+### Key Domains
 
-```typescript
-// Core domain defines the port (interface)
-// domains/scanning/core/ports/ContentProcessor.ts
-export interface ContentProcessor {
-  canProcess(file: File): boolean;
-  process(file: File, context: ScanContext): Promise<ProcessResult>;
-}
+#### Scanning Domain (`src/domains/scanning/`)
+- **Entities**: ScanContext, ScanRequest, ScanResult
+- **Services**: ScanOrchestrator (main scanning workflow)
+- **Adapters**: LocalFileReader, JsonProcessor, TextProcessor
+- **Ports**: ContentProcessor, FileReader, ScanEngine
 
-// Adapter implements the port
-// domains/scanning/adapters/processors/JsonProcessor.ts
-export class JsonProcessor implements ContentProcessor {
-  canProcess(file: File): boolean {
-    return file.extension === '.json';
-  }
+#### Rules Domain (`src/domains/rules/`)
+- **Entities**: Rule, RulePack
+- **Services**: RuleEngineImpl (rule matching logic)
+- **Adapters**: YamlRuleRepository (YAML rule loading)
+- **Ports**: RuleEngine
 
-  async process(file: File, context: ScanContext): Promise<ProcessResult> {
-    // Implementation
-  }
-}
-```
+#### Reporting Domain (`src/domains/reporting/`)
+- **Entities**: Report
+- **Services**: ReportServiceImpl
+- **Adapters**: Multiple renderers (Json, Csv, Html, Markdown, Table, Ndjson)
+- **Ports**: Renderer
 
-### 3. Plugin Architecture
+#### Validation Domain (`src/domains/validation/`)
+- **Services**: ValidationEngineImpl
+- **Adapters**: InputFileValidatorImpl, RulePackValidatorImpl
+- **Ports**: ValidationEngine, Validator
 
-```typescript
-// plugins/core/PluginInterface.ts
-export interface Plugin {
-  name: string;
-  version: string;
-  register(container: Container): void;
-}
+### Dependency Injection
+Uses a custom lightweight DI container (`src/infrastructure/container/Container.ts`) with service locator pattern. Services are registered in bootstrap phase and resolved throughout the application.
 
-// Custom processor plugin
-export class CustomProcessorPlugin implements Plugin {
-  register(container: Container): void {
-    container.register('xmlProcessor', new XmlProcessor());
-  }
-}
-```
+### Command Pattern
+CLI commands follow CQRS-style command/handler pattern:
+- Commands define the contract (`src/application/commands/*/Command.ts`)
+- Handlers implement the logic (`src/application/commands/*/CommandHandler.ts`)
+- Supported commands: scan, list, init, validate
 
-### 4. Event-Driven Communication
+### File Processing
+- Supports JSON arrays, single JSON objects, NDJSON, and plain text
+- Streaming support for large files
+- Parallel processing capabilities
+- Memory-efficient processing with configurable thresholds
 
-```typescript
-// Domains communicate via events, not direct calls
-eventBus.publish(new ScanStarted(scanId, files));
+### Testing Structure
+- **Unit tests**: `tests/unit/` - Test individual components in isolation
+- **Integration tests**: `tests/integration/` - Test component interactions
+- **E2E tests**: `tests/e2e/` - Test complete workflows
+- **Performance tests**: Test memory usage and large file handling
+- Uses Jest with custom path mapping for clean imports
 
-// Other domains can listen
-eventBus.subscribe(ScanStarted, async (event) => {
-  await metricsService.recordScanStart(event);
-});
-```
+### Configuration
+- TypeScript with CommonJS modules
+- ESLint + Prettier for code quality
+- Jest for testing with coverage thresholds
+- Module path aliases for clean imports (`@domains/`, `@infrastructure/`, etc.)
 
-### 5. Functional Programming Patterns
+## CLI Architecture Notes
 
-```typescript
-// Use Result type for error handling
-const scanResult = await pipe(
-  validateInput,
-  map(loadRules),
-  flatMap(scanFiles),
-  map(generateReport)
-)(input);
+The CLI is currently transitioning architectures:
+- `src/cli/index.ts` contains the old CLI (commented out)
+- `src/cli/index-new-temp.ts` implements the new clean architecture
+- The binary (`bin/promptshield`) points to the main CLI entry
 
-// Pattern matching on results
-match(scanResult, {
-  Ok: (value) => console.log('Success:', value),
-  Err: (error) => console.error('Failed:', error),
-});
-```
-
-### 6. Dependency Injection
-
-```typescript
-// cli/container.ts
-const container = new Container();
-
-// Register implementations
-container.register('fileReader', new LocalFileReader());
-container.register('ruleEngine', new RuleEngine());
-container.register('logger', new ConsoleLogger());
-
-// Inject dependencies
-const scanService = container.resolve(ScanService);
-```
-
-### 7. Interface Segregation
-
-```typescript
-// Instead of one large Scanner interface
-interface Scanner {
-  scan(): void;
-  validate(): void;
-  report(): void;
-}
-
-// Split into focused interfaces
-interface Scannable {
-  scan(target: ScanTarget): Promise<ScanResult>;
-}
-
-interface Validatable {
-  validate(input: unknown): ValidationResult;
-}
-
-interface Reportable {
-  generateReport(data: ReportData): Report;
-}
-```
-
-## Benefits
-
-1. **True Modularity**: Each domain can be developed, tested, and deployed independently
-2. **Extensibility**: Easy to add new processors, renderers, or rules via plugins
-3. **Testability**: Core logic has no external dependencies
-4. **Flexibility**: Can swap implementations without changing core logic
-5. **Scalability**: Can extract domains into microservices if needed
-6. **Type Safety**: Strong typing with functional patterns
-7. **Error Handling**: Explicit error handling with Result types
-
-## Migration Strategy
-
-1. **Phase 1**: Create domain structure without breaking existing code
-2. **Phase 2**: Extract core entities and value objects
-3. **Phase 3**: Define ports (interfaces) for each domain
-4. **Phase 4**: Migrate existing code to adapters
-5. **Phase 5**: Implement event bus and command bus
-6. **Phase 6**: Add plugin system
-7. **Phase 7**: Refactor CLI to use dependency injection
-
-This architecture provides much better separation of concerns and true modularity while maintaining pragmatism for a CLI tool.
+When working with CLI commands, use the new command/handler pattern in `src/application/commands/` rather than the legacy approach.

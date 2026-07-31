@@ -1,6 +1,6 @@
 import { describe, test, expect } from '@jest/globals';
 import { ScanRequest } from '../../../../../src/domains/scanning/core/entities/ScanRequest';
-import { createScanConfig } from '../../../../helpers/testFactories';
+import { createScanConfig, createScanContext } from '../../../../helpers/testFactories';
 
 describe('ScanRequest', () => {
   describe('constructor', () => {
@@ -170,3 +170,10 @@ describe('ScanRequest', () => {
     });
   });
 });
+
+
+
+
+
+
+

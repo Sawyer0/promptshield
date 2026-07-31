@@ -13,6 +13,7 @@ import {
   DefaultRuleEngine,
   DefaultRuleMatcher,
 } from '../domains/rules/core/services/RuleEngineImpl';
+import { OptimizedRuleMatcher } from '../domains/rules/core/services/OptimizedRuleMatcher';
 import { JsonRenderer } from '../domains/reporting/adapters/renderers/JsonRenderer';
 import { MarkdownRenderer } from '../domains/reporting/adapters/renderers/MarkdownRenderer';
 import { CsvRenderer } from '../domains/reporting/adapters/renderers/CsvRenderer';
@@ -20,6 +21,10 @@ import { HtmlRenderer } from '../domains/reporting/adapters/renderers/HtmlRender
 import { TableRenderer } from '../domains/reporting/adapters/renderers/TableRenderer';
 import { NdjsonRenderer } from '../domains/reporting/adapters/renderers/NdjsonRenderer';
 import { ReportServiceImpl } from '../domains/reporting/core/services/ReportServiceImpl';
+
+// Infrastructure adapters
+import { NodeFileSystem } from '../infrastructure/adapters/NodeFileSystem';
+import { NodePathUtils } from '../infrastructure/adapters/NodePathUtils';
 
 // Validation domain
 import { DefaultValidationEngine } from '../domains/validation/core/services/ValidationEngineImpl';
@@ -53,6 +58,10 @@ export function setupContainer(container: Container): void {
     })
   );
 
+  // Platform adapters (Node.js implementations)
+  container.register('fileSystem', new NodeFileSystem());
+  container.register('pathUtils', new NodePathUtils());
+
   const configManager = container.resolve<ConfigManager>('configManager');
   configManager.loadFromEnvironment();
 
@@ -74,7 +83,12 @@ export function setupContainer(container: Container): void {
 
   container.registerFactory(
     'ruleMatcher',
-    () => new DefaultRuleMatcher(),
+    () => {
+      // Use OptimizedRuleMatcher for O(n) performance
+      // Can switch to DefaultRuleMatcher if needed for debugging
+      const useOptimized = process.env.USE_OPTIMIZED_MATCHER !== 'false';
+      return useOptimized ? new OptimizedRuleMatcher() : new DefaultRuleMatcher();
+    },
     true
   );
 
@@ -119,9 +133,10 @@ export function setupContainer(container: Container): void {
         memoryUsage = process.memoryUsage().heapUsed;
         streamingUsed = false;
       },
-      recordProcessing: (items: number, memory: number) => {
+      recordProcessing: (items: number) => {
         objectCount = items;
-        memoryUsage = Math.max(memoryUsage, memory);
+        // In Node.js environment, we track peak heap usage
+        memoryUsage = Math.max(memoryUsage, process.memoryUsage().heapUsed);
       },
       setStreamingUsed: (used: boolean) => {
         streamingUsed = used;
@@ -162,7 +177,11 @@ export function setupContainer(container: Container): void {
   // Report service
   container.registerFactory(
     'reportService',
-    () => new ReportServiceImpl(renderers),
+    () => new ReportServiceImpl(
+      renderers,
+      container.resolve('fileSystem'),
+      container.resolve('pathUtils')
+    ),
     true
   );
 
@@ -170,7 +189,10 @@ export function setupContainer(container: Container): void {
   container.registerFactory(
     'validationEngine',
     () => {
-      const validationEngine = new DefaultValidationEngine();
+      const validationEngine = new DefaultValidationEngine(
+        container.resolve('fileSystem'),
+        container.resolve('pathUtils')
+      );
 
       // Register validators
       validationEngine.registerValidator(
@@ -287,6 +309,7 @@ export function setupContainer(container: Container): void {
         options: {
           name?: string;
           description?: string;
+          template?: string;
           quiet?: boolean;
           verbose?: boolean;
         };
@@ -295,25 +318,90 @@ export function setupContainer(container: Container): void {
           container.resolve<YamlRuleRepository>('ruleRepository');
 
         try {
-          // Create a blank rulepack with example structure
-          const exampleRule = new Rule(
-            'example_rule',
-            'Example rule description',
-            ['pattern\\d+'], // Example regex pattern
-            ['keyword1', 'keyword2'], // Example keywords
-            'medium' as RuleSeverity,
-            'custom' as RuleCategory,
-            true, // enabled
-            false // case_sensitive
-          );
+          let rulePack: RulePack;
 
-          const rulePack = new RulePack(
-            command.options.name || 'My RulePack',
-            command.options.description || 'Custom rules for prompt safety',
-            [exampleRule],
-            '1.0.0',
-            new Date()
-          );
+          const templateName = command.options.template || 'basic';
+
+          if (templateName === 'pii') {
+            const rules = [
+              new Rule(
+                'email_addresses',
+                'Detects email addresses in text',
+                ['[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}'],
+                [],
+                'high' as RuleSeverity,
+                'pii' as RuleCategory,
+                true,
+                false
+              ),
+              new Rule(
+                'phone_numbers',
+                'Detects common phone number formats',
+                ['\\+?\\d{1,4}?[-.\\s]?\\(?\\d{1,3}?\\)?[-.\\s]?\\d{1,4}[-.\\s]?\\d{1,4}[-.\\s]?\\d{1,9}'],
+                [],
+                'medium' as RuleSeverity,
+                'pii' as RuleCategory,
+                true,
+                false
+              ),
+            ];
+
+            rulePack = new RulePack(
+              command.options.name || 'PII Detection',
+              command.options.description ||
+                'RulePack for detecting personal identifying information',
+              rules,
+              '1.0.0',
+              new Date()
+            );
+          } else if (templateName === 'security') {
+            const rules = [
+              new Rule(
+                'prompt_injection',
+                'Detects common prompt injection patterns',
+                [
+                  'ignore previous instructions',
+                  'system prompt',
+                  'you are now',
+                  'instead of',
+                ],
+                [],
+                'critical' as RuleSeverity,
+                'security' as RuleCategory,
+                true,
+                false
+              ),
+            ];
+
+            rulePack = new RulePack(
+              command.options.name || 'Security Rules',
+              command.options.description ||
+                'RulePack for detecting security-related prompt attacks',
+              rules,
+              '1.0.0',
+              new Date()
+            );
+          } else {
+            // Default basic template
+            const exampleRule = new Rule(
+              'example_rule',
+              'Example rule description',
+              ['pattern\\d+'], // Example regex pattern
+              ['keyword1', 'keyword2'], // Example keywords
+              'medium' as RuleSeverity,
+              'custom' as RuleCategory,
+              true, // enabled
+              false // case_sensitive
+            );
+
+            rulePack = new RulePack(
+              command.options.name || 'My RulePack',
+              command.options.description || 'Custom rules for prompt safety',
+              [exampleRule],
+              '1.0.0',
+              new Date()
+            );
+          }
 
           const result = await repository.saveToYaml(
             command.filename,

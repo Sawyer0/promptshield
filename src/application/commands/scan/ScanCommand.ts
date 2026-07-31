@@ -6,7 +6,8 @@ import { ScanConfig, OutputFormat } from '../../../shared/types/ScanConfig';
 export class ScanCommand {
   constructor(
     public readonly input: string,
-    public readonly options: ScanCommandOptions
+    public readonly options: ScanCommandOptions,
+    public readonly isRawContent: boolean = false
   ) {}
 
   /**

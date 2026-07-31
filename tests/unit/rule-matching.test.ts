@@ -1,4 +1,4 @@
-import { applyRulesToText } from '../../src/core/rules';
+import { applyRulesToText } from '../../src/domains/rules/core/services/RuleEngineImpl';
 
 describe('Rule Matching Logic', () => {
   const testRules = [
@@ -100,3 +100,10 @@ describe('Rule Matching Logic', () => {
     expect(violations.length).toBeGreaterThan(1);
   });
 });
+
+
+
+
+
+
+

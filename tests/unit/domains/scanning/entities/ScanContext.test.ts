@@ -1,7 +1,7 @@
 import { describe, test, expect } from '@jest/globals';
 import { ScanContext } from '../../../../../src/domains/scanning/core/entities/ScanContext';
 import {
-  createScanConfig,
+  createScanConfig, createScanContext,
   createRulePack,
 } from '../../../../helpers/testFactories';
 
@@ -21,7 +21,7 @@ describe('ScanContext', () => {
 
     test('should use current time as default start time', () => {
       const beforeTime = new Date();
-      const context = new ScanContext(createScanConfig(), createRulePack());
+      const context = createScanContext();
       const afterTime = new Date();
 
       expect(context.startTime.getTime()).toBeGreaterThanOrEqual(
@@ -391,3 +391,10 @@ describe('ScanContext', () => {
     });
   });
 });
+
+
+
+
+
+
+

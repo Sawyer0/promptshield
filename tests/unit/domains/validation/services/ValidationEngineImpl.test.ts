@@ -1,28 +1,38 @@
-import { describe, test, expect, beforeEach } from '@jest/globals';
+import { describe, test, expect, beforeEach, jest } from '@jest/globals';
 import { DefaultValidationEngine } from '../../../../../src/domains/validation/core/services/ValidationEngineImpl';
 import { ValidationOptions } from '../../../../../src/domains/validation/core/entities/ValidationOptions';
-import { ValidationResult } from '../../../../../src/domains/validation/core/entities/ValidationResult';
 import { InputFileValidatorImpl } from '../../../../../src/domains/validation/adapters/validators/InputFileValidatorImpl';
 import { RulePackValidatorImpl } from '../../../../../src/domains/validation/adapters/validators/RulePackValidatorImpl';
 import { createValidationResult } from '../../../../helpers/testFactories';
-import * as fs from 'fs';
-import * as path from 'path';
-
-// Mock fs module
-jest.mock('fs');
-const mockFs = fs as jest.Mocked<typeof fs>;
+import { IFileSystem } from '../../../../../src/shared/ports/FileSystem';
+import { IPathUtils } from '../../../../../src/shared/ports/PathUtils';
 
 describe('DefaultValidationEngine', () => {
   let engine: DefaultValidationEngine;
   let inputFileValidator: InputFileValidatorImpl;
   let rulePackValidator: RulePackValidatorImpl;
+  let mockFileSystem: jest.Mocked<IFileSystem>;
+  let mockPathUtils: jest.Mocked<IPathUtils>;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    mockFileSystem = {
+      existsSync: jest.fn<any>(),
+      exists: jest.fn<any>(),
+      readFile: jest.fn<any>(),
+      writeFile: jest.fn<any>(),
+      mkdir: jest.fn<any>(),
+    } as any;
+
+    mockPathUtils = {
+      extname: jest.fn<any>().mockReturnValue(''),
+      basename: jest.fn<any>().mockReturnValue(''),
+      dirname: jest.fn<any>().mockReturnValue(''),
+      join: jest.fn<any>().mockImplementation((...args: any[]) => args.join('/')),
+    } as any;
 
     inputFileValidator = new InputFileValidatorImpl();
     rulePackValidator = new RulePackValidatorImpl();
-    engine = new DefaultValidationEngine();
+    engine = new DefaultValidationEngine(mockFileSystem, mockPathUtils);
     engine.registerValidator('input-file', inputFileValidator);
     engine.registerValidator('rulepack', rulePackValidator);
   });
@@ -33,7 +43,9 @@ describe('DefaultValidationEngine', () => {
       const expectedResult = createValidationResult({ isValid: true });
 
       // Mock file system
-      mockFs.existsSync.mockReturnValue(true);
+      mockFileSystem.existsSync.mockReturnValue(true);
+      mockPathUtils.extname.mockReturnValue('.json');
+      mockPathUtils.basename.mockReturnValue('test.json');
 
       // Mock the validator to return expected result
       jest.spyOn(inputFileValidator, 'validate').mockResolvedValue({
@@ -70,8 +82,8 @@ describe('DefaultValidationEngine', () => {
         validateSchema: true,
       };
 
-      // Mock file system to return false for unknown extension
-      mockFs.existsSync.mockReturnValue(false);
+      // Mock file system to return false (file not found)
+      mockFileSystem.existsSync.mockReturnValue(false);
 
       const result = await engine.validate(filePath, options);
 
@@ -95,7 +107,9 @@ describe('DefaultValidationEngine', () => {
       };
 
       // Mock file system
-      mockFs.existsSync.mockReturnValue(true);
+      mockFileSystem.existsSync.mockReturnValue(true);
+      mockPathUtils.extname.mockReturnValue('.txt');
+      mockPathUtils.basename.mockReturnValue('test.txt');
 
       // Mock supports to return false
       jest.spyOn(inputFileValidator, 'supports').mockReturnValue(false);
@@ -115,7 +129,9 @@ describe('DefaultValidationEngine', () => {
       const error = new Error('Validation failed');
 
       // Mock file system
-      mockFs.existsSync.mockReturnValue(true);
+      mockFileSystem.existsSync.mockReturnValue(true);
+      mockPathUtils.extname.mockReturnValue('.json');
+      mockPathUtils.basename.mockReturnValue('test.json');
 
       // Mock the validator to return error
       jest.spyOn(inputFileValidator, 'validate').mockResolvedValue({
@@ -151,7 +167,9 @@ describe('DefaultValidationEngine', () => {
       ];
 
       // Mock file system
-      mockFs.existsSync.mockReturnValue(true);
+      mockFileSystem.existsSync.mockReturnValue(true);
+      mockPathUtils.extname.mockImplementation((p: any) => p.endsWith('.json') ? '.json' : '.yaml');
+      mockPathUtils.basename.mockImplementation((p: any) => p);
 
       // Mock validators to return expected results
       jest.spyOn(inputFileValidator, 'validate').mockResolvedValue({
@@ -186,7 +204,9 @@ describe('DefaultValidationEngine', () => {
       const error = new Error('Validation failed');
 
       // Mock file system
-      mockFs.existsSync.mockReturnValue(true);
+      mockFileSystem.existsSync.mockReturnValue(true);
+      mockPathUtils.extname.mockImplementation((p: any) => p.endsWith('.json') ? '.json' : '.yaml');
+      mockPathUtils.basename.mockImplementation((p: any) => p);
 
       // Mock first validation to succeed, second to fail
       jest.spyOn(inputFileValidator, 'validate').mockResolvedValue({

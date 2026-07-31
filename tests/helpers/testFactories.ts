@@ -8,6 +8,7 @@ import { Violation } from '../../src/shared/types/Violation';
 import { ScanConfig } from '../../src/shared/types/ScanConfig';
 import { ScanMetrics } from '../../src/shared/types/ScanMetrics';
 import { ScanRequest } from '../../src/domains/scanning/core/entities/ScanRequest';
+import { ScanContext } from '../../src/domains/scanning/core/entities/ScanContext';
 import {
   ValidationResult,
   ValidationError,
@@ -163,6 +164,19 @@ export const createScanRequest = (
   const defaultInput = input || 'test input content';
   const defaultConfig = config || createScanConfig();
   return new ScanRequest(defaultInput, defaultConfig);
+};
+
+/**
+ * ScanContext factory
+ */
+export const createScanContext = (
+  config?: Partial<ScanConfig>,
+  rulePack?: RulePack
+): ScanContext => {
+  return new ScanContext(
+    createScanConfig(config),
+    rulePack || createRulePack()
+  );
 };
 
 /**

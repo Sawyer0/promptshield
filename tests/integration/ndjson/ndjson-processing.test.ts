@@ -5,7 +5,7 @@
 
 import { describe, test, expect, beforeEach, afterEach } from '@jest/globals';
 import { ndjsonHelpers, fsHelpers } from '../../utils/testHelpers';
-import { applyRulesToDataOrStream } from '../../../src/core/scanner';
+import { applyRulesToDataOrStream } from '../../../src/domains/scanning/core/services/ScanOrchestrator';
 
 describe('NDJSON File Processing Integration', () => {
   let tempFiles: string[] = [];
@@ -77,3 +77,10 @@ describe('NDJSON File Processing Integration', () => {
     expect(results[0].violations).toHaveLength(0);
   });
 });
+
+
+
+
+
+
+

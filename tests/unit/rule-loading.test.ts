@@ -1,4 +1,4 @@
-import { loadAndValidateRulePack } from '../../src/core/rules';
+import { loadAndValidateRulePack } from '../../src/domains/rules/core/services/RuleEngineImpl';
 import { RuleSchema, RulePackSchema } from '../../src/rulepacks/schema';
 import { promises as fs } from 'fs';
 import yaml from 'js-yaml';
@@ -130,3 +130,10 @@ describe('Rule Loading and Validation', () => {
     expect(() => RuleSchema.parse({ id: 'x' })).toThrow();
   });
 });
+
+
+
+
+
+
+

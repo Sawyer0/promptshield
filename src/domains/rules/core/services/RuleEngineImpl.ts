@@ -57,19 +57,40 @@ export class DefaultRuleEngine implements RuleEngine {
     try {
       const violations: Violation[] = [];
 
-      for (const rule of rules) {
-        if (!rule.enabled) continue;
-
+      // Check if matcher supports optimized batch matching
+      if ('matchAll' in this.matcher && typeof this.matcher.matchAll === 'function') {
+        // Use optimized O(n) single-pass matching
         for (const [fieldName, fieldValue] of Object.entries(fields)) {
           if (!fieldValue) continue;
 
-          const matches = this.matcher.match(fieldValue, rule);
+          const matchResults = this.matcher.matchAll(fieldValue, rules.filter(r => r.enabled));
 
-          for (const match of matches) {
-            if (match.matched) {
-              violations.push(
-                this.createViolation(rule, fieldName, match, metadata)
-              );
+          for (const [rule, matches] of matchResults) {
+            for (const match of matches) {
+              if (match.matched) {
+                violations.push(
+                  this.createViolation(rule, fieldName, match, metadata)
+                );
+              }
+            }
+          }
+        }
+      } else {
+        // Fallback to sequential matching for backward compatibility
+        for (const rule of rules) {
+          if (!rule.enabled) continue;
+
+          for (const [fieldName, fieldValue] of Object.entries(fields)) {
+            if (!fieldValue) continue;
+
+            const matches = this.matcher.match(fieldValue, rule);
+
+            for (const match of matches) {
+              if (match.matched) {
+                violations.push(
+                  this.createViolation(rule, fieldName, match, metadata)
+                );
+              }
             }
           }
         }

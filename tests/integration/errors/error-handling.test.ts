@@ -5,7 +5,7 @@
 
 import { describe, test, expect, beforeEach, afterEach } from '@jest/globals';
 import { testHelpers, fsHelpers } from '../../utils/testHelpers';
-import { applyRulesToDataOrStream } from '../../../src/core/scanner';
+import { applyRulesToDataOrStream } from '../../../src/domains/scanning/core/services/ScanOrchestrator';
 
 describe('Error Handling Integration', () => {
   let tempFiles: string[] = [];
@@ -144,3 +144,10 @@ describe('Error Handling Integration', () => {
     ).rejects.toThrow('Invalid JSON');
   });
 });
+
+
+
+
+
+
+

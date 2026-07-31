@@ -35,7 +35,7 @@ export interface ScanOrchestrator {
 export interface ScanMetricsCollector {
   start(): void;
 
-  recordProcessing(itemsProcessed: number, memoryUsage: number): void;
+  recordProcessing(itemsProcessed: number): void;
 
   end(): {
     objectsScanned: number;

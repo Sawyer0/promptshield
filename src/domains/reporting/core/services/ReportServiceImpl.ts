@@ -1,8 +1,8 @@
 import { ReportService, Renderer } from '../ports/Renderer';
 import { Report } from '../entities/Report';
 import { Result, ok, err } from '../../../../shared/types/Result';
-import * as fs from 'fs';
-import * as path from 'path';
+import { IFileSystem } from '../../../../shared/ports/FileSystem';
+import { IPathUtils } from '../../../../shared/ports/PathUtils';
 
 /**
  * Default implementation of ReportService
@@ -10,7 +10,11 @@ import * as path from 'path';
 export class ReportServiceImpl implements ReportService {
   private renderers: Map<string, Renderer>;
 
-  constructor(renderers: Map<string, Renderer>) {
+  constructor(
+    renderers: Map<string, Renderer>,
+    private fs: IFileSystem,
+    private pathUtils: IPathUtils
+  ) {
     this.renderers = renderers;
   }
 
@@ -38,13 +42,20 @@ export class ReportServiceImpl implements ReportService {
         return err(contentResult.error);
       }
 
-      const dir = path.dirname(outputPath);
-      if (!fs.existsSync(dir)) {
-        await fs.promises.mkdir(dir, { recursive: true });
+      const dir = this.pathUtils.dirname(outputPath);
+      const dirExists = await this.fs.exists(dir);
+      if (!dirExists) {
+        const mkdirResult = await this.fs.mkdir(dir, true);
+        if (mkdirResult.isErr()) {
+          return err(mkdirResult.error);
+        }
       }
 
       // Write to file
-      await fs.promises.writeFile(outputPath, contentResult.value, 'utf-8');
+      const writeResult = await this.fs.writeFile(outputPath, contentResult.value);
+      if (writeResult.isErr()) {
+        return err(writeResult.error);
+      }
 
       return ok(undefined);
     } catch (error) {

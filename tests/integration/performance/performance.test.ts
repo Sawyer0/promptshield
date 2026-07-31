@@ -6,7 +6,7 @@
 import { describe, test, expect, beforeEach, afterEach } from '@jest/globals';
 import fs from 'fs';
 import { fsHelpers } from '../../utils/testHelpers';
-import { applyRulesToDataOrStream } from '../../../src/core/scanner';
+import { applyRulesToDataOrStream } from '../../../src/domains/scanning/core/services/ScanOrchestrator';
 
 describe('Performance Integration', () => {
   let tempFiles: string[] = [];
@@ -158,3 +158,10 @@ describe('Performance Integration', () => {
     expect(results[0].durationMs).toBeGreaterThan(0);
   });
 });
+
+
+
+
+
+
+

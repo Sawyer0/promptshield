@@ -134,3 +134,10 @@ describe('Report', () => {
     expect(report.shouldIncludeMetrics()).toBe(false);
   });
 });
+
+
+
+
+
+
+

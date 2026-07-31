@@ -113,7 +113,9 @@ program
     try {
       // Handle stdin input
       let actualInput = input;
+      let isRawContent = false;
       if (input === '-') {
+        isRawContent = true;
         // Read from stdin
         actualInput = await new Promise<string>((resolve, reject) => {
           let data = '';
@@ -131,7 +133,7 @@ program
         });
       }
 
-      const command = new ScanCommand(actualInput, options);
+      const command = new ScanCommand(actualInput, options, isRawContent);
 
       const commandLogger = options.quiet
         ? LoggerFactory.createQuietLogger()
@@ -202,6 +204,7 @@ program
   .description('Initialize a new RulePack YAML file with example structure')
   .option('-n, --name <name>', 'RulePack name')
   .option('-d, --description <description>', 'RulePack description')
+  .option('-t, --template <template>', 'Template to use: basic, pii, security')
   .option('--force', 'Overwrite existing file')
   .option('-v, --verbose', 'Show detailed information')
   .option('-q, --quiet', 'Suppress output messages')
@@ -211,6 +214,7 @@ program
       options: {
         name?: string;
         description?: string;
+        template?: string;
         force?: boolean;
         verbose?: boolean;
         quiet?: boolean;

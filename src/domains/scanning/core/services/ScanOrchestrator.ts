@@ -109,11 +109,28 @@ export class DefaultScanOrchestrator implements IScanOrchestrator, ScanEngine {
     const allViolations: Violation[] = [];
     let totalObjects = 0;
 
-    for (const filePath of filesResult.value) {
-      const fileResult = await this.scanFile(context, filePath);
-      if (fileResult.isOk()) {
-        allViolations.push(...fileResult.value.violations);
-        totalObjects += fileResult.value.metrics.objectsScanned;
+    // Process files concurrently in batches to avoid EMFILE errors
+    const CONCURRENCY_LIMIT = 20;
+    const files = filesResult.value;
+    
+    for (let i = 0; i < files.length; i += CONCURRENCY_LIMIT) {
+      const chunk = files.slice(i, i + CONCURRENCY_LIMIT);
+      
+      // Process chunk in parallel
+      const chunkResults = await Promise.allSettled(
+        chunk.map(filePath => this.scanFile(context, filePath))
+      );
+
+      // Aggregate results
+      for (const result of chunkResults) {
+        if (result.status === 'fulfilled' && result.value.isOk()) {
+          allViolations.push(...result.value.value.violations);
+          totalObjects += result.value.value.metrics.objectsScanned;
+        } else if (result.status === 'rejected') {
+          console.error('File scan failed:', result.reason);
+        } else if (result.status === 'fulfilled' && result.value.isErr()) {
+          console.error('File scan error:', result.value.error);
+        }
       }
     }
 
@@ -237,10 +254,7 @@ export class DefaultScanOrchestrator implements IScanOrchestrator, ScanEngine {
         }
 
         itemCount++;
-        this.metricsCollector.recordProcessing(
-          itemCount,
-          process.memoryUsage().heapUsed
-        );
+        this.metricsCollector.recordProcessing(itemCount);
       }
     );
 

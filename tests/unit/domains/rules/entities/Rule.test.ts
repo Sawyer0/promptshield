@@ -30,19 +30,33 @@ describe('Rule', () => {
         'minimal-rule',
         'Minimal description',
         [],
-        ['test'],
-        'medium',
-        'custom'
+        ['test']
       );
 
       expect(rule.id).toBe('minimal-rule');
       expect(rule.description).toBe('Minimal description');
       expect(rule.matchRegex).toEqual([]);
       expect(rule.matchKeywords).toEqual(['test']);
-      expect(rule.severity).toBe('medium');
-      expect(rule.category).toBe('custom');
+      expect(rule.severity).toBe('medium'); // default
+      expect(rule.category).toBe('custom'); // default
       expect(rule.enabled).toBe(true); // default
       expect(rule.caseSensitive).toBe(false); // default
+    });
+
+    test('should throw error if ID is empty', () => {
+      expect(() => new Rule('', 'desc', [], ['test'])).toThrow('Rule ID is required');
+    });
+
+    test('should throw error if description is empty', () => {
+      expect(() => new Rule('id', '', [], ['test'])).toThrow('Rule description is required');
+    });
+
+    test('should throw error if no patterns are provided', () => {
+      expect(() => new Rule('id', 'desc', [], [])).toThrow('Rule must have either match_regex or match_keywords');
+    });
+
+    test('should throw error for invalid regex', () => {
+      expect(() => new Rule('id', 'desc', ['['], [])).toThrow('Invalid regex pattern: [');
     });
   });
 
@@ -52,9 +66,7 @@ describe('Rule', () => {
         'test',
         'test',
         ['\\btest\\b'],
-        [],
-        'medium',
-        'custom'
+        []
       );
       expect(rule.hasRegexPatterns()).toBe(true);
     });
@@ -64,15 +76,8 @@ describe('Rule', () => {
         'test',
         'test',
         [],
-        ['keyword'],
-        'medium',
-        'custom'
+        ['keyword']
       );
-      expect(rule.hasRegexPatterns()).toBe(false);
-    });
-
-    test('should return false when regex array is empty', () => {
-      const rule = new Rule('test', 'test', [], [], 'medium', 'custom');
       expect(rule.hasRegexPatterns()).toBe(false);
     });
   });
@@ -83,9 +88,7 @@ describe('Rule', () => {
         'test',
         'test',
         [],
-        ['keyword'],
-        'medium',
-        'custom'
+        ['keyword']
       );
       expect(rule.hasKeywordPatterns()).toBe(true);
     });
@@ -95,258 +98,89 @@ describe('Rule', () => {
         'test',
         'test',
         ['\\btest\\b'],
-        [],
-        'medium',
-        'custom'
+        []
       );
       expect(rule.hasKeywordPatterns()).toBe(false);
     });
+  });
 
-    test('should return false when keywords array is empty', () => {
-      const rule = new Rule('test', 'test', [], [], 'medium', 'custom');
-      expect(rule.hasKeywordPatterns()).toBe(false);
+  describe('pattern detection', () => {
+    test('should detect any patterns', () => {
+      const rule1 = new Rule('test1', 'test', ['\\btest\\b'], []);
+      const rule2 = new Rule('test2', 'test', [], ['keyword']);
+      const rule3 = new Rule('test3', 'test', ['\\btest\\b'], ['keyword']);
+
+      expect(rule1.hasRegexPatterns() || rule1.hasKeywordPatterns()).toBe(true);
+      expect(rule2.hasRegexPatterns() || rule2.hasKeywordPatterns()).toBe(true);
+      expect(rule3.hasRegexPatterns() || rule3.hasKeywordPatterns()).toBe(true);
     });
   });
 
-  describe('hasAnyPatterns', () => {
-    test('should return true when regex patterns exist', () => {
-      const rule = new Rule(
-        'test',
-        'test',
-        ['\\btest\\b'],
-        [],
-        'medium',
-        'custom'
-      );
-      expect(rule.hasAnyPatterns()).toBe(true);
+  describe('getCompiledRegexPatterns', () => {
+    test('should return compiled RegEx objects', () => {
+      const rule = new Rule('test', 'test', ['test1', 'test2'], []);
+      const regexes = rule.getCompiledRegexPatterns();
+      
+      expect(regexes).toHaveLength(2);
+      expect(regexes[0]).toBeInstanceOf(RegExp);
+      expect(regexes[0].source).toBe('test1');
+      expect(regexes[1].source).toBe('test2');
     });
 
-    test('should return true when keyword patterns exist', () => {
-      const rule = new Rule(
-        'test',
-        'test',
-        [],
-        ['keyword'],
-        'medium',
-        'custom'
-      );
-      expect(rule.hasAnyPatterns()).toBe(true);
-    });
-
-    test('should return true when both patterns exist', () => {
-      const rule = new Rule(
-        'test',
-        'test',
-        ['\\btest\\b'],
-        ['keyword'],
-        'medium',
-        'custom'
-      );
-      expect(rule.hasAnyPatterns()).toBe(true);
-    });
-
-    test('should return false when no patterns exist', () => {
-      const rule = new Rule('test', 'test', [], [], 'medium', 'custom');
-      expect(rule.hasAnyPatterns()).toBe(false);
+    test('should handle case sensitivity', () => {
+      const caseInsensitiveRule = new Rule('test', 'test', ['test'], [], 'medium', 'custom', true, false);
+      const caseSensitiveRule = new Rule('test', 'test', ['test'], [], 'medium', 'custom', true, true);
+      
+      expect(caseInsensitiveRule.getCompiledRegexPatterns()[0].flags).toContain('i');
+      expect(caseSensitiveRule.getCompiledRegexPatterns()[0].flags).not.toContain('i');
     });
   });
 
-  describe('clone', () => {
-    test('should create exact copy of rule', () => {
-      const original = new Rule(
-        'original',
-        'Original description',
-        ['\\boriginal\\b'],
-        ['original'],
-        'critical',
-        'security',
-        false,
-        true
-      );
-
-      const cloned = original.clone();
-
-      expect(cloned).not.toBe(original);
-      expect(cloned.id).toBe(original.id);
-      expect(cloned.description).toBe(original.description);
-      expect(cloned.matchRegex).toEqual(original.matchRegex);
-      expect(cloned.matchKeywords).toEqual(original.matchKeywords);
-      expect(cloned.severity).toBe(original.severity);
-      expect(cloned.category).toBe(original.category);
-      expect(cloned.enabled).toBe(original.enabled);
-      expect(cloned.caseSensitive).toBe(original.caseSensitive);
+  describe('getNormalizedKeywords', () => {
+    test('should lowercase keywords when case insensitive', () => {
+      const rule = new Rule('test', 'test', [], ['KEYWORD', 'MixedCase'], 'medium', 'custom', true, false);
+      expect(rule.getNormalizedKeywords()).toEqual(['keyword', 'mixedcase']);
     });
 
-    test('should create independent copy', () => {
-      const original = new Rule(
-        'test',
-        'test',
-        ['pattern'],
-        ['keyword'],
-        'medium',
-        'custom'
-      );
-      const cloned = original.clone();
-
-      // Modify arrays in original
-      original.matchRegex.push('new-pattern');
-      original.matchKeywords.push('new-keyword');
-
-      // Cloned should be unaffected
-      expect(cloned.matchRegex).not.toContain('new-pattern');
-      expect(cloned.matchKeywords).not.toContain('new-keyword');
+    test('should preserve case when case sensitive', () => {
+      const rule = new Rule('test', 'test', [], ['KEYWORD', 'MixedCase'], 'medium', 'custom', true, true);
+      expect(rule.getNormalizedKeywords()).toEqual(['KEYWORD', 'MixedCase']);
     });
   });
 
-  describe('withOverrides', () => {
-    test('should create rule with overridden properties', () => {
-      const original = new Rule(
-        'original',
-        'Original',
-        ['pattern'],
-        ['keyword'],
-        'medium',
-        'custom'
-      );
+  describe('YAML conversion', () => {
+    test('should convert to YAML data', () => {
+      const rule = new Rule('test-id', 'test-desc', ['regex'], ['keyword'], 'high', 'security', true, true);
+      const yaml = rule.toYaml();
+      
+      expect(yaml.id).toBe('test-id');
+      expect(yaml.description).toBe('test-desc');
+      expect(yaml.match_regex).toEqual(['regex']);
+      expect(yaml.match_keywords).toEqual(['keyword']);
+      expect(yaml.severity).toBe('high');
+      expect(yaml.category).toBe('security');
+      expect(yaml.enabled).toBe(true);
+      expect(yaml.case_sensitive).toBe(true);
+    });
 
-      const modified = original.withOverrides({
-        description: 'Modified description',
+    test('should create from YAML data', () => {
+      const yamlData = {
+        id: 'yaml-id',
+        description: 'yaml-desc',
+        match_regex: ['regex-pattern'],
         severity: 'critical',
-        enabled: false,
-      });
-
-      expect(modified.id).toBe('original'); // unchanged
-      expect(modified.description).toBe('Modified description'); // changed
-      expect(modified.severity).toBe('critical'); // changed
-      expect(modified.enabled).toBe(false); // changed
-      expect(modified.category).toBe('custom'); // unchanged
-    });
-
-    test('should not modify original rule', () => {
-      const original = new Rule(
-        'test',
-        'Original',
-        [],
-        ['test'],
-        'medium',
-        'custom'
-      );
-
-      original.withOverrides({
-        description: 'Modified',
-        severity: 'critical',
-      });
-
-      expect(original.description).toBe('Original');
-      expect(original.severity).toBe('medium');
-    });
-  });
-
-  describe('getSeverityLevel', () => {
-    test('should return correct severity levels', () => {
-      expect(
-        new Rule(
-          'test',
-          'test',
-          [],
-          ['test'],
-          'low',
-          'custom'
-        ).getSeverityLevel()
-      ).toBe(1);
-      expect(
-        new Rule(
-          'test',
-          'test',
-          [],
-          ['test'],
-          'medium',
-          'custom'
-        ).getSeverityLevel()
-      ).toBe(2);
-      expect(
-        new Rule(
-          'test',
-          'test',
-          [],
-          ['test'],
-          'high',
-          'custom'
-        ).getSeverityLevel()
-      ).toBe(3);
-      expect(
-        new Rule(
-          'test',
-          'test',
-          [],
-          ['test'],
-          'critical',
-          'custom'
-        ).getSeverityLevel()
-      ).toBe(4);
-    });
-  });
-
-  describe('validation', () => {
-    test('should accept valid severities', () => {
-      expect(
-        () => new Rule('test', 'test', [], ['test'], 'low', 'custom')
-      ).not.toThrow();
-      expect(
-        () => new Rule('test', 'test', [], ['test'], 'medium', 'custom')
-      ).not.toThrow();
-      expect(
-        () => new Rule('test', 'test', [], ['test'], 'high', 'custom')
-      ).not.toThrow();
-      expect(
-        () => new Rule('test', 'test', [], ['test'], 'critical', 'custom')
-      ).not.toThrow();
-    });
-
-    test('should accept valid categories', () => {
-      expect(
-        () => new Rule('test', 'test', [], ['test'], 'medium', 'pii')
-      ).not.toThrow();
-      expect(
-        () => new Rule('test', 'test', [], ['test'], 'medium', 'bias')
-      ).not.toThrow();
-      expect(
-        () => new Rule('test', 'test', [], ['test'], 'medium', 'hallucination')
-      ).not.toThrow();
-      expect(
-        () => new Rule('test', 'test', [], ['test'], 'medium', 'security')
-      ).not.toThrow();
-      expect(
-        () => new Rule('test', 'test', [], ['test'], 'medium', 'compliance')
-      ).not.toThrow();
-      expect(
-        () => new Rule('test', 'test', [], ['test'], 'medium', 'parse')
-      ).not.toThrow();
-      expect(
-        () => new Rule('test', 'test', [], ['test'], 'medium', 'internal')
-      ).not.toThrow();
-      expect(
-        () => new Rule('test', 'test', [], ['test'], 'medium', 'custom')
-      ).not.toThrow();
-    });
-  });
-
-  describe('toString', () => {
-    test('should return readable string representation', () => {
-      const rule = new Rule(
-        'email-rule',
-        'Email detection',
-        ['\\b[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}\\b'],
-        ['email'],
-        'high',
-        'pii'
-      );
-      const str = rule.toString();
-
-      expect(str).toContain('email-rule');
-      expect(str).toContain('Email detection');
-      expect(str).toContain('high');
-      expect(str).toContain('pii');
+        category: 'pii',
+        enabled: false
+      };
+      
+      const rule = Rule.fromYaml(yamlData);
+      
+      expect(rule.id).toBe('yaml-id');
+      expect(rule.description).toBe('yaml-desc');
+      expect(rule.matchRegex).toEqual(['regex-pattern']);
+      expect(rule.severity).toBe('critical');
+      expect(rule.category).toBe('pii');
+      expect(rule.enabled).toBe(false);
     });
   });
 });

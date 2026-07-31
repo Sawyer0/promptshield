@@ -3,7 +3,7 @@ import { Container } from '../../../../src/infrastructure/container/Container';
 import { setupContainer } from '../../../../src/cli/bootstrap';
 import { ScanCommandHandler } from '../../../../src/application/commands/scan/ScanCommandHandler';
 import { ScanCommand } from '../../../../src/application/commands/scan/ScanCommand';
-import { createScanConfig } from '../../../helpers/testFactories';
+import { createScanConfig, createScanContext } from '../../../helpers/testFactories';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -279,3 +279,10 @@ describe('Scan Streaming Integration', () => {
     });
   });
 });
+
+
+
+
+
+
+

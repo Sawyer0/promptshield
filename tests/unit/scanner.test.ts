@@ -5,7 +5,7 @@
 
 import { describe, test, expect } from '@jest/globals';
 import { testHelpers, ndjsonHelpers } from '../utils/testHelpers';
-import { applyRulesToDataOrStream } from '../../src/core/scanner';
+import { applyRulesToDataOrStream } from '../../src/domains/scanning/core/services/ScanOrchestrator';
 
 describe('NDJSON Scanner', () => {
   describe('NDJSON Parsing', () => {
@@ -133,3 +133,10 @@ describe('NDJSON Scanner', () => {
     });
   });
 });
+
+
+
+
+
+
+

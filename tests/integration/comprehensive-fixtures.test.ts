@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@jest/globals';
-import { applyRulesToDataOrStream } from '../../src/core/scanner';
+import { applyRulesToDataOrStream } from '../../src/domains/scanning/core/services/ScanOrchestrator';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
@@ -342,3 +342,10 @@ describe('Comprehensive Test Fixtures', () => {
     });
   });
 });
+
+
+
+
+
+
+

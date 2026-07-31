@@ -3,8 +3,8 @@ import { ValidationEngine } from '../ports/ValidationEngine';
 import { ValidationResult } from '../entities/ValidationResult';
 import { ValidationOptions } from '../entities/ValidationOptions';
 import { Validator } from '../ports/Validator';
-import * as path from 'path';
-import * as fs from 'fs';
+import { IFileSystem } from '../../../../shared/ports/FileSystem';
+import { IPathUtils } from '../../../../shared/ports/PathUtils';
 
 /**
  * Default validation engine implementation
@@ -12,7 +12,10 @@ import * as fs from 'fs';
 export class DefaultValidationEngine implements ValidationEngine {
   private validators = new Map<string, Validator>();
 
-  constructor() {
+  constructor(
+    private fs: IFileSystem,
+    private pathUtils: IPathUtils
+  ) {
     // Register default validators will be done by dependency injection
   }
 
@@ -73,12 +76,12 @@ export class DefaultValidationEngine implements ValidationEngine {
 
   private determineValidationType(target: string): string {
     // Check if target exists
-    if (!fs.existsSync(target)) {
+    if (!this.fs.existsSync(target)) {
       return 'unknown';
     }
 
-    const ext = path.extname(target).toLowerCase();
-    const basename = path.basename(target).toLowerCase();
+    const ext = this.pathUtils.extname(target).toLowerCase();
+    const basename = this.pathUtils.basename(target).toLowerCase();
 
     // RulePack files
     if (ext === '.yaml' || ext === '.yml') {

@@ -108,6 +108,7 @@ export class ScanCommandHandler {
     // Check if input file exists (unless it's stdin or direct content)
     if (
       command.input &&
+      !command.isRawContent &&
       command.input !== '-' &&
       !command.input.startsWith('{') &&
       !command.input.startsWith('[')

@@ -5,7 +5,7 @@
 
 import { describe, test, expect, beforeEach, afterEach } from '@jest/globals';
 import { testHelpers, fsHelpers } from '../../utils/testHelpers';
-import { applyRulesToDataOrStream } from '../../../src/core/scanner';
+import { applyRulesToDataOrStream } from '../../../src/domains/scanning/core/services/ScanOrchestrator';
 
 describe('Rule Engine Integration', () => {
   let tempFiles: string[] = [];
@@ -95,3 +95,10 @@ describe('Rule Engine Integration', () => {
     expect(results[0].violations.length).toBe(0);
   });
 });
+
+
+
+
+
+
+
